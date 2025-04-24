@@ -19,6 +19,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import { UseChatHelpers } from '@ai-sdk/react';
+import { Sparkles, Pencil } from 'lucide-react';
 
 const PurePreviewMessage = ({
   chatId,
@@ -57,13 +58,7 @@ const PurePreviewMessage = ({
             },
           )}
         >
-          {message.role === 'assistant' && (
-            <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
-              <div className="translate-y-px">
-                <SparklesIcon size={14} />
-              </div>
-            </div>
-          )}
+       
 
           <div className="flex flex-col gap-4 w-full">
             {message.experimental_attachments && (
@@ -109,7 +104,7 @@ const PurePreviewMessage = ({
                                 setMode('edit');
                               }}
                             >
-                              <PencilEditIcon />
+                              <Pencil size={14} className="size-4 mb-1" />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>Edit message</TooltipContent>
@@ -119,7 +114,7 @@ const PurePreviewMessage = ({
                       <div
                         data-testid="message-content"
                         className={cn('flex flex-col gap-4', {
-                          'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                          'bg-gray-200 dark:bg-muted text-secondary-foreground px-3 py-2 rounded-[15px]':
                             message.role === 'user',
                         })}
                       >
@@ -257,18 +252,50 @@ export const ThinkingMessage = () => {
         className={cx(
           'flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl',
           {
-            'group-data-[role=user]/message:bg-muted': true,
+            'group-data-[role=user]': true,
           },
         )}
       >
-        <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
-          <SparklesIcon size={14} />
-        </div>
+       
 
         <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-4 text-muted-foreground">
-            Hmm...
+          <div className="relative inline-block">
+            {/* Base gray text */}
+            <span className="text-gray-500">Lumia A.I is thinking...</span>
+
+            {/* White highlight overlay */}
+            <span className="absolute inset-0 white-wave-effect">
+              Lumia A.I is thinking...
+            </span>
           </div>
+
+          <style jsx>{`
+        .white-wave-effect {
+          color: transparent;
+          background: linear-gradient(
+            to right,
+            transparent 0%,
+            transparent 45%,
+            white 48%,
+            white 52%,
+            transparent 55%,
+            transparent 100%
+          );
+          -webkit-background-clip: text;
+          background-clip: text;
+          background-size: 200% 100%;
+          animation: whiteWave 4s linear infinite;
+        }
+        
+        @keyframes whiteWave {
+          0% {
+            background-position: -100% 0;
+          }
+          100% {
+            background-position: 100% 0;
+          }
+        }
+      `}</style>
         </div>
       </div>
     </motion.div>

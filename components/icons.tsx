@@ -534,24 +534,27 @@ export const ArrowUpIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const StopIcon = ({ size = 16 }: { size?: number }) => {
+export const StopIcon = ({ size = 16, radius = 2 }: { size?: number; radius?: number }) => {
   return (
     <svg
       height={size}
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
+      xmlns="http://www.w3.org/2000/svg"
     >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M3 3H13V13H3V3Z"
+      <rect
+        x="3"
+        y="3"
+        width="10"
+        height="10"
+        rx={radius}
+        ry={radius}
         fill="currentColor"
       />
     </svg>
   );
 };
-
 export const PaperclipIcon = ({ size = 16 }: { size?: number }) => {
   return (
     <svg
@@ -729,38 +732,71 @@ export const SummarizeIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export const SidebarLeftIcon = ({ size = 16 }: { size?: number }) => (
+export const SidebarLeftIcon = ({ size = 22, color = '#6B7280' }: { size?: number; color?: string }) => (
   <svg
-    height={size}
-    strokeLinejoin="round"
-    viewBox="0 0 16 16"
     width={size}
-    style={{ color: 'currentcolor' }}
+    height={size}
+    viewBox="0 0 64 64"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ color }}
   >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M6.245 2.5H14.5V12.5C14.5 13.0523 14.0523 13.5 13.5 13.5H6.245V2.5ZM4.995 2.5H1.5V12.5C1.5 13.0523 1.94772 13.5 2.5 13.5H4.995V2.5ZM0 1H1.5H14.5H16V2.5V12.5C16 13.8807 14.8807 15 13.5 15H2.5C1.11929 15 0 13.8807 0 12.5V2.5V1Z"
-      fill="currentColor"
+    {/* Внешний скруглённый прямоугольник */}
+    <rect
+      x="6"
+      y="6"
+      width="52"
+      height="52"
+      rx="15"
+      ry="15"
+      stroke="currentColor"
+      strokeWidth="6"
+      fill="none"
     />
+
+    {/* Вертикальная линия на 40% ширины */}
+    <line
+      x1="26.8"
+      y1="6"
+      x2="26.8"
+      y2="58"
+      stroke="currentColor"
+      strokeWidth="6"
+    />
+
+    <circle cx="16" cy="19" r="3.5" fill="currentColor" />
+    <circle cx="16" cy="31" r="3.5" fill="currentColor" />
   </svg>
 );
 
+
 export const PlusIcon = ({ size = 16 }: { size?: number }) => (
   <svg
-    height={size}
-    strokeLinejoin="round"
-    viewBox="0 0 16 16"
-    width={size}
-    style={{ color: 'currentcolor' }}
-  >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M 8.75,1 H7.25 V7.25 H1.5 V8.75 H7.25 V15 H8.75 V8.75 H14.5 V7.25 H8.75 V1.75 Z"
-      fill="currentColor"
-    />
-  </svg>
+  width={size}
+  height={size}
+  viewBox="0 0 64 64"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  style={{ color: 'currentcolor' }}
+>
+  {/* Основной квадрат со скруглениями */}
+  <rect
+    x="4"
+    y="4"
+    width="56"
+    height="56"
+    rx="10"
+    ry="10"
+    fill="currentColor"
+  />
+  {/* "Дырка" — круг в правом верхнем углу */}
+  <circle
+    cx="50"
+    cy="14"
+    r="6"
+    fill="white"
+  />
+</svg>
 );
 
 export const CopyIcon = ({ size = 16 }: { size?: number }) => (
@@ -832,24 +868,18 @@ export const ChevronDownIcon = ({ size = 16 }: { size?: number }) => (
 );
 
 export const SparklesIcon = ({ size = 16 }: { size?: number }) => (
-  <svg
-    height={size}
-    strokeLinejoin="round"
-    viewBox="0 0 16 16"
-    width={size}
-    style={{ color: 'currentcolor' }}
-  >
-    <path
-      d="M2.5 0.5V0H3.5V0.5C3.5 1.60457 4.39543 2.5 5.5 2.5H6V3V3.5H5.5C4.39543 3.5 3.5 4.39543 3.5 5.5V6H3H2.5V5.5C2.5 4.39543 1.60457 3.5 0.5 3.5H0V3V2.5H0.5C1.60457 2.5 2.5 1.60457 2.5 0.5Z"
-      fill="currentColor"
-    />
-    <path
-      d="M14.5 4.5V5H13.5V4.5C13.5 3.94772 13.0523 3.5 12.5 3.5H12V3V2.5H12.5C13.0523 2.5 13.5 2.05228 13.5 1.5V1H14H14.5V1.5C14.5 2.05228 14.9477 2.5 15.5 2.5H16V3V3.5H15.5C14.9477 3.5 14.5 3.94772 14.5 4.5Z"
-      fill="currentColor"
-    />
+  <svg height={size} strokeLinejoin="round" viewBox="0 0 16 16" width={size}>
+    <defs>
+      <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#00BFFF" /> {/* Light blue */}
+        <stop offset="100%" stopColor="#0000FF" /> {/* Deep blue */}
+      </linearGradient>
+    </defs>
+
+    {/* Only keeping the main star with gradient */}
     <path
       d="M8.40706 4.92939L8.5 4H9.5L9.59294 4.92939C9.82973 7.29734 11.7027 9.17027 14.0706 9.40706L15 9.5V10.5L14.0706 10.5929C11.7027 10.8297 9.82973 12.7027 9.59294 15.0706L9.5 16H8.5L8.40706 15.0706C8.17027 12.7027 6.29734 10.8297 3.92939 10.5929L3 10.5V9.5L3.92939 9.40706C6.29734 9.17027 8.17027 7.29734 8.40706 4.92939Z"
-      fill="currentColor"
+      fill="url(#blueGradient)"
     />
   </svg>
 );

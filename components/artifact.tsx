@@ -335,6 +335,8 @@ function PureArtifact({
                     append={append}
                     className="bg-background dark:bg-muted"
                     setMessages={setMessages}
+                    isSearchMode={false}
+                    setIsSearchMode={() => {}}
                   />
                 </form>
               </div>

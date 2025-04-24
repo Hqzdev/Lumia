@@ -1,6 +1,6 @@
 'use client';
 
-import type { Attachment, UIMessage } from 'ai';
+import type { Attachment, Message } from 'ai';
 import cx from 'classnames';
 import type React from 'react';
 import {
@@ -15,14 +15,25 @@ import {
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { useArtifactSelector } from '@/hooks/use-artifact';
+import { cn } from '@/lib/utils';
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
+import { ArrowUpIcon, StopIcon } from './icons';
+import { ArrowUp, Square, Paperclip, Search, Lightbulb, PlusIcon, MessageSquareDiff, Globe, Paintbrush, Image, SearchCheck } from 'lucide-react';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
+import { SearchModeToggle } from './search-mode-toggle'
 import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
+import { DeepSearchToggle } from './deep-search-toggle';
+import { JustifyModeToggle } from './justify-toggle';
 import equal from 'fast-deep-equal';
-import type { UseChatHelpers } from '@ai-sdk/react';
+import { UseChatHelpers, UseChatOptions } from '@ai-sdk/react';
+import { EllipsisModeToggle } from './three-button-toggle';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { useSidebar } from '@/components/ui/sidebar';
+import { artifactCreatePrompt } from '@/lib/ai/prompts';
 
 function PureMultimodalInput({
   chatId,
@@ -37,6 +48,8 @@ function PureMultimodalInput({
   append,
   handleSubmit,
   className,
+  isSearchMode,
+  setIsSearchMode,
 }: {
   chatId: string;
   input: UseChatHelpers['input'];
@@ -45,14 +58,21 @@ function PureMultimodalInput({
   stop: () => void;
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
-  messages: Array<UIMessage>;
-  setMessages: UseChatHelpers['setMessages'];
+  messages: Array<Message>;
+  setMessages: Dispatch<SetStateAction<Array<Message>>>;
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
   className?: string;
+  isSearchMode: boolean;
+  setIsSearchMode: (v: boolean) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  const [isButtonInput, setIsButtonInput] = useState(false);
+  const [isCommandMenuOpen, setIsCommandMenuOpen] = useState(false);
+  const [isMenuSelected, setIsMenuSelected] = useState(false);
+  const { open, openMobile } = useSidebar();
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -95,8 +115,19 @@ function PureMultimodalInput({
     setLocalStorageInput(input);
   }, [input, setLocalStorageInput]);
 
+  const buttonWords = ['Artifact', 'Canvas', 'Justify', 'Search', 'Research', 'Deep Research', 'Generate Image'];
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(event.target.value);
+    const value = event.target.value;
+    setInput(value);
+    if (value.startsWith('/')) {
+      setIsCommandMenuOpen(true);
+    } else {
+      setIsCommandMenuOpen(false);
+    }
+    if (!buttonWords.some(word => value.startsWith(word))) {
+      setIsButtonInput(false);
+    }
+    setIsMenuSelected(false);
     adjustHeight();
   };
 
@@ -106,7 +137,19 @@ function PureMultimodalInput({
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
-    handleSubmit(undefined, {
+    let userPrompt = input;
+    // Если пользователь выбрал Artifact через three-button-toggle
+    if (input === 'Artifact') {
+      setIsButtonInput(true);
+      // Просто выделяем input синим, не отправляем ничего
+      return;
+    }
+    // Если до этого был выбран Artifact, то добавляем к промту инструкцию
+    if (isButtonInput && input && input !== 'Artifact') {
+      userPrompt = `${artifactCreatePrompt}\n${input}`;
+    }
+
+    append({ role: 'user', content: userPrompt }, {
       experimental_attachments: attachments,
     });
 
@@ -117,14 +160,7 @@ function PureMultimodalInput({
     if (width && width > 768) {
       textareaRef.current?.focus();
     }
-  }, [
-    attachments,
-    handleSubmit,
-    setAttachments,
-    setLocalStorageInput,
-    width,
-    chatId,
-  ]);
+  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isButtonInput, artifactCreatePrompt, resetHeight]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
@@ -180,89 +216,134 @@ function PureMultimodalInput({
   );
 
   return (
-    <div className="relative w-full flex flex-col gap-4">
-      {messages.length === 0 &&
-        attachments.length === 0 &&
-        uploadQueue.length === 0 && (
-          <SuggestedActions append={append} chatId={chatId} />
-        )}
+   
 
-      <input
-        type="file"
-        className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
-        ref={fileInputRef}
-        multiple
-        onChange={handleFileChange}
-        tabIndex={-1}
-      />
+<div
+  className={cn(
+    'fixed h-auto h-[200px] left-1/2 -translate-x-1/2 w-full max-w-[800px] z-40 bg-white flex flex-col justify-center items-center transition-all duration-300',
+    open && width >= 768 && !openMobile && 'md:ml-[130px]', // половина ширины сайдбара
+    messages.length === 0 ? 'md:bottom-[30%] bottom-0' : 'bottom-0' // Поднимаем контейнер выше только на десктопе
+  )}
+>
+     
+      <div className="relative w-full max-w-2xl flex flex-col gap-4 rounded-[30px] bg-white shadow-lg border border-gray-200">
+        <div className="flex items-center w-full relative">
+          <Textarea
+            data-testid="multimodal-input"
+            ref={textareaRef}
+            placeholder="What's up?"
+            value={isMenuSelected ? (input + ' →') : input}
+            onChange={handleInput}
+            className={cx(
+              'min-h-[60px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-[30px] !text-base bg-white pb-16 px-6 pt-4 border border-gray-200 focus:border-gray-200 focus-visible:border-gray-200 focus:ring-0 focus-visible:ring-0',
+              ((isButtonInput && /^(Artifact|Canvas|Research|Search|Deep Research|Generate Image)\b/.test(input)) || isMenuSelected) && 'font-bold text-blue-600',
+              className,
+            )}
+            rows={1}
+            autoFocus
+            onKeyDown={(event) => {
+              if (
+                event.key === 'Enter' &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing
+              ) {
+                event.preventDefault();
 
-      {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div
-          data-testid="attachments-preview"
-          className="flex flex-row gap-2 overflow-x-scroll items-end"
-        >
-          {attachments.map((attachment) => (
-            <PreviewAttachment key={attachment.url} attachment={attachment} />
-          ))}
-
-          {uploadQueue.map((filename) => (
-            <PreviewAttachment
-              key={filename}
-              attachment={{
-                url: '',
-                name: filename,
-                contentType: '',
-              }}
-              isUploading={true}
-            />
-          ))}
-        </div>
-      )}
-
-      <Textarea
-        data-testid="multimodal-input"
-        ref={textareaRef}
-        placeholder="Send a message..."
-        value={input}
-        onChange={handleInput}
-        className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
-          className,
-        )}
-        rows={2}
-        autoFocus
-        onKeyDown={(event) => {
-          if (
-            event.key === 'Enter' &&
-            !event.shiftKey &&
-            !event.nativeEvent.isComposing
-          ) {
-            event.preventDefault();
-
-            if (status !== 'ready') {
-              toast.error('Please wait for the model to finish its response!');
-            } else {
-              submitForm();
-            }
-          }
-        }}
-      />
-
-      <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
-        <AttachmentsButton fileInputRef={fileInputRef} status={status} />
-      </div>
-
-      <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
-        {status === 'submitted' ? (
-          <StopButton stop={stop} setMessages={setMessages} />
-        ) : (
-          <SendButton
-            input={input}
-            submitForm={submitForm}
-            uploadQueue={uploadQueue}
+                if (status !== 'ready') {
+                  toast.error('The Lumia A.i is answering now, wait!');
+                } else {
+                  submitForm();
+                  // Добавляем класс для анимации перемещения вниз
+                  const container = event.currentTarget.closest('div[class*="fixed"]');
+                  if (container) {
+                    container.classList.remove('bottom-[40%]');
+                    container.classList.add('bottom-0');
+                  }
+                }
+              }
+            }}
           />
+         
+        </div>
+
+        <div className="absolute bottom-0 p-2 w-full flex flex-row justify-between items-center">
+          <div className="flex items-center">
+          <Tooltip>
+  <TooltipTrigger asChild>
+  <Button
+  className="rounded-full border border-gray-200 size-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-600"
+  variant="ghost"
+  onClick={(event) => {
+    event.preventDefault();
+    fileInputRef.current?.click();
+  }}
+>
+  <PlusIcon className="size-5" />
+</Button>
+
+  </TooltipTrigger>
+  <TooltipContent side="top">
+  Attach files and more
+  </TooltipContent>
+</Tooltip>
+
+            <SearchModeToggle isSearchMode={isSearchMode} setIsSearchMode={setIsSearchMode} />
+            <DeepSearchToggle  />
+            <JustifyModeToggle  />
+            <EllipsisModeToggle onSectionSelect={(text: string) => { setInput(text); setIsButtonInput(true); }} />
+          </div>
+
+          <div>
+            {status === 'submitted' ? (
+              <StopButton stop={stop} setMessages={setMessages} />
+            ) : (
+              <SendButton
+                input={input}
+                submitForm={submitForm}
+                uploadQueue={uploadQueue}
+              />
+            )}
+          </div>
+        </div>
+
+        <input
+          type="file"
+          className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
+          ref={fileInputRef}
+          multiple
+          onChange={handleFileChange}
+          tabIndex={-1}
+        />
+
+        {(attachments.length > 0 || uploadQueue.length > 0) && (
+          <div
+            data-testid="attachments-preview"
+            className="flex flex-row gap-2 overflow-x-scroll items-end px-4"
+          >
+            {attachments.map((attachment) => (
+              <PreviewAttachment key={attachment.url} attachment={attachment} />
+            ))}
+
+            {uploadQueue.map((filename) => (
+              <PreviewAttachment
+                key={filename}
+                attachment={{
+                  url: '',
+                  name: filename,
+                  contentType: '',
+                }}
+                isUploading={true}
+              />
+            ))}
+          </div>
         )}
       </div>
+      {messages.length > 0 && (
+        <p className="text-center text-sm text-gray-500">
+          Lumia may contain errors. We recommend that you check important
+          information.
+        </p>
+      )}
     </div>
   );
 }
@@ -278,53 +359,28 @@ export const MultimodalInput = memo(
   },
 );
 
-function PureAttachmentsButton({
-  fileInputRef,
-  status,
-}: {
-  fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
-  status: UseChatHelpers['status'];
-}) {
-  return (
-    <Button
-      data-testid="attachments-button"
-      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
-      onClick={(event) => {
-        event.preventDefault();
-        fileInputRef.current?.click();
-      }}
-      disabled={status !== 'ready'}
-      variant="ghost"
-    >
-      <PaperclipIcon size={14} />
-    </Button>
-  );
-}
-
-const AttachmentsButton = memo(PureAttachmentsButton);
-
 function PureStopButton({
   stop,
   setMessages,
 }: {
   stop: () => void;
-  setMessages: UseChatHelpers['setMessages'];
+  setMessages: Dispatch<SetStateAction<Array<Message>>>;
 }) {
   return (
     <Button
       data-testid="stop-button"
-      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
+      variant={undefined}
+      className="rounded-full mr-1 mt-2 size-8 flex items-center justify-center bg-black text-white hover:bg-black/90 disabled:opacity-50 disabled:bg-black"
       onClick={(event) => {
         event.preventDefault();
         stop();
         setMessages((messages) => messages);
       }}
     >
-      <StopIcon size={14} />
+      <StopIcon size={7} />
     </Button>
   );
 }
-
 const StopButton = memo(PureStopButton);
 
 function PureSendButton({
@@ -339,14 +395,14 @@ function PureSendButton({
   return (
     <Button
       data-testid="send-button"
-      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
+      className="rounded-full mr-1 mt-2 size-8 flex items-center justify-center bg-black text-white hover:bg-black/90 disabled:opacity-50 disabled:bg-black"
       onClick={(event) => {
         event.preventDefault();
         submitForm();
       }}
       disabled={input.length === 0 || uploadQueue.length > 0}
     >
-      <ArrowUpIcon size={14} />
+      <ArrowUp className="size-5" strokeWidth={3} />
     </Button>
   );
 }

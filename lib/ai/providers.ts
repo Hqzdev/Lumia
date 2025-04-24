@@ -1,9 +1,5 @@
-import {
-  customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
-} from 'ai';
-import { xai } from '@ai-sdk/xai';
+import { customProvider } from 'ai';
+import { fireworks } from '@ai-sdk/fireworks';
 import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
@@ -11,6 +7,9 @@ import {
   reasoningModel,
   titleModel,
 } from './models.test';
+
+// Просто укажите FIREWORKS_API_KEY=sk-... в .env.local
+// SDK автоматически подхватит ключ из переменных окружения
 
 export const myProvider = isTestEnvironment
   ? customProvider({
@@ -23,15 +22,13 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': xai('grok-2-1212'),
-        'chat-model-reasoning': wrapLanguageModel({
-          model: xai('grok-3-mini-beta'),
-          middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        }),
-        'title-model': xai('grok-2-1212'),
-        'artifact-model': xai('grok-2-1212'),
+        'chat-model': fireworks('accounts/fireworks/models/deepseek-r1'),
+        'chat-model-reasoning': fireworks('accounts/fireworks/models/deepseek-r1'),
+        'title-model': fireworks('accounts/fireworks/models/deepseek-r1'),
+        'artifact-model': fireworks('accounts/fireworks/models/deepseek-r1'),
       },
-      imageModels: {
-        'small-model': xai.image('grok-2-image'),
-      },
+      imageModels: {},
     });
+
+// .env.local:
+// FIREWORKS_API_KEY=sk-...

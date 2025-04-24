@@ -1,4 +1,4 @@
-import type { CoreMessage } from 'ai';
+import { CoreMessage } from 'ai';
 
 export const TEST_PROMPTS: Record<string, CoreMessage> = {
   USER_SKY: {

@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-import { SidebarLeftIcon } from './icons';
+import { ChartNoAxesGantt } from 'lucide-react';
 import { Button } from './ui/button';
 
 export function SidebarToggle({
@@ -21,9 +21,9 @@ export function SidebarToggle({
         <Button
           onClick={toggleSidebar}
           variant="outline"
-          className="md:px-2 md:h-fit"
+          className={`p-0 h-[38px] w-[38px] rounded-xl [&_svg]:size-[28px] text-[#6B7280] ${className}`}
         >
-          <SidebarLeftIcon size={16} />
+          <ChartNoAxesGantt color="#6B7280" />
         </Button>
       </TooltipTrigger>
       <TooltipContent align="start">Toggle Sidebar</TooltipContent>

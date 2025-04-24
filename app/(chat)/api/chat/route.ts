@@ -1,5 +1,5 @@
 import {
-  type UIMessage,
+  UIMessage,
   appendResponseMessages,
   createDataStreamResponse,
   smoothStream,
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 
     const session = await auth();
 
-    if (!session?.user?.id) {
+    if (!session || !session.user || !session.user.id) {
       return new Response('Unauthorized', { status: 401 });
     }
 
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       await saveChat({ id, userId: session.user.id, title });
     } else {
       if (chat.userId !== session.user.id) {
-        return new Response('Forbidden', { status: 403 });
+        return new Response('Unauthorized', { status: 401 });
       }
     }
 
@@ -137,7 +137,7 @@ export async function POST(request: Request) {
                     },
                   ],
                 });
-              } catch (_) {
+              } catch (error) {
                 console.error('Failed to save chat');
               }
             }
@@ -155,12 +155,12 @@ export async function POST(request: Request) {
         });
       },
       onError: () => {
-        return 'Oops, an error occurred!';
+        return 'Oops, an error occured!';
       },
     });
   } catch (error) {
     return new Response('An error occurred while processing your request!', {
-      status: 500,
+      status: 404,
     });
   }
 }
@@ -175,7 +175,7 @@ export async function DELETE(request: Request) {
 
   const session = await auth();
 
-  if (!session?.user?.id) {
+  if (!session || !session.user) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -183,12 +183,12 @@ export async function DELETE(request: Request) {
     const chat = await getChatById({ id });
 
     if (chat.userId !== session.user.id) {
-      return new Response('Forbidden', { status: 403 });
+      return new Response('Unauthorized', { status: 401 });
     }
 
-    const deletedChat = await deleteChatById({ id });
+    await deleteChatById({ id });
 
-    return Response.json(deletedChat, { status: 200 });
+    return new Response('Chat deleted', { status: 200 });
   } catch (error) {
     return new Response('An error occurred while processing your request!', {
       status: 500,

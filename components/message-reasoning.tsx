@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronDownIcon, LoaderIcon } from './icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Markdown } from './markdown';
+import React from 'react';
 
 interface MessageReasoningProps {
   isLoading: boolean;
@@ -30,6 +31,11 @@ export function MessageReasoning({
       marginBottom: '0.5rem',
     },
   };
+
+  // Функция для выделения <think>...</think> как markdown
+  function highlightThinkTags(text: string) {
+    return text.replace(/<think>([\s\S]*?)<\/think>/g, '`$1`');
+  }
 
   return (
     <div className="flex flex-col">
@@ -69,7 +75,7 @@ export function MessageReasoning({
             style={{ overflow: 'hidden' }}
             className="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
           >
-            <Markdown>{reasoning}</Markdown>
+            <Markdown>{highlightThinkTags(reasoning)}</Markdown>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
+import { cn } from '@/lib/utils';
 
 import { LoaderIcon } from '@/components/icons';
 
@@ -9,10 +10,13 @@ import { Button } from './ui/button';
 export function SubmitButton({
   children,
   isSuccessful,
+  className, // Добавляем className
 }: {
   children: React.ReactNode;
   isSuccessful: boolean;
+  className?: string; // Делаем его необязательным
 }) {
+
   const { pending } = useFormStatus();
 
   return (
@@ -20,7 +24,7 @@ export function SubmitButton({
       type={pending ? 'button' : 'submit'}
       aria-disabled={pending || isSuccessful}
       disabled={pending || isSuccessful}
-      className="relative"
+      className={cn("relative", className)}
     >
       {children}
 

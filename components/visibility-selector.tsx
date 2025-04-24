@@ -30,13 +30,13 @@ const visibilities: Array<{
     id: 'private',
     label: 'Private',
     description: 'Only you can access this chat',
-    icon: <LockIcon />,
+    icon: <LockIcon size={18} />,
   },
   {
     id: 'public',
     label: 'Public',
     description: 'Anyone with the link can access this chat',
-    icon: <GlobeIcon />,
+    icon: <GlobeIcon size={18} />,
   },
 ];
 
@@ -71,15 +71,15 @@ export function VisibilitySelector({
       >
         <Button
           variant="outline"
-          className="hidden md:flex md:px-2 md:h-[34px]"
+          className="hidden md:flex md:px-4 md:py-2 md:h-[40px] text-lg gap-2"
         >
           {selectedVisibility?.icon}
           {selectedVisibility?.label}
-          <ChevronDownIcon />
+          <ChevronDownIcon size={18} />
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="min-w-[300px]">
+      <DropdownMenuContent align="start" className="min-w-[320px] text-base">
         {visibilities.map((visibility) => (
           <DropdownMenuItem
             key={visibility.id}
@@ -87,19 +87,19 @@ export function VisibilitySelector({
               setVisibilityType(visibility.id);
               setOpen(false);
             }}
-            className="gap-4 group/item flex flex-row justify-between items-center"
+            className="gap-4 group/item flex flex-row justify-between items-center py-2 px-3"
             data-active={visibility.id === visibilityType}
           >
             <div className="flex flex-col gap-1 items-start">
               {visibility.label}
               {visibility.description && (
-                <div className="text-xs text-muted-foreground">
+                <div className="text-sm text-muted-foreground">
                   {visibility.description}
                 </div>
               )}
             </div>
             <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-              <CheckCircleFillIcon />
+              <CheckCircleFillIcon size={18} />
             </div>
           </DropdownMenuItem>
         ))}

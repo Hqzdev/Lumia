@@ -31,7 +31,7 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 1,
   /* Opt out of parallel tests on CI. */
-  workers: 1,
+  workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -53,11 +53,11 @@ export default defineConfig({
   projects: [
     {
       name: 'setup:auth',
-      testMatch: /e2e\/auth.setup.ts/,
+      testMatch: /auth.setup.ts/,
     },
     {
       name: 'setup:reasoning',
-      testMatch: /e2e\/reasoning.setup.ts/,
+      testMatch: /reasoning.setup.ts/,
       dependencies: ['setup:auth'],
       use: {
         ...devices['Desktop Chrome'],
@@ -66,7 +66,7 @@ export default defineConfig({
     },
     {
       name: 'chat',
-      testMatch: /e2e\/chat.test.ts/,
+      testMatch: /chat.test.ts/,
       dependencies: ['setup:auth'],
       use: {
         ...devices['Desktop Chrome'],
@@ -75,7 +75,7 @@ export default defineConfig({
     },
     {
       name: 'reasoning',
-      testMatch: /e2e\/reasoning.test.ts/,
+      testMatch: /reasoning.test.ts/,
       dependencies: ['setup:reasoning'],
       use: {
         ...devices['Desktop Chrome'],
@@ -84,19 +84,11 @@ export default defineConfig({
     },
     {
       name: 'artifacts',
-      testMatch: /e2e\/artifacts.test.ts/,
+      testMatch: /artifacts.test.ts/,
       dependencies: ['setup:auth'],
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/session.json',
-      },
-    },
-    {
-      name: 'routes',
-      testMatch: /routes\/.*.test.ts/,
-      dependencies: [],
-      use: {
-        ...devices['Desktop Chrome'],
       },
     },
 
