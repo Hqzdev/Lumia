@@ -16,7 +16,7 @@ import {
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { useArtifactSelector } from '@/hooks/use-artifact';
+import { useArtifactSelector, useArtifact } from '@/hooks/use-artifact';
 import { cn } from '@/lib/utils';
 
 import { ArrowUpIcon, StopIcon } from './icons';
@@ -48,7 +48,8 @@ function PureMultimodalInput({
   append,
   handleSubmit,
   className,
-
+  isSearchMode,
+  setIsSearchMode,
 }: {
   chatId: string;
   input: UseChatHelpers['input'];
@@ -64,18 +65,16 @@ function PureMultimodalInput({
   className?: string;
   isSearchMode: boolean;
   setIsSearchMode: (v: boolean) => void;
- 
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
-  const [isButtonInput, setIsButtonInput] = useState(false);
+  const { setArtifact } = useArtifact();
   const [isCommandMenuOpen, setIsCommandMenuOpen] = useState(false);
   const [isMenuSelected, setIsMenuSelected] = useState(false);
   const { open, openMobile } = useSidebar();
   const [isJustifyMode, setIsJustifyMode] = useState(true);
   const [isDeepSearchMode, setIsDeepSearchMode] = useState(false);
-  const [isSearchMode, setIsSearchMode] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -118,7 +117,6 @@ function PureMultimodalInput({
     setLocalStorageInput(input);
   }, [input, setLocalStorageInput]);
 
-  const buttonWords = ['Artifact', 'Canvas', 'Justify', 'Search', 'Research', 'Deep Research', 'Generate Image'];
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
     setInput(value);
@@ -127,9 +125,6 @@ function PureMultimodalInput({
     } else {
       setIsCommandMenuOpen(false);
     }
-    if (!buttonWords.some(word => value.startsWith(word))) {
-      setIsButtonInput(false);
-    }
     setIsMenuSelected(false);
     adjustHeight();
   };
@@ -137,22 +132,12 @@ function PureMultimodalInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
-  const submitForm = useCallback(() => {
+  const submitForm = useCallback(async () => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
     let userPrompt = input;
     let systemPrompt = undefined;
-    // Если пользователь выбрал Artifact через three-button-toggle
-    if (input === 'Artifact') {
-      setIsButtonInput(true);
-      // Просто выделяем input синим, не отправляем ничего
-      return;
-    }
-    // Если до этого был выбран Artifact, то добавляем к промту инструкцию
-    if (isButtonInput && input && input !== 'Artifact') {
-      userPrompt = `${artifactCreatePrompt}\n${input}`;
-    }
-    // Выбираем нужный systemPrompt
+    // Обычный режим
     if (isJustifyMode) {
       systemPrompt = justifyPrompt;
     } else if (isDeepSearchMode) {
@@ -173,7 +158,7 @@ function PureMultimodalInput({
     }
     // Лог финального сообщения
     console.log('Отправлен в ИИ (только пользовательский текст):', userPrompt);
-  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isButtonInput, artifactCreatePrompt, resetHeight, isJustifyMode, isDeepSearchMode]);
+  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isJustifyMode, isDeepSearchMode, setInput]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
@@ -229,17 +214,13 @@ function PureMultimodalInput({
   );
 
   return (
-   
-
-<div
-  className={cn(
-    'fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full max-w-[800px] z-40 bg-white flex flex-col justify-center items-center transition-all duration-300',
-    open && width >= 768 && !openMobile && 'md:ml-[130px]', // половина ширины сайдбара
-    messages.length === 0 ? 'md:bottom-[30px] bottom-0' : 'bottom-0' // Поднимаем контейнер выше только на десктопе
-  )}
->
-
-     
+    <div
+      className={cn(
+        'fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full max-w-[800px] z-40 bg-white flex flex-col justify-center items-center transition-all duration-300',
+        open && width >= 768 && !openMobile && 'md:ml-[130px]', // половина ширины сайдбара
+        messages.length === 0 ? 'md:bottom-[30px] bottom-0' : 'bottom-0' // Поднимаем контейнер выше только на десктопе
+      )}
+    >
       <div className="relative w-full max-w-2xl flex flex-col gap-4 rounded-[30px] bg-white shadow-lg border border-gray-200 -mb-4">
         <div className="flex items-center w-full relative">
           <Textarea
@@ -250,7 +231,7 @@ function PureMultimodalInput({
             onChange={handleInput}
             className={cx(
               'min-h-[60px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-[30px] !text-base bg-white pb-16 px-6 pt-4 border border-gray-200 focus:border-gray-200 focus-visible:border-gray-200 focus:ring-0 focus-visible:ring-0',
-              ((isButtonInput && /^(Artifact|Canvas|Research|Search|Deep Research|Generate Image)\b/.test(input)) || isMenuSelected) && 'font-bold text-blue-600',
+              ((isCommandMenuOpen && /^(Justify|Search|Research|Deep Research|Generate Image)\b/.test(input)) || isMenuSelected) && 'font-bold text-blue-600',
               className,
             )}
             rows={1}
@@ -277,34 +258,31 @@ function PureMultimodalInput({
               }
             }}
           />
-         
         </div>
 
         <div className="absolute bottom-0 p-2 w-full flex flex-row justify-between items-center">
           <div className="flex items-center">
-          <Tooltip>
-  <TooltipTrigger asChild>
-  <Button
-  className="rounded-full border border-gray-200 size-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-600"
-  variant="ghost"
-  onClick={(event) => {
-    event.preventDefault();
-    fileInputRef.current?.click();
-  }}
->
-  <PlusIcon className="size-5" />
-</Button>
-
-  </TooltipTrigger>
-  <TooltipContent side="top">
-  Attach files and more
-  </TooltipContent>
-</Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  className="rounded-full border border-gray-200 size-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-600"
+                  variant="ghost"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    fileInputRef.current?.click();
+                  }}
+                >
+                  <PlusIcon className="size-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                Attach files and more
+              </TooltipContent>
+            </Tooltip>
 
             <SearchModeToggle isSearchMode={isSearchMode} setIsSearchMode={setIsSearchMode} />
             <DeepSearchToggle isDeepSearchMode={isDeepSearchMode} setIsDeepSearchMode={setIsDeepSearchMode} />
             <JustifyModeToggle onToggle={() => {}} isJustifyMode={isJustifyMode} setIsJustifyMode={setIsJustifyMode} />
-            <EllipsisModeToggle onSectionSelect={(text: string) => { setInput(text); setIsButtonInput(true); }} />
           </div>
 
           <div>
@@ -409,7 +387,10 @@ function PureSendButton({
   return (
     <Button
       data-testid="send-button"
-      className="rounded-full mr-1 mt-2 size-8 flex items-center justify-center bg-black text-white hover:bg-black/90 disabled:opacity-50 disabled:bg-black"
+      className={
+        "rounded-full mr-1 mt-2 size-8 flex items-center justify-center bg-black text-white hover:bg-black/90" +
+        (input.length === 0 || uploadQueue.length > 0 ? " disabled:bg-black disabled:text-white" : "")
+      }
       onClick={(event) => {
         event.preventDefault();
         submitForm();

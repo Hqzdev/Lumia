@@ -21,7 +21,7 @@ export function SidebarToggle({
         <Button
           onClick={toggleSidebar}
           variant="outline"
-          className={`p-0 h-[38px] w-[38px] rounded-xl [&_svg]:size-[28px] text-[#6B7280] ${className}`}
+          className={`p-0 h-[38px] w-[38px]  hover:bg-gray-200 rounded-xl [&_svg]:size-[28px] text-[#6B7280] ${className}`}
         >
           <ChartNoAxesGantt color="#6B7280" />
         </Button>

@@ -73,7 +73,7 @@ function PureChatHeader({
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
-                  className="p-0 h-[38px] w-[38px] rounded-xl [&_svg]:size-[22px] text-[#6B7280] ${className}"
+                  className="p-0 h-[38px] w-[38px] rounded-xl hover:text-[#6B7280] hover:bg-gray-200 [&_svg]:size-[22px] text-[#6B7280] ${className}"
                   onClick={() => {
                     router.push('/');
                     router.refresh();

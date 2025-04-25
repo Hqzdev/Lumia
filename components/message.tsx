@@ -39,6 +39,7 @@ const PurePreviewMessage = ({
   isReadonly: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const [copied, setCopied] = useState(false);
 
   return (
     <AnimatePresence>
@@ -216,6 +217,8 @@ const PurePreviewMessage = ({
                 message={message}
                 vote={vote}
                 isLoading={isLoading}
+                copied={copied}
+                setCopied={setCopied}
               />
             )}
           </div>

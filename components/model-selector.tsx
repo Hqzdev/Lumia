@@ -42,7 +42,7 @@ export function ModelSelector({
         <Button
           data-testid="model-selector"
           variant="outline"
-          className="md:px-4 md:h-[38px] text-base px-3 h-[34px] text-gray-600 hover:text-gray-600"
+          className="md:px-4 md:h-[38px] text-base px-3 h-[34px] text-gray-600 hover:text-gray-600 hover:bg-gray-200"
         >
           {selectedChatModel?.name}
           <ChevronDownIcon />
@@ -69,7 +69,7 @@ export function ModelSelector({
             >
               <button
                 type="button"
-                className="gap-4 group/item flex flex-row justify-between items-center w-full"
+                className="gap-4 group/item flex flex-row justify-between hover:bg-gray-200 items-center w-full"
               >
                 <div className="flex flex-col gap-1 items-start">
                   <div>{chatModel.name}</div>

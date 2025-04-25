@@ -87,7 +87,7 @@ export function Chat({
             isArtifactVisible={isArtifactVisible}
           />
         </div>
-        {!isReadonly && (
+        {!isReadonly && !isArtifactVisible && (
           <MultimodalInput
             chatId={id}
             input={input}

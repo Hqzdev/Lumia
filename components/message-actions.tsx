@@ -12,6 +12,15 @@ import type { Vote } from '@/lib/db/schema';
 
 import { Button } from './ui/button';
 import { Files, ThumbsUp, ThumbsDown, Pencil, Volume2 } from 'lucide-react';
+import { useArtifact } from '@/hooks/use-artifact';
+
+function CheckmarkIcon() {
+  return (
+    <svg className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+    </svg>
+  );
+}
 
 export function PureMessageActions({
   chatId,
@@ -19,15 +28,20 @@ export function PureMessageActions({
   vote,
   isLoading,
   className,
+  copied,
+  setCopied,
 }: {
   chatId: string;
   message: Message;
   vote: Vote | undefined;
   isLoading: boolean;
   className?: string;
+  copied: boolean;
+  setCopied: (v: boolean) => void;
 }) {
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
+  const { setArtifact } = useArtifact();
 
   if (isLoading || message.role === 'user') return null;
 
@@ -55,13 +69,15 @@ export function PureMessageActions({
           if (textFromParts) {
             await copyToClipboard(textFromParts);
             toast.success('Copied to clipboard!');
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1200);
           } else {
             toast.error("There's no text to copy!");
           }
         }}
         aria-label="Copy"
       >
-        <Files className="size-4" />
+        {copied ? <CheckmarkIcon /> : <Files className="size-4" />}
       </Button>
 
       {/* Upvote button */}
@@ -167,7 +183,15 @@ export function PureMessageActions({
         className={iconButtonClass}
         variant="ghost"
         onClick={() => {
-          toast('Edit mode (not implemented yet)');
+          setArtifact({
+            documentId: message.id,
+            kind: 'text',
+            content: message.parts?.filter((part) => part.type === 'text').map((part) => part.text).join('\n') || '',
+            title: 'Edit message',
+            isVisible: true,
+            status: 'idle',
+            boundingBox: { top: 0, left: 0, width: 0, height: 0 },
+          });
         }}
         aria-label="Edit"
       >
