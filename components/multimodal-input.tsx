@@ -48,8 +48,7 @@ function PureMultimodalInput({
   append,
   handleSubmit,
   className,
-  isSearchMode,
-  setIsSearchMode,
+
 }: {
   chatId: string;
   input: UseChatHelpers['input'];
@@ -65,6 +64,7 @@ function PureMultimodalInput({
   className?: string;
   isSearchMode: boolean;
   setIsSearchMode: (v: boolean) => void;
+ 
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -75,6 +75,7 @@ function PureMultimodalInput({
   const { open, openMobile } = useSidebar();
   const [isJustifyMode, setIsJustifyMode] = useState(true);
   const [isDeepSearchMode, setIsDeepSearchMode] = useState(false);
+  const [isSearchMode, setIsSearchMode] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -301,7 +302,7 @@ function PureMultimodalInput({
 </Tooltip>
 
             <SearchModeToggle isSearchMode={isSearchMode} setIsSearchMode={setIsSearchMode} />
-            <DeepSearchToggle onToggle={() => setIsDeepSearchMode((v) => !v)} />
+            <DeepSearchToggle isDeepSearchMode={isDeepSearchMode} setIsDeepSearchMode={setIsDeepSearchMode} />
             <JustifyModeToggle onToggle={() => {}} isJustifyMode={isJustifyMode} setIsJustifyMode={setIsJustifyMode} />
             <EllipsisModeToggle onSectionSelect={(text: string) => { setInput(text); setIsButtonInput(true); }} />
           </div>
@@ -352,7 +353,7 @@ function PureMultimodalInput({
         )}
       </div>
       {messages.length > 0 && (
-        <p className="mt-3 text-center text-sm text-gray-500">
+        <p className="mt-5 text-center text-sm text-gray-500">
           Lumia may contain errors. We recommend that you check important
           information.
         </p>

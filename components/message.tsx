@@ -261,11 +261,11 @@ export const ThinkingMessage = () => {
         <div className="flex flex-col gap-2 w-full">
           <div className="relative inline-block">
             {/* Base gray text */}
-            <span className="text-gray-500">Lumia A.I is thinking...</span>
+            <span className="text-gray-500">Thinking...</span>
 
             {/* White highlight overlay */}
             <span className="absolute inset-0 white-wave-effect">
-              Lumia A.I is thinking...
+              Thinking...
             </span>
           </div>
 

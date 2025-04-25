@@ -10,33 +10,23 @@ import {
 } from '@/components/ui/tooltip'
 import { useWindowSize } from 'usehooks-ts'
 
-export function DeepSearchToggle({ onToggle }: { onToggle?: () => void }) {
-  const [isDeepSearchMode, setIsDeepSearchMode] = useState(true)
+export function DeepSearchToggle({ isDeepSearchMode, setIsDeepSearchMode }: { isDeepSearchMode: boolean; setIsDeepSearchMode: (v: boolean) => void }) {
   const { width } = useWindowSize();
 
-  useEffect(() => {
-    const savedMode = getCookie('search-mode')
-    if (savedMode !== null) {
-      setIsDeepSearchMode(savedMode === 'true')
-    }
-  }, [])
-
   const handleDeepSearchModeChange = (pressed: boolean) => {
-    setIsDeepSearchMode(pressed)
-    setCookie('search-mode', pressed.toString())
-    if (onToggle) onToggle()
+    setIsDeepSearchMode(pressed);
     if (pressed) {
-      console.log('Deep search mode ON')
+      console.log('Deep search mode ON');
     } else {
-      console.log('Deep search mode OFF')
+      console.log('Deep search mode OFF');
     }
-  }
+  };
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Toggle
-          aria-label="Toggle search mode"
+          aria-label="Toggle deepsearch mode"
           pressed={isDeepSearchMode}
           onPressedChange={handleDeepSearchModeChange}
           className={cn(

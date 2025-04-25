@@ -1,36 +1,30 @@
 import { cn } from '@/lib/utils'
-import { getCookie, setCookie } from '@/lib/utils/cookies'
 import { Globe } from 'lucide-react'
-import { useEffect } from 'react'
+import { useWindowSize } from 'usehooks-ts'
 import { Toggle } from '@/components/ui/toggle'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useWindowSize } from 'usehooks-ts'
 
 export function SearchModeToggle({ isSearchMode, setIsSearchMode }: { isSearchMode: boolean; setIsSearchMode: (v: boolean) => void }) {
-  useEffect(() => {
-    const savedMode = getCookie('search-mode')
-    if (savedMode !== null) {
-      setIsSearchMode(savedMode === 'true')
-    }
-    // eslint-disable-next-line
-  }, [])
-
   const { width } = useWindowSize();
 
   const handleSearchModeChange = (pressed: boolean) => {
-    setIsSearchMode(pressed)
-    setCookie('search-mode', pressed.toString())
-  }
+    setIsSearchMode(pressed);
+    if (pressed) {
+      console.log('Search mode ON');
+    } else {
+      console.log('Search mode OFF');
+    }
+  };
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Toggle
-          aria-label="Toggle search mode"
+          aria-label="Search on the net"
           pressed={isSearchMode}
           onPressedChange={handleSearchModeChange}
           className={cn(
@@ -46,7 +40,7 @@ export function SearchModeToggle({ isSearchMode, setIsSearchMode }: { isSearchMo
         </Toggle>
       </TooltipTrigger>
       <TooltipContent side="top">
-        Toggle Search mode
+        Search on the net
       </TooltipContent>
     </Tooltip>
   )

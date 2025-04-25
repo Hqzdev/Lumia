@@ -1,21 +1,17 @@
-import type { Message } from 'ai';
+'use client';
+
+import { memo } from 'react';
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
+import equal from 'fast-deep-equal';
+import { toast } from 'sonner';
+import cn from 'classnames';
 
+import type { Message } from 'ai';
 import type { Vote } from '@/lib/db/schema';
 
 import { Button } from './ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from './ui/tooltip';
-import { memo } from 'react';
-import equal from 'fast-deep-equal';
-import { toast } from 'sonner';
-import { Files, ThumbsUp, ThumbsDown } from 'lucide-react';
-import cn from 'classnames';
+import { Files, ThumbsUp, ThumbsDown, Pencil, Volume2 } from 'lucide-react';
 
 export function PureMessageActions({
   chatId,
@@ -33,18 +29,21 @@ export function PureMessageActions({
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
 
-  if (isLoading) return null;
-  if (message.role === 'user') return null;
+  if (isLoading || message.role === 'user') return null;
+
+  const iconButtonClass =
+    'p-1 text-gray-600 rounded-md h-7 w-7 hover:bg-gray-50 hover:text-gray-600 hover:!bg-gray-100 transition-all flex items-center justify-center';
 
   return (
     <div
       className={cn(
-        'w-[120px] inline-flex flex-row bg-black/5 rounded-full p-1 -gap-2 justify-between',
+        'inline-flex items-center gap-1  p-1 ',
         className,
       )}
     >
+      {/* Copy button */}
       <Button
-        className="py-1 px-2 h-fit text-gray-600 hover:text-blue-500"
+        className={iconButtonClass}
         variant="ghost"
         onClick={async () => {
           const textFromParts = message.parts
@@ -60,17 +59,17 @@ export function PureMessageActions({
             toast.error("There's no text to copy!");
           }
         }}
+        aria-label="Copy"
       >
-        <Files className="size-3 text-gray-500 hover:text-blue-600" />
+        <Files className="size-4" />
       </Button>
 
-      <div className="w-px h-4 bg-gray-300 my-auto" />
-
+      {/* Upvote button */}
       <Button
         data-testid="message-upvote"
-        className="py-1 px-2 h-fit text-muted-foreground hover:bg-transparent hover:text-blue-600 !pointer-events-auto"
-        disabled={vote?.isUpvoted}
+        className={iconButtonClass}
         variant="ghost"
+        disabled={vote?.isUpvoted}
         onClick={async () => {
           const upvote = fetch('/api/vote', {
             method: 'PATCH',
@@ -88,37 +87,30 @@ export function PureMessageActions({
                 `/api/vote?chatId=${chatId}`,
                 (currentVotes) => {
                   if (!currentVotes) return [];
-
                   const votesWithoutCurrent = currentVotes.filter(
                     (vote) => vote.messageId !== message.id,
                   );
-
                   return [
                     ...votesWithoutCurrent,
-                    {
-                      chatId,
-                      messageId: message.id,
-                      isUpvoted: true,
-                    },
+                    { chatId, messageId: message.id, isUpvoted: true },
                   ];
                 },
                 { revalidate: false },
               );
-
-              return 'Succesfully!';
+              return 'Successfully upvoted!';
             },
             error: 'Failed to upvote response.',
           });
         }}
+        aria-label="Upvote"
       >
-        <ThumbsUp className="size-3 text-gray-500 hover:text-blue-600" />
+        <ThumbsUp className="size-4" />
       </Button>
 
-      <div className="w-px h-5 bg-gray-300 my-auto" />
-
+      {/* Downvote button */}
       <Button
         data-testid="message-downvote"
-        className="py-1 px-2 h-fit text-muted-foreground hover:bg-transparent hover:text-blue-600 !pointer-events-auto"
+        className={iconButtonClass}
         variant="ghost"
         disabled={vote && !vote.isUpvoted}
         onClick={async () => {
@@ -138,30 +130,48 @@ export function PureMessageActions({
                 `/api/vote?chatId=${chatId}`,
                 (currentVotes) => {
                   if (!currentVotes) return [];
-
                   const votesWithoutCurrent = currentVotes.filter(
                     (vote) => vote.messageId !== message.id,
                   );
-
                   return [
                     ...votesWithoutCurrent,
-                    {
-                      chatId,
-                      messageId: message.id,
-                      isUpvoted: false,
-                    },
+                    { chatId, messageId: message.id, isUpvoted: false },
                   ];
                 },
                 { revalidate: false },
               );
-
-              return 'Succesfully!';
+              return 'Successfully downvoted!';
             },
-            error: 'Failed to response.',
+            error: 'Failed to downvote response.',
           });
         }}
+        aria-label="Downvote"
       >
-        <ThumbsDown className="size-3 text-gray-500 hover:text-blue-600" />
+        <ThumbsDown className="size-4" />
+      </Button>
+
+      {/* Voice button */}
+      <Button
+        className={iconButtonClass}
+        variant="ghost"
+        onClick={() => {
+          toast('Playing voice (not implemented yet)');
+        }}
+        aria-label="Speak"
+      >
+        <Volume2 className="size-4" />
+      </Button>
+
+      {/* Edit button */}
+      <Button
+        className={iconButtonClass}
+        variant="ghost"
+        onClick={() => {
+          toast('Edit mode (not implemented yet)');
+        }}
+        aria-label="Edit"
+      >
+        <Pencil className="size-4" />
       </Button>
     </div>
   );
@@ -170,9 +180,9 @@ export function PureMessageActions({
 export const MessageActions = memo(
   PureMessageActions,
   (prevProps, nextProps) => {
-    if (!equal(prevProps.vote, nextProps.vote)) return false;
-    if (prevProps.isLoading !== nextProps.isLoading) return false;
-
-    return true;
+    return (
+      equal(prevProps.vote, nextProps.vote) &&
+      prevProps.isLoading === nextProps.isLoading
+    );
   },
 );
