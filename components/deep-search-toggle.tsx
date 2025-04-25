@@ -25,6 +25,11 @@ export function DeepSearchToggle({ onToggle }: { onToggle?: () => void }) {
     setIsDeepSearchMode(pressed)
     setCookie('search-mode', pressed.toString())
     if (onToggle) onToggle()
+    if (pressed) {
+      console.log('Deep search mode ON')
+    } else {
+      console.log('Deep search mode OFF')
+    }
   }
 
   return (

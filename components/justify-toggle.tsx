@@ -10,8 +10,11 @@ import {
 } from '@/components/ui/tooltip'
 import { useWindowSize } from 'usehooks-ts'
 
-export function JustifyModeToggle({ onToggle }: { onToggle?: () => void }) {
-  const [isJustifyMode, setIsJustifyMode] = useState(true)
+export function JustifyModeToggle({ onToggle, isJustifyMode: controlledIsJustifyMode, setIsJustifyMode: controlledSetIsJustifyMode }: { onToggle?: () => void, isJustifyMode?: boolean, setIsJustifyMode?: (v: boolean) => void }) {
+  const [uncontrolledIsJustifyMode, setUncontrolledIsJustifyMode] = useState(true)
+  const isControlled = controlledIsJustifyMode !== undefined && controlledSetIsJustifyMode !== undefined;
+  const isJustifyMode = isControlled ? controlledIsJustifyMode : uncontrolledIsJustifyMode;
+  const setIsJustifyMode = isControlled ? controlledSetIsJustifyMode! : setUncontrolledIsJustifyMode;
   const { width } = useWindowSize();
 
   useEffect(() => {
@@ -25,6 +28,11 @@ export function JustifyModeToggle({ onToggle }: { onToggle?: () => void }) {
     setIsJustifyMode(pressed)
     setCookie('justify-mode', pressed.toString())
     if (onToggle) onToggle()
+    if (pressed) {
+      console.log('Justify mode ON')
+    } else {
+      console.log('Justify mode OFF')
+    }
   }
 
   return (

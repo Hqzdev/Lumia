@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
-const waveText = "help you?".split("");
+const waveText = 'How can I help you?'.split("");
 
 export const Overview = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -15,78 +15,86 @@ export const Overview = () => {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Фиксированные размеры текста для мобильных и десктопа
-  const headingSize = isMobile ? 'text-2xl' : 'text-xl';
-  // Для мобильных увеличиваем help you, для ПК — обычный размер
-  const waveSize = isMobile ? 'text-[40px] sm:text-[48px] md:text-[56px]' : 'text-[40px] md:text-[48px] lg:text-[56px]';
+  // Увеличенный размер текста для приветствия
+  const waveSize = isMobile
+    ? 'text-[32px] sm:text-[40px] md:text-[48px]'
+    : 'text-[48px] md:text-[56px] lg:text-[72px]';
 
   return (
-    <motion.div
+    <div
       key="overview"
-      className="max-w-3xl md:mt-10 px-4 md:px-0 mx-auto"
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ delay: 0.5 }}
+      className="max-w-5xl mx-auto md:mt-32 px-4 size-full flex flex-col justify-center items-center"
     >
-      <div className="rounded-xl p-6 flex flex-col gap-8 leading-relaxed items-center">
-        <h2 className={`${headingSize} font-bold mt-[75px] flex flex-col items-center`}>
-          {/* Первая строка — заголовок */}
+      <div
+        className={`flex gap-[2px] ${waveSize} font-extrabold justify-center mb-8`}
+        style={{ lineHeight: 1.05 }}
+      >
+        {waveText.map((char, i) => (
           <motion.span
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className={isMobile ? 'text-[32px] text-center ' : 'text-[50px] text-center'}
+            key={i}
+            initial={{ color: '#fff' }}
+            animate={{
+              color: [
+                '#fff',
+                'rgb(0, 0, 0)', // gray-900
+                '#fff',
+              ],
+            }}
+            transition={{
+              duration: 2,
+              delay: i * 0.12,
+              repeat: Infinity,
+              repeatType: 'loop',
+              ease: 'linear',
+            }}
+            className="bg-clip-text text-transparent"
+            style={{ WebkitTextStroke: '2px #fff' }}
           >
-            How can I
+            {char === ' ' ? '\u00A0' : char}
           </motion.span>
-          <br />
-
-          {/* help you: для пк — серый цвет без анимации, для телефона — увеличен и с анимацией */}
-          <div
-            className={`flex gap-[1px] ${waveSize} font-semibold justify-center`}
-          >
-            {isMobile ? (
-              // Мобильная версия: увеличенный размер и анимация
-              waveText.map((char, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ color: '#fff' }}
-                  animate={{
-                    color: [
-                      '#fff',
-                      'rgb(0, 0, 0)', // gray-600
-                      '#fff',
-                    ],
-                  }}
-                  transition={{
-                    duration: 2,
-                    delay: i * 0.15,
-                    repeat: Infinity,
-                    repeatType: 'loop',
-                    ease: 'linear',
-                  }}
-                  className="bg-clip-text text-transparent"
-                  style={{ WebkitTextStroke: '0.5px #fff' }}
-                >
-                  {char}
-                </motion.span>
-              ))
-            ) : (
-              // ПК: серый цвет, без анимации
-              waveText.map((char, i) => (
-                <span
-                  key={i}
-                  className="text-black"
-                  style={{ WebkitTextStroke: '0.5px #fff' }}
-                >
-                  {char}
-                </span>
-              ))
-            )}
-          </div>
-        </h2>
+        ))}
       </div>
-    </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ delay: 0.6 }}
+        className="text-4xl text-zinc-500 text-center"
+      >
+        <style jsx>{`
+          .wave {
+            animation-name: wave-animation;
+            animation-duration: 2.1s;
+            animation-iteration-count: infinite;
+            transform-origin: 70% 70%;
+            display: inline-block;
+            font-size: 2.5em;
+          }
+
+          @keyframes wave-animation {
+            0% { transform: rotate(0deg); }
+            10% { transform: rotate(14deg); }
+            20% { transform: rotate(-8deg); }
+            30% { transform: rotate(14deg); }
+            40% { transform: rotate(-4deg); }
+            50% { transform: rotate(10deg); }
+            60% { transform: rotate(0deg); }
+            100% { transform: rotate(0deg); }
+          }
+        `}</style>
+        <div className="space-y-8">
+          <div>
+            <span className="md-3 text-3xl md:text-4xl lg:text-5xl font-semibold">Hi, There!{" "}</span>
+            <span
+              className="wave"
+              role="img"
+              aria-label="wave"
+            >
+              👋🏻
+            </span>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 };

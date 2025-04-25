@@ -33,7 +33,7 @@ import { UseChatHelpers, UseChatOptions } from '@ai-sdk/react';
 import { EllipsisModeToggle } from './three-button-toggle';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { useSidebar } from '@/components/ui/sidebar';
-import { artifactCreatePrompt } from '@/lib/ai/prompts';
+import { artifactCreatePrompt, regularPrompt, justifyPrompt, deepSearchPrompt } from '@/lib/ai/prompts';
 
 function PureMultimodalInput({
   chatId,
@@ -73,6 +73,8 @@ function PureMultimodalInput({
   const [isCommandMenuOpen, setIsCommandMenuOpen] = useState(false);
   const [isMenuSelected, setIsMenuSelected] = useState(false);
   const { open, openMobile } = useSidebar();
+  const [isJustifyMode, setIsJustifyMode] = useState(true);
+  const [isDeepSearchMode, setIsDeepSearchMode] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -138,6 +140,7 @@ function PureMultimodalInput({
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
     let userPrompt = input;
+    let systemPrompt = undefined;
     // Если пользователь выбрал Artifact через three-button-toggle
     if (input === 'Artifact') {
       setIsButtonInput(true);
@@ -148,19 +151,28 @@ function PureMultimodalInput({
     if (isButtonInput && input && input !== 'Artifact') {
       userPrompt = `${artifactCreatePrompt}\n${input}`;
     }
-
+    // Выбираем нужный systemPrompt
+    if (isJustifyMode) {
+      systemPrompt = justifyPrompt;
+    } else if (isDeepSearchMode) {
+      systemPrompt = deepSearchPrompt;
+    }
+    if (systemPrompt) {
+      console.log('systemPrompt для ИИ:', systemPrompt);
+    }
     append({ role: 'user', content: userPrompt }, {
-      experimental_attachments: attachments,
+      experimental_attachments: attachments
     });
-
     setAttachments([]);
     setLocalStorageInput('');
+    setInput('');
     resetHeight();
-
     if (width && width > 768) {
       textareaRef.current?.focus();
     }
-  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isButtonInput, artifactCreatePrompt, resetHeight]);
+    // Лог финального сообщения
+    console.log('Отправлен в ИИ (только пользовательский текст):', userPrompt);
+  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isButtonInput, artifactCreatePrompt, resetHeight, isJustifyMode, isDeepSearchMode]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
@@ -220,13 +232,14 @@ function PureMultimodalInput({
 
 <div
   className={cn(
-    'fixed h-auto h-[200px] left-1/2 -translate-x-1/2 w-full max-w-[800px] z-40 bg-white flex flex-col justify-center items-center transition-all duration-300',
+    'fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full max-w-[800px] z-40 bg-white flex flex-col justify-center items-center transition-all duration-300',
     open && width >= 768 && !openMobile && 'md:ml-[130px]', // половина ширины сайдбара
-    messages.length === 0 ? 'md:bottom-[30%] bottom-0' : 'bottom-0' // Поднимаем контейнер выше только на десктопе
+    messages.length === 0 ? 'md:bottom-[30px] bottom-0' : 'bottom-0' // Поднимаем контейнер выше только на десктопе
   )}
 >
+
      
-      <div className="relative w-full max-w-2xl flex flex-col gap-4 rounded-[30px] bg-white shadow-lg border border-gray-200">
+      <div className="relative w-full max-w-2xl flex flex-col gap-4 rounded-[30px] bg-white shadow-lg border border-gray-200 -mb-4">
         <div className="flex items-center w-full relative">
           <Textarea
             data-testid="multimodal-input"
@@ -288,8 +301,8 @@ function PureMultimodalInput({
 </Tooltip>
 
             <SearchModeToggle isSearchMode={isSearchMode} setIsSearchMode={setIsSearchMode} />
-            <DeepSearchToggle  />
-            <JustifyModeToggle  />
+            <DeepSearchToggle onToggle={() => setIsDeepSearchMode((v) => !v)} />
+            <JustifyModeToggle onToggle={() => {}} isJustifyMode={isJustifyMode} setIsJustifyMode={setIsJustifyMode} />
             <EllipsisModeToggle onSectionSelect={(text: string) => { setInput(text); setIsButtonInput(true); }} />
           </div>
 
@@ -339,7 +352,7 @@ function PureMultimodalInput({
         )}
       </div>
       {messages.length > 0 && (
-        <p className="text-center text-sm text-gray-500">
+        <p className="mt-3 text-center text-sm text-gray-500">
           Lumia may contain errors. We recommend that you check important
           information.
         </p>
