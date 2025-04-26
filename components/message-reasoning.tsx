@@ -4,16 +4,17 @@ import { useState } from 'react';
 import { ChevronDownIcon, LoaderIcon } from './icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Markdown } from './markdown';
-import React from 'react';
 
 interface MessageReasoningProps {
   isLoading: boolean;
   reasoning: string;
+  selectedChatModel?: string;
 }
 
 export function MessageReasoning({
   isLoading,
   reasoning,
+  selectedChatModel,
 }: MessageReasoningProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -32,10 +33,7 @@ export function MessageReasoning({
     },
   };
 
-  // Функция для выделения <think>...</think> как markdown
-  function highlightThinkTags(text: string) {
-    return text.replace(/<think>([\s\S]*?)<\/think>/g, '`$1`');
-  }
+
 
   return (
     <div className="flex flex-col">
@@ -75,7 +73,7 @@ export function MessageReasoning({
             style={{ overflow: 'hidden' }}
             className="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
           >
-            <Markdown>{highlightThinkTags(reasoning)}</Markdown>
+            <Markdown>{reasoning}</Markdown>
           </motion.div>
         )}
       </AnimatePresence>

@@ -91,7 +91,7 @@ export function VideoSearchResults({ results }: VideoSearchResultsProps) {
                   />
                   <p className="text-xs line-clamp-2">{result.title}</p>
                   <div className="mt-2 flex items-center space-x-2">
-                    <Avatar className="h-4 w-4">
+                    <Avatar className="size-4">
                       <AvatarImage
                         src={`https://www.google.com/s2/favicons?domain=${
                           new URL(result.link).hostname
@@ -153,10 +153,10 @@ export function VideoSearchResults({ results }: VideoSearchResultsProps) {
                   })}
                 </CarouselContent>
                 <div className="absolute inset-8 flex items-center justify-between p-4 pointer-events-none">
-                  <CarouselPrevious className="w-10 h-10 rounded-full shadow focus:outline-none pointer-events-auto">
+                  <CarouselPrevious className="size-10 rounded-full shadow focus:outline-none pointer-events-auto">
                     <span className="sr-only">Previous</span>
                   </CarouselPrevious>
-                  <CarouselNext className="w-10 h-10 rounded-full shadow focus:outline-none pointer-events-auto">
+                  <CarouselNext className="size-10 rounded-full shadow focus:outline-none pointer-events-auto">
                     <span className="sr-only">Next</span>
                   </CarouselNext>
                 </div>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useState, useRef } from 'react';
 import { toast } from '@/components/toast';
 
 import { AuthForm } from '@/components/auth-form';
@@ -19,6 +19,8 @@ export default function Page() {
   const [nickname, setNickname] = useState('');       // Новое поле
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
 
   const [state, formAction] = useActionState<RegisterActionState, FormData>(
     register,
@@ -57,13 +59,24 @@ export default function Page() {
     formAction(formData);
   };
 
+  const handleNavigateLogin = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsLeaving(true);
+    setTimeout(() => {
+      router.push('/login');
+    }, 500); // match slide-out duration
+  };
+
   return (
     <div className="relative flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center overflow-hidden">
       {/* Анимированный градиент и плавающие элементы на фоне */}
       <AnimatedGradient />
       <FloatingElements />
 
-      <div className="z-10 w-full max-w-md overflow-hidden rounded-[20px] border border-gray-300 bg-white/80 backdrop-blur-lg flex flex-col gap-12 p-6 transition-all duration-300">
+      <div
+        ref={formRef}
+        className={`z-10 w-full max-w-md overflow-hidden rounded-[20px] border border-gray-300 bg-white/80 backdrop-blur-lg flex flex-col gap-12 p-6 transition-all duration-300 animate-fade-in ${isLeaving ? 'animate-slide-out' : 'animate-slide-in'}`}
+      >
         <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
           <h3 className="text-xl font-semibold text-gray-900">Sign Up</h3>
           <p className="text-sm text-gray-500">
@@ -83,12 +96,13 @@ export default function Page() {
 
           <p className="mt-4 text-center text-sm text-gray-600">
             {'Already have an account? '}
-            <Link
+            <a
               href="/login"
-              className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+              onClick={handleNavigateLogin}
+              className="font-medium text-blue-600 hover:text-blue-500 transition-colors cursor-pointer"
             >
               Sign in
-            </Link>
+            </a>
             {' instead.'}
           </p>
         </AuthForm>

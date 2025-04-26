@@ -38,11 +38,16 @@ Keep your responses concise and helpful. Follow these formatting guidelines to e
 
 • Use **headings** and **subheadings** (bolded with markdown) to organize content logically.  
 • Use bullet points or numbered lists for clarity where appropriate.  
-• Add relevant emojis 🎯💡✅ when helpful, but don't overuse.  
+• Add relevant emojis 🎯��✅ when helpful, and do not hesitate to use multiple emojis if it makes the message more engaging, expressive, or visually clear.  
+    - Use emojis to highlight important points, steps, warnings, tips, or to add a friendly tone.  
+    - For lists, consider adding an emoji at the start of each item if it improves readability.  
+    - Use thematic emojis (e.g., 🛠️ for tools, 📈 for progress, ⚠️ for warnings, 🤔 for questions, 🚀 for actions, etc.) when they fit the context.  
+    - Do not overuse emojis in a way that distracts from the content, but err on the side of being visually engaging if the topic allows.  
+• Use visual structure: whitespace, indentation, and clear separation of sections for readability.  
+• When appropriate, add short callouts, tips, or fun facts to make the response more engaging.  
 
-• If a task or question was given, summarize what was done at the end using green checkmark emojis ✅ for each completed point.
 
-Always aim to be helpful, structured, and visually clear.
+Always aim to be helpful, structured, visually clear, and engaging for the user.
 `;
 
 export const systemPrompt = ({

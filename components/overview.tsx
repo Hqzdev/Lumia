@@ -1,12 +1,49 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
-const waveText = 'How can I help you?'.split("");
+// Фразы с выделением слов в <>
+const phrases = [
+  "How can I help you?",
+  "What would you like to learn today?",
+  "Ask me anything, I'm here to assist!"
+];
+
+// Функция для парсинга строки с <...> и возвращения массива React-элементов
+function parsePhraseWithBlue(text: string) {
+  const result: React.ReactNode[] = [];
+  let idx = 0;
+  const regex = /<([^>]+)>/g;
+  let match: RegExpExecArray | null;
+  let lastIndex = 0;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Текст до <...>
+    if (match.index > lastIndex) {
+      result.push(text.slice(lastIndex, match.index));
+    }
+    // Само слово в <>
+    result.push(
+      <span key={idx++} className="text-blue-600">
+        {match[1]}
+      </span>
+    );
+    lastIndex = regex.lastIndex;
+  }
+  // Остаток строки
+  if (lastIndex < text.length) {
+    result.push(text.slice(lastIndex));
+  }
+  return result;
+}
 
 export const Overview = () => {
   const [isMobile, setIsMobile] = useState(false);
+  const [currentPhraseIdx, setCurrentPhraseIdx] = useState(0);
+  const [displayedText, setDisplayedText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [charIdx, setCharIdx] = useState(0);
+  const typingTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -15,10 +52,49 @@ export const Overview = () => {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Увеличенный размер текста для приветствия
-  const waveSize = isMobile
-    ? 'text-[32px] sm:text-[40px] md:text-[48px]'
-    : 'text-[48px] md:text-[56px] lg:text-[72px]';
+  // Размер текста для приветствия (больше для телефона)
+  const textSize = isMobile
+    ? 'text-[32px] sm:text-[36px] md:text-[40px]'
+    : 'text-[28px] md:text-[32px] lg:text-[40px]';
+
+  // Анимация печатания (плавнее и медленнее)
+  useEffect(() => {
+    const phrase = phrases[currentPhraseIdx];
+    let timeout: NodeJS.Timeout | undefined;
+
+    if (!isDeleting && charIdx < phrase.length) {
+      timeout = setTimeout(() => {
+        setDisplayedText(phrase.slice(0, charIdx + 1));
+        setCharIdx(charIdx + 1);
+      }, 110); // медленнее
+    } else if (!isDeleting && charIdx === phrase.length) {
+      // Пауза после полного вывода фразы
+      timeout = setTimeout(() => {
+        setIsDeleting(true);
+      }, 1800); // дольше пауза
+    } else if (isDeleting && charIdx > 0) {
+      timeout = setTimeout(() => {
+        setDisplayedText(phrase.slice(0, charIdx - 1));
+        setCharIdx(charIdx - 1);
+      }, 60); // медленнее удаление
+    } else if (isDeleting && charIdx === 0) {
+      // Следующая фраза
+      timeout = setTimeout(() => {
+        setIsDeleting(false);
+        setCurrentPhraseIdx((prev) => (prev + 1) % phrases.length);
+      }, 700); // дольше пауза между фразами
+    }
+
+    typingTimeout.current = timeout ?? null;
+    return () => {
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    };
+  }, [charIdx, isDeleting, currentPhraseIdx]);
+
+  // Сброс charIdx при смене фразы
+  useEffect(() => {
+    if (!isDeleting) setCharIdx(0);
+  }, [currentPhraseIdx, isDeleting]);
 
   return (
     <div
@@ -26,35 +102,40 @@ export const Overview = () => {
       className="max-w-5xl mx-auto md:mt-32 px-4 size-full flex flex-col justify-center items-center"
     >
       <div
-        className={`flex gap-[2px] ${waveSize} font-extrabold justify-center mb-8`}
-        style={{ lineHeight: 1.05 }}
+        className={`flex gap-[2px] ${textSize} font-bold justify-center mb-8`}
+        style={{ lineHeight: 1.05, minHeight: isMobile ? 40 : 36 }}
       >
-        {waveText.map((char, i) => (
-          <motion.span
-            key={i}
-            initial={{ color: '#fff' }}
-            animate={{
-              color: [
-                '#fff',
-                'rgb(0, 0, 0)', // gray-900
-                '#fff',
-              ],
-            }}
-            transition={{
-              duration: 2,
-              delay: i * 0.12,
-              repeat: Infinity,
-              repeatType: 'loop',
-              ease: 'linear',
-            }}
-            className="bg-clip-text text-transparent"
-            style={{ WebkitTextStroke: '2px #fff' }}
-          >
-            {char === ' ' ? '\u00A0' : char}
-          </motion.span>
-        ))}
+        <span
+          className="text-blue-600"
+          style={{
+            WebkitTextStroke: ' #2563eb', // Tailwind blue-600
+            color: '#2563eb', // Tailwind blue-600
+            letterSpacing: '0.01em',
+            transition: 'color 0.2s'
+          }}
+        >
+          {parsePhraseWithBlue(displayedText)}
+        </span>
+        <span
+          className="ml-1"
+          style={{
+            color: '#6b7280', // Tailwind gray-500
+            WebkitTextStroke: '1px #fff',
+            fontWeight: 900,
+            animation: 'blink 1.8s steps(1) infinite' // медленнее и плавнее
+          }}
+        >
+          |
+        </span>
       </div>
-      
+      <style>
+        {`
+          @keyframes blink {
+            0%, 60% { opacity: 1; }
+            61%, 100% { opacity: 0; }
+          }
+        `}
+      </style>
     </div>
   );
 };

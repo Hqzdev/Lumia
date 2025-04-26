@@ -108,13 +108,13 @@ const Tool = ({
             }
           }}
           initial={{ scale: 1, opacity: 0 }}
-          animate={{ opacity: 1, transition: { delay: 0.1 } }}
+          animate={{ opacity: 1, transition: { delay: 0.1, duration: 0.5, ease: [0.4, 0, 0.2, 1] } }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           exit={{
             scale: 0.9,
             opacity: 0,
-            transition: { duration: 0.1 },
+            transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
           }}
           onClick={() => {
             handleSelect();
@@ -271,8 +271,8 @@ export const Tools = ({
     <motion.div
       className="flex flex-col gap-1.5"
       initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] } }}
+      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
     >
       <AnimatePresence>
         {isToolbarVisible &&
@@ -390,20 +390,20 @@ const PureToolbar = ({
                   opacity: 1,
                   y: 0,
                   height: 6 * 43,
-                  transition: { delay: 0 },
+                  transition: { delay: 0, duration: 0.6, ease: [0.4, 0, 0.2, 1] },
                   scale: 0.95,
                 }
               : {
                   opacity: 1,
                   y: 0,
                   height: toolsByArtifactKind.length * 50,
-                  transition: { delay: 0 },
+                  transition: { delay: 0, duration: 0.6, ease: [0.4, 0, 0.2, 1] },
                   scale: 1,
                 }
             : { opacity: 1, y: 0, height: 54, transition: { delay: 0 } }
         }
-        exit={{ opacity: 0, y: -20, transition: { duration: 0.1 } }}
-        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        exit={{ opacity: 0, y: -20, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
+        transition={{ type: 'spring', stiffness: 180, damping: 32 }}
         onHoverStart={() => {
           if (status === 'streaming') return;
 

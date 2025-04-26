@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useState, useRef } from 'react';
 import { toast } from '@/components/toast';
 
 import { AuthForm } from '@/components/auth-form';
@@ -18,6 +18,8 @@ export default function Page() {
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
 
   const [state, formAction] = useActionState<LoginActionState, FormData>(
     login,
@@ -52,36 +54,46 @@ export default function Page() {
 
   if (!mounted) return null;
 
+  const handleNavigateRegister = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsLeaving(true);
+    setTimeout(() => {
+      router.push('/register');
+    }, 500); // match slide-out duration
+  };
+
   return (
-    <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center relative overflow-hidden">
+    <div className="relative flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center overflow-hidden">
       {/* Animated background */}
       <AnimatedGradient />
       <FloatingElements />
 
-      <div className="w-full max-w-md overflow-hidden rounded-[20px] shadow-lg bg-white/80 backdrop-blur-lg  flex flex-col gap-12 p-6 z-10 transition-all duration-300">
+      <div
+        ref={formRef}
+        className={`z-10 w-full max-w-md overflow-hidden rounded-[20px] border border-gray-300 bg-white/80 backdrop-blur-lg flex flex-col gap-12 p-6 transition-all duration-300 animate-fade-in ${isLeaving ? 'animate-slide-out' : 'animate-slide-in'}`}
+      >
         <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
           <h3 className="text-xl font-semibold text-gray-900">Sign In</h3>
           <p className="text-sm text-gray-500">
-            Use your email and{' '}
-            <span className="text-blue-600 font-medium">password</span> to
-            sign in
+            Use your email and <span className="text-blue-600 font-medium">password</span> to sign in
           </p>
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
           <SubmitButton
             isSuccessful={isSuccessful}
-            className="text-blue-600 hover:text-blue-600 transition-all duration-200 hover:scale-110"
+            className="bg-blue-600 hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02] text-white"
           >
-            Sign in
+            Sign In
           </SubmitButton>
-          <p className="text-center text-sm text-gray-600 mt-4">
+          <p className="mt-4 text-center text-sm text-gray-600 transition-all duration-300">
             {"Don't have an account? "}
-            <Link
+            <a
               href="/register"
-              className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+              onClick={handleNavigateRegister}
+              className="font-medium text-blue-600 hover:text-blue-500 transition-colors cursor-pointer"
             >
               Sign up
-            </Link>
+            </a>
             {' for free.'}
           </p>
         </AuthForm>

@@ -6,6 +6,7 @@ import { useCopyToClipboard } from 'usehooks-ts';
 import equal from 'fast-deep-equal';
 import { toast } from 'sonner';
 import cn from 'classnames';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import type { Message } from 'ai';
 import type { Vote } from '@/lib/db/schema';
@@ -22,7 +23,7 @@ function CheckmarkIcon() {
   );
 }
 
-export function PureMessageActions({
+export const PureMessageActions = memo(function PureMessageActions({
   chatId,
   message,
   vote,
@@ -49,157 +50,163 @@ export function PureMessageActions({
     'p-1 text-gray-600 rounded-md h-7 w-7 hover:bg-gray-50 hover:text-gray-600 hover:!bg-gray-100 transition-all flex items-center justify-center';
 
   return (
-    <div
-      className={cn(
-        'inline-flex items-center gap-1  p-1 ',
-        className,
-      )}
-    >
-      {/* Copy button */}
-      <Button
-        className={iconButtonClass}
-        variant="ghost"
-        onClick={async () => {
-          const textFromParts = message.parts
-            ?.filter((part) => part.type === 'text')
-            .map((part) => part.text)
-            .join('\n')
-            .trim();
-
-          if (textFromParts) {
-            await copyToClipboard(textFromParts);
-            toast.success('Copied to clipboard!');
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1200);
-          } else {
-            toast.error("There's no text to copy!");
-          }
-        }}
-        aria-label="Copy"
+    <AnimatePresence>
+      <motion.div
+        className={cn(
+          'inline-flex items-center gap-1  p-1 ',
+          className,
+        )}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } }}
+        exit={{ opacity: 0, y: 10, transition: { duration: 0.2 } }}
+        layout
       >
-        {copied ? <CheckmarkIcon /> : <Files className="size-4" />}
-      </Button>
+        {/* Copy button */}
+        <Button
+          className={iconButtonClass}
+          variant="ghost"
+          onClick={async () => {
+            const textFromParts = message.parts
+              ?.filter((part) => part.type === 'text')
+              .map((part) => part.text)
+              .join('\n')
+              .trim();
 
-      {/* Upvote button */}
-      <Button
-        data-testid="message-upvote"
-        className={iconButtonClass}
-        variant="ghost"
-        disabled={vote?.isUpvoted}
-        onClick={async () => {
-          const upvote = fetch('/api/vote', {
-            method: 'PATCH',
-            body: JSON.stringify({
-              chatId,
-              messageId: message.id,
-              type: 'up',
-            }),
-          });
+            if (textFromParts) {
+              await copyToClipboard(textFromParts);
+              toast.success('Copied to clipboard!');
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1200);
+            } else {
+              toast.error("There's no text to copy!");
+            }
+          }}
+          aria-label="Copy"
+        >
+          {copied ? <CheckmarkIcon /> : <Files className="size-4" />}
+        </Button>
 
-          toast.promise(upvote, {
-            loading: 'Upvoting Response...',
-            success: () => {
-              mutate<Array<Vote>>(
-                `/api/vote?chatId=${chatId}`,
-                (currentVotes) => {
-                  if (!currentVotes) return [];
-                  const votesWithoutCurrent = currentVotes.filter(
-                    (vote) => vote.messageId !== message.id,
-                  );
-                  return [
-                    ...votesWithoutCurrent,
-                    { chatId, messageId: message.id, isUpvoted: true },
-                  ];
-                },
-                { revalidate: false },
-              );
-              return 'Successfully upvoted!';
-            },
-            error: 'Failed to upvote response.',
-          });
-        }}
-        aria-label="Upvote"
-      >
-        <ThumbsUp className="size-4" />
-      </Button>
+        {/* Upvote button */}
+        <Button
+          data-testid="message-upvote"
+          className={iconButtonClass}
+          variant="ghost"
+          disabled={vote?.isUpvoted}
+          onClick={async () => {
+            const upvote = fetch('/api/vote', {
+              method: 'PATCH',
+              body: JSON.stringify({
+                chatId,
+                messageId: message.id,
+                type: 'up',
+              }),
+            });
 
-      {/* Downvote button */}
-      <Button
-        data-testid="message-downvote"
-        className={iconButtonClass}
-        variant="ghost"
-        disabled={vote && !vote.isUpvoted}
-        onClick={async () => {
-          const downvote = fetch('/api/vote', {
-            method: 'PATCH',
-            body: JSON.stringify({
-              chatId,
-              messageId: message.id,
-              type: 'down',
-            }),
-          });
+            toast.promise(upvote, {
+              loading: 'Upvoting Response...',
+              success: () => {
+                mutate<Array<Vote>>(
+                  `/api/vote?chatId=${chatId}`,
+                  (currentVotes) => {
+                    if (!currentVotes) return [];
+                    const votesWithoutCurrent = currentVotes.filter(
+                      (vote) => vote.messageId !== message.id,
+                    );
+                    return [
+                      ...votesWithoutCurrent,
+                      { chatId, messageId: message.id, isUpvoted: true },
+                    ];
+                  },
+                  { revalidate: false },
+                );
+                return 'Successfully upvoted!';
+              },
+              error: 'Failed to upvote response.',
+            });
+          }}
+          aria-label="Upvote"
+        >
+          <ThumbsUp className="size-4" />
+        </Button>
 
-          toast.promise(downvote, {
-            loading: 'Downvoting Response...',
-            success: () => {
-              mutate<Array<Vote>>(
-                `/api/vote?chatId=${chatId}`,
-                (currentVotes) => {
-                  if (!currentVotes) return [];
-                  const votesWithoutCurrent = currentVotes.filter(
-                    (vote) => vote.messageId !== message.id,
-                  );
-                  return [
-                    ...votesWithoutCurrent,
-                    { chatId, messageId: message.id, isUpvoted: false },
-                  ];
-                },
-                { revalidate: false },
-              );
-              return 'Successfully downvoted!';
-            },
-            error: 'Failed to downvote response.',
-          });
-        }}
-        aria-label="Downvote"
-      >
-        <ThumbsDown className="size-4" />
-      </Button>
+        {/* Downvote button */}
+        <Button
+          data-testid="message-downvote"
+          className={iconButtonClass}
+          variant="ghost"
+          disabled={vote && !vote.isUpvoted}
+          onClick={async () => {
+            const downvote = fetch('/api/vote', {
+              method: 'PATCH',
+              body: JSON.stringify({
+                chatId,
+                messageId: message.id,
+                type: 'down',
+              }),
+            });
 
-      {/* Voice button */}
-      <Button
-        className={iconButtonClass}
-        variant="ghost"
-        onClick={() => {
-          toast('Playing voice (not implemented yet)');
-        }}
-        aria-label="Speak"
-      >
-        <Volume2 className="size-4" />
-      </Button>
+            toast.promise(downvote, {
+              loading: 'Downvoting Response...',
+              success: () => {
+                mutate<Array<Vote>>(
+                  `/api/vote?chatId=${chatId}`,
+                  (currentVotes) => {
+                    if (!currentVotes) return [];
+                    const votesWithoutCurrent = currentVotes.filter(
+                      (vote) => vote.messageId !== message.id,
+                    );
+                    return [
+                      ...votesWithoutCurrent,
+                      { chatId, messageId: message.id, isUpvoted: false },
+                    ];
+                  },
+                  { revalidate: false },
+                );
+                return 'Successfully downvoted!';
+              },
+              error: 'Failed to downvote response.',
+            });
+          }}
+          aria-label="Downvote"
+        >
+          <ThumbsDown className="size-4" />
+        </Button>
 
-      {/* Edit button */}
-      <Button
-        className={iconButtonClass}
-        variant="ghost"
-        onClick={() => {
-          setArtifact({
-            documentId: message.id,
-            kind: 'text',
-            content: message.parts?.filter((part) => part.type === 'text').map((part) => part.text).join('\n') || '',
-            title: 'Edit message',
-            isVisible: true,
-            status: 'idle',
-            boundingBox: { top: 0, left: 0, width: 0, height: 0 },
-          });
-        }}
-        aria-label="Edit"
-      >
-        <Pencil className="size-4" />
-      </Button>
-    </div>
+        {/* Voice button */}
+        <Button
+          className={iconButtonClass}
+          variant="ghost"
+          onClick={() => {
+            toast('Playing voice (not implemented yet)');
+          }}
+          aria-label="Speak"
+        >
+          <Volume2 className="size-4" />
+        </Button>
+
+        {/* Edit button */}
+        <Button
+          className={iconButtonClass}
+          variant="ghost"
+          onClick={() => {
+            setArtifact({
+              documentId: message.id,
+              kind: 'text',
+              content: message.parts?.filter((part) => part.type === 'text').map((part) => part.text).join('\n') || '',
+              title: 'Edit message',
+              isVisible: true,
+              status: 'idle',
+              boundingBox: { top: 0, left: 0, width: 0, height: 0 },
+            });
+          }}
+          aria-label="Edit"
+        >
+          <Pencil className="size-4" />
+        </Button>
+      </motion.div>
+    </AnimatePresence>
   );
-}
+});
 
 export const MessageActions = memo(
   PureMessageActions,

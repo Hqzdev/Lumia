@@ -7,7 +7,7 @@ import type { User } from 'next-auth';
 import { memo, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Pencil, ArchiveIcon  } from 'lucide-react';
 
 import {
   CheckCircleFillIcon,
@@ -57,17 +57,21 @@ type GroupedChats = {
   older: Chat[];
 };
 
+type PureChatItemProps = {
+  chat: Chat;
+  isActive: boolean;
+  onDelete: (chatId: string) => void;
+  setOpenMobile: (open: boolean) => void;
+  onRename: (chat: Chat) => void;
+};
+
 const PureChatItem = ({
   chat,
   isActive,
   onDelete,
   setOpenMobile,
-}: {
-  chat: Chat;
-  isActive: boolean;
-  onDelete: (chatId: string) => void;
-  setOpenMobile: (open: boolean) => void;
-}) => {
+  onRename,
+}: PureChatItemProps) => {
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
     initialVisibility: chat.visibility,
@@ -92,16 +96,47 @@ const PureChatItem = ({
           </SidebarMenuAction>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent side="bottom" align="end">
+        <DropdownMenuContent
+          side="bottom"
+          align="start"
+          className="min-w-[220px]" // увеличиваем ширину меню
+        >
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
               <ShareIcon />
               <span>Share</span>
             </DropdownMenuSubTrigger>
+            <DropdownMenuSeparator />
             <DropdownMenuPortal>
-         
+              {/* Share submenu content here if needed */}
             </DropdownMenuPortal>
           </DropdownMenuSub>
+
+          <DropdownMenuItem
+            className="cursor-pointer focus:bg-gray-100 dark:focus:bg-gray-800"
+            onSelect={() => {
+              // TODO: Implement archive logic here
+              // For now, just a placeholder
+              // You might want to call a prop like onArchive(chat.id)
+              alert('Archive feature coming soon!');
+            }}
+          >
+            <ArchiveIcon className="size-4" />
+            <span>Archive</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            className="cursor-pointer  focus:bg-gray-100 dark:focus:bg-gray-800"
+            onSelect={() => {
+              onRename(chat);
+            }}
+          >
+            <Pencil className="size-4" />
+            <span>Rename</span>
+          </DropdownMenuItem>
+
+      
 
           <DropdownMenuItem
             className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
@@ -141,7 +176,14 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // Rename dialog state
+  const [renameChat, setRenameChat] = useState<Chat | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [isRenaming, setIsRenaming] = useState(false);
+
   const router = useRouter();
+
   const handleDelete = async () => {
     const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
       method: 'DELETE',
@@ -165,6 +207,32 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     if (deleteId === id) {
       router.push('/');
     }
+  };
+
+  const handleRename = async () => {
+    if (!renameChat) return;
+    setIsRenaming(true);
+
+    const renamePromise = fetch(`/api/chat?id=${renameChat.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: renameValue }),
+    });
+
+    toast.promise(renamePromise, {
+      loading: 'Renaming chat...',
+      success: async () => {
+        await mutate();
+        setRenameChat(null);
+        setRenameValue('');
+        setIsRenaming(false);
+        return 'Chat renamed successfully';
+      },
+      error: () => {
+        setIsRenaming(false);
+        return 'Failed to rename chat';
+      },
+    });
   };
 
   if (!user) {
@@ -219,7 +287,6 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
       </SidebarGroup>
     );
   }
-  
 
   const groupChatsByDate = (chats: Chat[]): GroupedChats => {
     const now = new Date();
@@ -280,6 +347,10 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                               setIsDeleteDialogOpen(true);
                             }}
                             setOpenMobile={setOpenMobile}
+                            onRename={(chat) => {
+                              setRenameChat(chat);
+                              setRenameValue(chat.title);
+                            }}
                           />
                         ))}
                       </>
@@ -300,6 +371,10 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                               setIsDeleteDialogOpen(true);
                             }}
                             setOpenMobile={setOpenMobile}
+                            onRename={(chat) => {
+                              setRenameChat(chat);
+                              setRenameValue(chat.title);
+                            }}
                           />
                         ))}
                       </>
@@ -320,6 +395,10 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                               setIsDeleteDialogOpen(true);
                             }}
                             setOpenMobile={setOpenMobile}
+                            onRename={(chat) => {
+                              setRenameChat(chat);
+                              setRenameValue(chat.title);
+                            }}
                           />
                         ))}
                       </>
@@ -340,6 +419,10 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                               setIsDeleteDialogOpen(true);
                             }}
                             setOpenMobile={setOpenMobile}
+                            onRename={(chat) => {
+                              setRenameChat(chat);
+                              setRenameValue(chat.title);
+                            }}
                           />
                         ))}
                       </>
@@ -360,6 +443,10 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                               setIsDeleteDialogOpen(true);
                             }}
                             setOpenMobile={setOpenMobile}
+                            onRename={(chat) => {
+                              setRenameChat(chat);
+                              setRenameValue(chat.title);
+                            }}
                           />
                         ))}
                       </>
@@ -406,6 +493,58 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
               Delete
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Rename Dialog */}
+      <Dialog open={!!renameChat} onOpenChange={(open) => {
+        if (!open) {
+          setRenameChat(null);
+          setRenameValue('');
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="mb-2 text-xl">Rename chat</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              handleRename();
+            }}
+          >
+            <div className="mb-4">
+              <input
+                className="w-full border rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="text"
+                value={renameValue}
+                onChange={e => setRenameValue(e.target.value)}
+                maxLength={100}
+                autoFocus
+                placeholder="Enter new chat name"
+                disabled={isRenaming}
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                className="text-gray-500 hover:text-blue-600 bg-white hover:bg-white rounded-lg"
+                onClick={() => {
+                  setRenameChat(null);
+                  setRenameValue('');
+                }}
+                disabled={isRenaming}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="text-blue-600 hover:text-blue-700 bg-white hover:bg-white"
+                disabled={isRenaming || !renameValue.trim() || renameValue === renameChat?.title}
+              >
+                {isRenaming ? 'Renaming...' : 'Rename'}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </>

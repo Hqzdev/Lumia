@@ -6,6 +6,7 @@ import { memo } from 'react';
 import { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
 import { UseChatHelpers } from '@ai-sdk/react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface MessagesProps {
   chatId: string;
@@ -16,6 +17,7 @@ interface MessagesProps {
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
+  selectedChatModel: string;
 }
 
 function PureMessages({
@@ -26,6 +28,7 @@ function PureMessages({
   setMessages,
   reload,
   isReadonly,
+  selectedChatModel,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -36,28 +39,35 @@ function PureMessages({
       className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
     >
       {messages.length === 0 && <Overview />}
-
-      {messages.map((message, index) => (
-        <PreviewMessage
-          key={message.id}
-          chatId={chatId}
-          message={message}
-          isLoading={status === 'streaming' && messages.length - 1 === index}
-          vote={
-            votes
-              ? votes.find((vote) => vote.messageId === message.id)
-              : undefined
-          }
-          setMessages={setMessages}
-          reload={reload}
-          isReadonly={isReadonly}
-        />
-      ))}
-
+      <AnimatePresence initial={false}>
+        {messages.map((message, index) => (
+          <motion.div
+            key={message.id}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120, damping: 18 } }}
+            exit={{ y: 20, opacity: 0, transition: { duration: 0.2 } }}
+            layout
+          >
+            <PreviewMessage
+              chatId={chatId}
+              message={message}
+              isLoading={status === 'streaming' && messages.length - 1 === index}
+              vote={
+                votes
+                  ? votes.find((vote) => vote.messageId === message.id)
+                  : undefined
+              }
+              setMessages={setMessages}
+              reload={reload}
+              isReadonly={isReadonly}
+              selectedChatModel={selectedChatModel}
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
       {status === 'submitted' &&
         messages.length > 0 &&
         messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
-
       <div
         ref={messagesEndRef}
         className="shrink-0 min-w-[24px] min-h-[24px]"

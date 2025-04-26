@@ -29,6 +29,7 @@ const PurePreviewMessage = ({
   setMessages,
   reload,
   isReadonly,
+  selectedChatModel,
 }: {
   chatId: string;
   message: UIMessage;
@@ -37,6 +38,7 @@ const PurePreviewMessage = ({
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
+  selectedChatModel?: string;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [copied, setCopied] = useState(false);
@@ -46,9 +48,11 @@ const PurePreviewMessage = ({
       <motion.div
         data-testid={`message-${message.role}`}
         className="w-full mx-auto max-w-3xl px-4 group/message"
-        initial={{ y: 5, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120, damping: 18 } }}
+        exit={{ y: 20, opacity: 0, transition: { duration: 0.2 } }}
         data-role={message.role}
+        layout
       >
         <div
           className={cn(
@@ -86,6 +90,7 @@ const PurePreviewMessage = ({
                     key={key}
                     isLoading={isLoading}
                     reasoning={part.reasoning}
+                    selectedChatModel={selectedChatModel}
                   />
                 );
               }
@@ -235,21 +240,23 @@ export const PreviewMessage = memo(
     if (prevProps.message.id !== nextProps.message.id) return false;
     if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
     if (!equal(prevProps.vote, nextProps.vote)) return false;
-
+    if (prevProps.selectedChatModel !== nextProps.selectedChatModel) return false;
     return true;
   },
 );
 
-export const ThinkingMessage = () => {
+export const ThinkingMessage = memo(() => {
   const role = 'assistant';
 
   return (
     <motion.div
       data-testid="message-assistant-loading"
       className="w-full mx-auto max-w-3xl px-4 group/message "
-      initial={{ y: 5, opacity: 0 }}
-      animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1, transition: { delay: 0.2, type: 'spring', stiffness: 120, damping: 18 } }}
+      exit={{ y: 20, opacity: 0, transition: { duration: 0.2 } }}
       data-role={role}
+      layout
     >
       <div
         className={cx(
@@ -303,4 +310,5 @@ export const ThinkingMessage = () => {
       </div>
     </motion.div>
   );
-};
+});
+ThinkingMessage.displayName = 'ThinkingMessage';

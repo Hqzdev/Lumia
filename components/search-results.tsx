@@ -62,7 +62,7 @@ export function SearchResults({ results }: SearchResultsProps) {
               <Card className="overflow-hidden">
                 <CardContent className="p-0">
                   <div className="flex gap-4 p-4">
-                    <div className="relative aspect-video w-48 flex-shrink-0 overflow-hidden rounded-md bg-muted">
+                    <div className="relative aspect-video w-48 shrink-0 overflow-hidden rounded-md bg-muted">
                       {thumbnail ? (
                         <Image
                           src={thumbnail}

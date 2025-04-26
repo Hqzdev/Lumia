@@ -48,13 +48,14 @@
         --chart-3: 197 37% 24%;
         --chart-4: 43 74% 66%;
         --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
+        --radius: 0.7rem;
         --sidebar-background: 0 0% 97%;
         --sidebar-foreground: 240 5.3% 26.1%;
         --sidebar-primary: 240 5.9% 10%;
         --sidebar-primary-foreground: 0 0% 98%;
-        --sidebar-accent: 0 0% 98%;
-        --sidebar-accent-foreground: 270, 70%, 60%;
+        --sidebar-accent: 220 13% 91%;
+        --sidebar-accent-foreground: 240 5.3% 26.1%;
+        /* вместо фиол сделай черный */
         --sidebar-border: 220 13% 91%;
         --sidebar-ring: 217.2 91.2% 59.8%;
     }
@@ -163,4 +164,13 @@
 
 .suggestion-highlight {
     @apply bg-blue-200 hover:bg-blue-300 dark:hover:bg-blue-400/50 dark:text-blue-50 dark:bg-blue-500/40;
+}
+
+@media (max-width: 768px) {
+
+    .bg-sidebar,
+    [data-mobile="true"].bg-sidebar {
+        background-color: #fff !important;
+        color: #222 !important;
+    }
 }

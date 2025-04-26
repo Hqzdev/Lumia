@@ -2,20 +2,22 @@
 
 import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
 import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
-import { MultimodalInput } from './multimodal-input';
+import { MultimodalInput } from '@/components/multimodal-input';
 import { Messages } from './messages';
 import { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 import { searchPrompt, systemPrompt } from '@/lib/ai/prompts';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Overview } from '@/components/overview';
 
-export function Chat({
+export const Chat = memo(function Chat({
   id,
   initialMessages,
   selectedChatModel,
@@ -66,15 +68,20 @@ export function Chat({
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   return (
-    <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background pt-[56px]">
+    <AnimatePresence>
+      <motion.div
+        className="flex flex-col min-w-0 h-dvh bg-background pt-[56px]"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } }}
+        exit={{ opacity: 0, y: 30, transition: { duration: 0.2 } }}
+        layout
+      >
         <ChatHeader
           chatId={id}
           selectedModelId={selectedChatModel}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
         />
-
         <div className={`flex-1 flex flex-col ${messages.length === 0 ? 'justify-center' : ''} pb-28`}>
           <Messages
             chatId={id}
@@ -85,6 +92,7 @@ export function Chat({
             reload={reload}
             isReadonly={isReadonly}
             isArtifactVisible={isArtifactVisible}
+            selectedChatModel={selectedChatModel}
           />
         </div>
         {!isReadonly && !isArtifactVisible && (
@@ -104,8 +112,7 @@ export function Chat({
             setIsSearchMode={setIsSearchMode}
           />
         )}
-      </div>
-
+      </motion.div>
       <Artifact
         chatId={id}
         input={input}
@@ -122,6 +129,6 @@ export function Chat({
         votes={votes}
         isReadonly={isReadonly}
       />
-    </>
+    </AnimatePresence>
   );
-}
+});

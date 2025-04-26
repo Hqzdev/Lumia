@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { SidebarHistory } from '@/components/sidebar-history';
 import { SidebarUserNav } from '@/components/sidebar-user-nav';
 import { Button } from '@/components/ui/button';
-import { MessageSquareDiff, FolderPlus } from 'lucide-react'
+import { MessageSquareDiff, FolderPlus, Plus } from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SidebarToggle } from './sidebar-toggle';
-import { Plus } from 'lucide-react'
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -68,11 +67,11 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 <TooltipTrigger asChild>
                   <Button
                     variant="outline"
-                    className={`p-0 h-[38px] w-[38px] rounded-xl hover:bg-gray-200 [&_svg]:size-[22px] text-[#6B7280] ${buttonBg}`}
+                    className={`p-0 size-[38px] rounded-xl hover:bg-gray-200 [&_svg]:size-[22px] text-[#6B7280] ${buttonBg}`}
                     onClick={handleNewChatClick}
                   >
                     <span className="sr-only">New Chat</span>
-                    <MessageSquareDiff className="p-0 h-[42px] w-[42px]  hover:bg-gray-200 rounded-xl [&_svg]:size-[24px] text-[#6B7280] ${className}" />
+                    <MessageSquareDiff className="p-0 size-[42px] hover:bg-gray-200 rounded-xl [&_svg]:size-[24px] text-[#6B7280] ${className}" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>New Chat</TooltipContent>
@@ -81,7 +80,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 <TooltipTrigger asChild>
                   <Button
                     variant="outline"
-                    className={`p-0 h-[38px] w-[38px] rounded-xl hover:text-[#6B7280] hover:bg-gray-200 [&_svg]:size-[22px] text-[#6B7280] ${buttonBg}`}
+                    className={`p-0 size-[38px] rounded-xl hover:text-[#6B7280] hover:bg-gray-200 [&_svg]:size-[22px] text-[#6B7280] ${buttonBg}`}
                     onClick={handleSearchClick}
                   >
                     <span className="sr-only">Search</span>
