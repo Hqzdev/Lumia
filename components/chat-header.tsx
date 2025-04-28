@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 
 import { ModelSelector } from '@/components/model-selector';
 import { SidebarToggle } from '@/components/sidebar-toggle';
@@ -82,12 +82,14 @@ function PureChatHeader({
 }) {
   const router = useRouter();
   const { open, openMobile } = useSidebar();
-
   const { width: windowWidth } = useWindowSize();
-
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
   const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
+
+  // Получаем userId из сессии
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
 
   // Profile button handler (for now, just go to /profile)
   const handleProfileClick = () => {
@@ -196,7 +198,9 @@ function PureChatHeader({
       {/* Spacer to push content to left */}
       <div className="flex-1" />
       <SettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
-      <UpgradePlanDialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen} />
+      {userId && (
+        <UpgradePlanDialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen} userId={userId} />
+      )}
       <CustomizeLumiaDialog open={isCustomizeOpen} onOpenChange={setIsCustomizeOpen} />
     </header>
   );

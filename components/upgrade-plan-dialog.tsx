@@ -1,10 +1,10 @@
 "use client"
 
+import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Check, X, Zap, Star, Award, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 
 const pricingTiers = [
   {
@@ -128,7 +128,33 @@ const getIconComponent = (tierName: string) => {
   }
 };
 
-export function UpgradePlanDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
+export function UpgradePlanDialog({ open, onOpenChange, userId }: { open: boolean, onOpenChange: (open: boolean) => void, userId: string }) {
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+
+  async function handleSelectPlan(planName: string) {
+    setSelectedPlan(planName);
+    console.log("Вы выбрали подписку:", planName);
+    console.log("userId:", userId);
+    const subscription = planName.toLowerCase().replace(" ", "_");
+    console.log("subscription (отправляется в БД):", subscription);
+    try {
+      const res = await fetch("/api/upgrade-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, subscription }),
+      });
+      const data = await res.json();
+      console.log("Ответ сервера:", data);
+      if (res.ok) {
+        console.log("Подписка успешно обновлена в БД");
+      } else {
+        console.error("Ошибка при обновлении подписки", data);
+      }
+    } catch (e) {
+      console.error("Ошибка сети при обновлении подписки", e);
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
@@ -165,9 +191,17 @@ export function UpgradePlanDialog({ open, onOpenChange }: { open: boolean, onOpe
                     </li>
                   ))}
                 </ul>
-                <Link href={tier.buttonLink} className="block w-full text-center py-2 px-4 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700">
-                  {tier.buttonText}
-                </Link>
+                <button
+                  className={cn(
+                    "block w-full text-center py-2 px-4 rounded-lg font-medium transition-colors border",
+                    selectedPlan === tier.name
+                      ? "bg-white border-blue-600 text-blue-600"
+                      : "bg-blue-600 text-white border-transparent hover:bg-blue-700"
+                  )}
+                  onClick={() => handleSelectPlan(tier.name)}
+                >
+                  {selectedPlan === tier.name ? "Selected" : tier.buttonText}
+                </button>
               </CardContent>
             </Card>
           ))}

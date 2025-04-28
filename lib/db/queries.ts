@@ -49,7 +49,12 @@ export async function createUser(email: string, password: string, nickname: stri
   const hash = hashSync(password, salt);
 
   try {
-    return await db.insert(user).values({ email, password: hash, nickname });
+    return await db.insert(user).values({ 
+      email, 
+      password: hash, 
+      nickname,
+      subscription: 'free'
+    });
   } catch (error) {
     console.error('Failed to create user in database');
     throw error;
@@ -355,6 +360,17 @@ export async function updateChatVisiblityById({
     return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
   } catch (error) {
     console.error('Failed to update chat visibility in database');
+    throw error;
+  }
+}
+
+export async function updateUserSubscription({ userId, subscription }: { userId: string, subscription: 'free' | 'starter' | 'starter_plus' | 'premium' | 'ultimate' }) {
+  try {
+    return await db.update(user)
+      .set({ subscription })
+      .where(eq(user.id, userId));
+  } catch (error) {
+    console.error('Failed to update user subscription in database');
     throw error;
   }
 }
