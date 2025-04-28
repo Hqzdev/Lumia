@@ -129,53 +129,68 @@ function PureChatHeader({
         )}
         {/* Theme toggle button removed from here */}
         {!isReadonly && (
-          <ModelSelector
-            selectedModelId={selectedModelId}
-            className="ml-2"
-          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <ModelSelector
+                  selectedModelId={selectedModelId}
+                  className="ml-2"
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              Select model
+            </TooltipContent>
+          </Tooltip>
         )}
         <div className="flex justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="p-0 size-[38px] rounded-full items-center justify-center [&_svg]:size-[24px] text-[#6B7280]"
-                aria-label="Profile"
-              >
-                <UserCircle />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="bottom">
-              <DropdownMenuItem onClick={() => router.push('/lumia-explore')}>
-                <Compass className="mr-2 size-4" />
-                Explore Lumia
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsCustomizeOpen(true)}>
-                <Settings2 className="mr-2 size-4" />
-                Customize Lumia
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                <Settings className="mr-2 size-4" />
-                Settings
-              </DropdownMenuItem>
-              {/* Theme toggle menu item */}
-             
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setIsUpgradeOpen(true)}>
-                <ArrowUpCircle className="mr-2 size-4" />
-                Upgrade Plan
-              </DropdownMenuItem>
-              <ThemeToggleMenuItem />
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => signOut({ redirect: true, callbackUrl: '/' })}
-                className="text-red-500"
-              >
-                <LogOut className="mr-2 size-4" />
-                Sign out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="p-0 size-[38px] rounded-xl hover:text-[#6B7280] hover:bg-gray-200 [&_svg]:size-[22px] text-[#6B7280] ml-2"
+                    aria-label="Profile"
+                  >
+                    <UserCircle />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" side="bottom">
+                  <DropdownMenuItem onClick={() => router.push('/lumia-explore')}>
+                    <Compass className="mr-2 size-4" />
+                    Explore Lumia
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsCustomizeOpen(true)}>
+                    <Settings2 className="mr-2 size-4" />
+                    Customize Lumia
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                    <Settings className="mr-2 size-4" />
+                    Settings
+                  </DropdownMenuItem>
+                  {/* Theme toggle menu item */}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setIsUpgradeOpen(true)}>
+                    <ArrowUpCircle className="mr-2 size-4" />
+                    Upgrade Plan
+                  </DropdownMenuItem>
+                  <ThemeToggleMenuItem />
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => signOut({ redirect: true, callbackUrl: '/' })}
+                    className="text-red-500"
+                  >
+                    <LogOut className="mr-2 size-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              Profile & Settings
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
       {/* Spacer to push content to left */}

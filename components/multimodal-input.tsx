@@ -64,7 +64,7 @@ function PureMultimodalInput({
   handleSubmit: UseChatHelpers['handleSubmit'];
   className?: string;
   isSearchMode: boolean;
-  setIsSearchMode: (v: boolean) => void;
+  setIsSearchMode: Dispatch<SetStateAction<boolean>>;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -158,7 +158,7 @@ function PureMultimodalInput({
     }
     // Лог финального сообщения
     console.log('Отправлен в ИИ (только пользовательский текст):', userPrompt);
-  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isJustifyMode, isDeepSearchMode, setInput]);
+  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isJustifyMode, isSearchMode, isDeepSearchMode, setInput]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
@@ -280,9 +280,28 @@ function PureMultimodalInput({
               </TooltipContent>
             </Tooltip>
 
-            <SearchModeToggle isSearchMode={isSearchMode} setIsSearchMode={setIsSearchMode} />
-            <DeepSearchToggle isDeepSearchMode={isDeepSearchMode} setIsDeepSearchMode={setIsDeepSearchMode} />
-            <JustifyModeToggle onToggle={() => {}} isJustifyMode={isJustifyMode} setIsJustifyMode={setIsJustifyMode} />
+ 
+            <DeepSearchToggle
+              isDeepSearchMode={isDeepSearchMode}
+              setIsDeepSearchMode={(v) => {
+                // Если JustifyMode уже активен и пользователь хочет включить DeepSearch, выключаем JustifyMode
+                if (v && isJustifyMode) {
+                  setIsJustifyMode(false);
+                }
+                setIsDeepSearchMode(v);
+              }}
+            />
+            <JustifyModeToggle
+              onToggle={() => {}}
+              isJustifyMode={isJustifyMode}
+              setIsJustifyMode={(v) => {
+                // Если DeepSearchMode уже активен и пользователь хочет включить JustifyMode, выключаем DeepSearchMode
+                if (v && isDeepSearchMode) {
+                  setIsDeepSearchMode(false);
+                }
+                setIsJustifyMode(v);
+              }}
+            />
           </div>
 
           <div>

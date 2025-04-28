@@ -3,7 +3,7 @@
 import type { UIMessage } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState } from 'react';
+import { memo, useState, useEffect } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
@@ -110,7 +110,7 @@ const PurePreviewMessage = ({
                                 setMode('edit');
                               }}
                             >
-                              <Pencil size={14} className="size-4 mb-1" />
+                              <PencilEditIcon />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>Edit message</TooltipContent>
@@ -124,7 +124,11 @@ const PurePreviewMessage = ({
                             message.role === 'user',
                         })}
                       >
-                        <Markdown>{part.text}</Markdown>
+                        {message.role === 'assistant' ? (
+                          <TypingText text={part.text} />
+                        ) : (
+                          <Markdown>{part.text}</Markdown>
+                        )}
                       </div>
                     </div>
                   );
@@ -312,3 +316,21 @@ export const ThinkingMessage = memo(() => {
   );
 });
 ThinkingMessage.displayName = 'ThinkingMessage';
+
+// Typing animation for assistant messages
+function TypingText({ text }: { text: string }) {
+  const [displayed, setDisplayed] = useState('');
+  useEffect(() => {
+    setDisplayed('');
+    if (!text) return;
+    const words = text.split(/(\s+)/); // сохраняем пробелы
+    let i = 0;
+    const interval = setInterval(() => {
+      setDisplayed((prev) => prev + words[i]);
+      i++;
+      if (i >= words.length) clearInterval(interval);
+    }, 80); // скорость появления слов
+    return () => clearInterval(interval);
+  }, [text]);
+  return <Markdown>{displayed}</Markdown>;
+}

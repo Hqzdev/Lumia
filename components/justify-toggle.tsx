@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 import { getCookie, setCookie } from '@/lib/utils/cookies'
-import { Lightbulb } from 'lucide-react'
+import { Globe } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Toggle } from '@/components/ui/toggle'
 import {
@@ -71,12 +71,12 @@ export function JustifyModeToggle({ onToggle, isJustifyMode: controlledIsJustify
             transition: 'background 0.3s, color 0.3s, border 0.3s, box-shadow 0.2s, transform 0.15s cubic-bezier(0.4,0,0.2,1)'
           }}
         >
-          <Lightbulb className="size-4" />
-          {width > 768 && <span className="text-xs ml-1">Justify</span>}
+          <Globe className="size-4" />
+          {width > 768 && <span className="text-xs ml-1">Search</span>}
         </Toggle>
       </TooltipTrigger>
       <TooltipContent side="top">
-        Toggle justify mode
+        Toggle search mode
       </TooltipContent>
     </Tooltip>
   )
