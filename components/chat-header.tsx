@@ -4,15 +4,70 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { signOut } from 'next-auth/react';
 
 import { ModelSelector } from '@/components/model-selector';
 import { SidebarToggle } from '@/components/sidebar-toggle';
 import { Button } from '@/components/ui/button';
-import { MessageSquareDiff } from 'lucide-react';
+import { MessageSquareDiff, UserCircle, Compass, Settings2, Settings, ArrowUpCircle, Search, LogOut, Sun, Moon } from 'lucide-react';
 import { useSidebar } from './ui/sidebar';
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { VisibilityType, VisibilitySelector } from './visibility-selector';
+import { SettingsDialog } from './settings-dialog';
+import { UpgradePlanDialog } from './upgrade-plan-dialog';
+import { CustomizeLumiaDialog } from './customize-lumia-dialog';
+
+// Theme switcher component (now returns just a button, no tooltip)
+function ThemeToggleMenuItem() {
+  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    setMounted(true);
+    // Check initial theme
+    if (
+      typeof window !== 'undefined' &&
+      (window.localStorage.getItem('theme') === 'dark' ||
+        (!window.localStorage.getItem('theme') &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches))
+    ) {
+      setTheme('dark');
+      document.documentElement.classList.add('dark');
+    } else {
+      setTheme('light');
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    if (theme === 'light') {
+      setTheme('dark');
+      document.documentElement.classList.add('dark');
+      window.localStorage.setItem('theme', 'dark');
+    } else {
+      setTheme('light');
+      document.documentElement.classList.remove('dark');
+      window.localStorage.setItem('theme', 'light');
+    }
+  };
+
+  if (!mounted) return null;
+
+  return (
+    <DropdownMenuItem onClick={toggleTheme}>
+      {theme === 'dark' ? <Sun className="mr-2 size-4" /> : <Moon className="mr-2 size-4" />}
+      {theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+    </DropdownMenuItem>
+  );
+}
 
 function PureChatHeader({
   chatId,
@@ -30,6 +85,18 @@ function PureChatHeader({
 
   const { width: windowWidth } = useWindowSize();
 
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
+  const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
+
+  // Profile button handler (for now, just go to /profile)
+  const handleProfileClick = () => {
+    router.push('/profile');
+  };
+
+  // Скрывать SidebarToggle и New Chat при открытом сайдбаре на desktop (>=768px)
+  const shouldHideSidebarButtons = open && windowWidth >= 768;
+
   return (
     <header
       className={cn(
@@ -37,67 +104,99 @@ function PureChatHeader({
         open && windowWidth >= 768 ? 'md:ml-[260px]' : 'ml-0'
       )}
     >
-      {/* MOBILE: SidebarToggle left, ModelSelector center, NewChat right */}
-      {windowWidth < 768 ? (
-        <>
-          <div className="flex flex-1 items-center">
+      {/* Всегда: SidebarToggle, ModelSelector, NewChat, Profile (слева направо) */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {!shouldHideSidebarButtons && (
+          <>
             <SidebarToggle />
-          </div>
-          <div className="flex flex-1 justify-center">
-            {!isReadonly && (
-              <ModelSelector
-                selectedModelId={selectedModelId}
-                className="mx-auto"
-              />
-            )}
-          </div>
-          <div className="flex flex-1 justify-end items-center">
-            <Button
-              variant="outline"
-              className="p-0 size-[38px] rounded-xl [&_svg]:size-[22px] text-[#6B7280]"
-              onClick={() => {
-                router.push('/');
-                router.refresh();
-              }}
-            >
-              <MessageSquareDiff />
-            </Button>
-          </div>
-        </>
-      ) : (
-        <>
-          {(!open || windowWidth < 768) && (!openMobile || windowWidth >= 768) && <SidebarToggle />}
-
-          {(!open || windowWidth < 768) && (!openMobile || windowWidth >= 768) && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
-                  className="p-0 size-[38px] rounded-xl hover:text-[#6B7280] hover:bg-gray-200 [&_svg]:size-[22px] text-[#6B7280] ${className}"
+                  className="p-0 size-[38px] rounded-xl hover:text-[#6B7280] hover:bg-gray-200 [&_svg]:size-[22px] text-[#6B7280] ml-2"
                   onClick={() => {
                     router.push('/');
                     router.refresh();
                   }}
+                  aria-label="New Chat"
                 >
                   <MessageSquareDiff />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>New Chat</TooltipContent>
             </Tooltip>
-          )}
-
-          {!isReadonly && (!openMobile || windowWidth >= 768) && (
-            <ModelSelector
-              selectedModelId={selectedModelId}
-              className="order-1 md:order-2"
-            />
-          )}
-        </>
-      )}
+          </>
+        )}
+        {/* Theme toggle button removed from here */}
+        {!isReadonly && (
+          <ModelSelector
+            selectedModelId={selectedModelId}
+            className="ml-2"
+          />
+        )}
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="p-0 size-[38px] rounded-full items-center justify-center [&_svg]:size-[24px] text-[#6B7280]"
+                aria-label="Profile"
+              >
+                <UserCircle />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="bottom">
+              <DropdownMenuItem onClick={() => router.push('/lumia-explore')}>
+                <Compass className="mr-2 size-4" />
+                Explore Lumia
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsCustomizeOpen(true)}>
+                <Settings2 className="mr-2 size-4" />
+                Customize Lumia
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                <Settings className="mr-2 size-4" />
+                Settings
+              </DropdownMenuItem>
+              {/* Theme toggle menu item */}
+             
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setIsUpgradeOpen(true)}>
+                <ArrowUpCircle className="mr-2 size-4" />
+                Upgrade Plan
+              </DropdownMenuItem>
+              <ThemeToggleMenuItem />
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => signOut({ redirect: true, callbackUrl: '/' })}
+                className="text-red-500"
+              >
+                <LogOut className="mr-2 size-4" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+      {/* Spacer to push content to left */}
+      <div className="flex-1" />
+      <SettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
+      <UpgradePlanDialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen} />
+      <CustomizeLumiaDialog open={isCustomizeOpen} onOpenChange={setIsCustomizeOpen} />
     </header>
   );
 }
 
-export const ChatHeader = memo(PureChatHeader, (prevProps, nextProps) => {
-  return prevProps.selectedModelId === nextProps.selectedModelId;
-});
+export const ChatHeader = memo(
+  PureChatHeader,
+  (
+    prevProps: {
+      selectedModelId: string;
+    },
+    nextProps: {
+      selectedModelId: string;
+    }
+  ) => {
+    return prevProps.selectedModelId === nextProps.selectedModelId;
+  }
+);

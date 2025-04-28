@@ -48,7 +48,6 @@ export default function Page() {
   }, [state.status, router]);
 
   const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get('email') as string);
     formAction(formData);
   };
 
@@ -78,7 +77,7 @@ export default function Page() {
             Use your email and <span className="text-blue-600 font-medium">password</span> to sign in
           </p>
         </div>
-        <AuthForm action={handleSubmit} defaultEmail={email}>
+        <AuthForm action={handleSubmit} mode="login">
           <SubmitButton
             isSuccessful={isSuccessful}
             className="bg-blue-600 hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02] text-white"

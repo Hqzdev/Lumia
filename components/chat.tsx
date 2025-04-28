@@ -23,12 +23,14 @@ export const Chat = memo(function Chat({
   selectedChatModel,
   selectedVisibilityType,
   isReadonly,
+  nickname,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
+  nickname?: string;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -83,6 +85,7 @@ export const Chat = memo(function Chat({
           isReadonly={isReadonly}
         />
         <div className={`flex-1 flex flex-col ${messages.length === 0 ? 'justify-center' : ''} pb-28`}>
+          
           <Messages
             chatId={id}
             status={status}
@@ -93,6 +96,7 @@ export const Chat = memo(function Chat({
             isReadonly={isReadonly}
             isArtifactVisible={isArtifactVisible}
             selectedChatModel={selectedChatModel}
+            nickname={nickname}
           />
         </div>
         {!isReadonly && !isArtifactVisible && (

@@ -7,36 +7,56 @@ export function AuthForm({
   action,
   children,
   defaultEmail = '',
+  mode = 'register',
 }: {
   action: NonNullable<
     string | ((formData: FormData) => void | Promise<void>) | undefined
   >;
   children: React.ReactNode;
   defaultEmail?: string;
+  mode?: 'register' | 'login';
 }) {
   return (
     <Form action={action} className="flex flex-col gap-4 px-4 sm:px-16">
+      {mode === 'register' && (
+        <div className="flex flex-col gap-2">
+          <Label
+            htmlFor="email"
+            className="text-gray-600 font-normal dark:text-gray-500"
+          >
+            Email Address
+          </Label>
+          <Input
+            id="email"
+            name="email"
+            className="bg-muted text-md md:text-sm"
+            type="email"
+            placeholder="example@Lumia.com"
+            autoComplete="email"
+            required
+            autoFocus
+            defaultValue={defaultEmail}
+          />
+        </div>
+      )}
       <div className="flex flex-col gap-2">
         <Label
-          htmlFor="email"
+          htmlFor="nickname"
           className="text-gray-600 font-normal dark:text-gray-500"
         >
-          Email Address
+          Nickname
         </Label>
-
         <Input
-          id="email"
-          name="email"
+          id="nickname"
+          name="nickname"
           className="bg-muted text-md md:text-sm"
-          type="email"
-          placeholder="example@Lumia.com"
-          autoComplete="email"
+          type="text"
+          placeholder="your_nickname"
+          autoComplete="username"
           required
-          autoFocus
-          defaultValue={defaultEmail}
+          autoFocus={mode === 'login'}
         />
       </div>
-
       <div className="flex flex-col gap-2">
         <Label
           htmlFor="password"
@@ -44,7 +64,6 @@ export function AuthForm({
         >
           Password
         </Label>
-
         <Input
           id="password"
           name="password"
@@ -54,7 +73,6 @@ export function AuthForm({
           required
         />
       </div>
-
       {children}
     </Form>
   );

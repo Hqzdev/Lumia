@@ -18,6 +18,7 @@ interface MessagesProps {
   isReadonly: boolean;
   isArtifactVisible: boolean;
   selectedChatModel: string;
+  nickname?: string;
 }
 
 function PureMessages({
@@ -29,6 +30,7 @@ function PureMessages({
   reload,
   isReadonly,
   selectedChatModel,
+  nickname,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -38,7 +40,7 @@ function PureMessages({
       ref={messagesContainerRef}
       className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
     >
-      {messages.length === 0 && <Overview />}
+      {messages.length === 0 && <Overview nickname={nickname} />}
       <AnimatePresence initial={false}>
         {messages.map((message, index) => (
           <motion.div

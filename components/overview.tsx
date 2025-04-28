@@ -4,10 +4,20 @@ import { useEffect, useState, useRef } from 'react';
 
 // Фразы с выделением слов в <>
 const phrases = [
-  "How can I help you?",
-  "What would you like to learn today?",
-  "Ask me anything, I'm here to assist!"
+  "How can I assist you?",
+  "What are you curious about?",
+  "Ask me anything, I'm ready!",
+  "Need help with something?",
+  "What's on your mind?",
+  "Looking for advice?",
+  "How can I support you?",
+  "What can I do for you?",
+  "Ready when you are!",
+  "Let's find the answer together!",
+  "Designed by Motay",
+  "Made by HT",
 ];
+
 
 // Функция для парсинга строки с <...> и возвращения массива React-элементов
 function parsePhraseWithBlue(text: string) {
@@ -37,7 +47,7 @@ function parsePhraseWithBlue(text: string) {
   return result;
 }
 
-export const Overview = () => {
+export const Overview = ({ nickname }: { nickname?: string }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [currentPhraseIdx, setCurrentPhraseIdx] = useState(0);
   const [displayedText, setDisplayedText] = useState('');
@@ -101,20 +111,41 @@ export const Overview = () => {
       key="overview"
       className="max-w-5xl mx-auto md:mt-32 px-4 size-full flex flex-col justify-center items-center"
     >
+      {nickname && (
+        <div
+          className="mb-4 font-extrabold flex items-center justify-center"
+          style={{
+            fontSize: isMobile ? '2.8rem' : '2.2rem',
+            lineHeight: 1.1,
+            letterSpacing: '0.01em',
+          }}
+        >
+          <span className="text-gray-600 mr-2">Hi,</span>
+          <span
+            className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+            style={{
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: '0 2px 16px #5050ff',
+            }}
+          >
+            {nickname}
+          </span>
+        </div>
+      )}
       <div
         className={`flex gap-[2px] ${textSize} font-bold justify-center mb-8`}
         style={{ lineHeight: 1.05, minHeight: isMobile ? 40 : 36 }}
       >
         <span
-          className="text-blue-600"
+          className="text-gray-600"
           style={{
-            WebkitTextStroke: ' #2563eb', // Tailwind blue-600
-            color: '#2563eb', // Tailwind blue-600
+            color: '#505050',
             letterSpacing: '0.01em',
-            transition: 'color 0.2s'
+            transition: 'color 0.2s',
           }}
         >
-          {parsePhraseWithBlue(displayedText)}
+          {displayedText}
         </span>
         <span
           className="ml-1"

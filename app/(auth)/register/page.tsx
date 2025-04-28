@@ -35,6 +35,8 @@ export default function Page() {
     // Обработка различных состояний (ошибок, успеха и т.д.)
     if (state.status === 'user_exists') {
       toast({ type: 'error', description: 'Account already exists!' });
+    } else if (state.status === 'nickname_exists') {
+      toast({ type: 'error', description: 'Nickname already taken!' });
     } else if (state.status === 'failed') {
       toast({ type: 'error', description: 'Failed to create account!' });
     } else if (state.status === 'invalid_data') {
@@ -85,7 +87,7 @@ export default function Page() {
         </div>
 
         {/* Форма, которая внутри отрисует Email, Password, Nickname и т.д. */}
-        <AuthForm action={handleSubmit} defaultEmail={email}>
+        <AuthForm action={handleSubmit} defaultEmail={email} mode="register">
           {/* Submit-кнопка */}
           <SubmitButton
             isSuccessful={isSuccessful}

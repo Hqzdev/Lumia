@@ -1,13 +1,33 @@
 import { compare } from 'bcrypt-ts';
 import NextAuth, { type User, type Session } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import 'next-auth';
 
-import { getUser } from '@/lib/db/queries';
-
+import { getUserByNickname } from '@/lib/db/queries';
 import { authConfig } from './auth.config';
+import { DefaultSession } from 'next-auth';
+
+interface ExtendedUser extends User {
+  id: string;
+  nickname: string;
+}
 
 interface ExtendedSession extends Session {
-  user: User;
+  user: ExtendedUser;
+}
+
+declare module 'next-auth' {
+  interface User {
+    id?: string;
+    nickname: string;
+  }
+
+  interface Session {
+    user: {
+      id?: string;
+      nickname: string;
+    } & DefaultSession["user"];
+  }
 }
 
 export const {
@@ -20,13 +40,26 @@ export const {
   providers: [
     Credentials({
       credentials: {},
-      async authorize({ email, password }: any) {
-        const users = await getUser(email);
+      async authorize(credentials) {
+        const { nickname, password } = credentials as { nickname: string; password: string };
+
+        const users = await getUserByNickname(nickname);
+
         if (users.length === 0) return null;
-        // biome-ignore lint: Forbidden non-null assertion.
-        const passwordsMatch = await compare(password, users[0].password!);
+
+        const user = users[0];
+
+        if (!user || !user.password) return null;
+
+        const passwordsMatch = await compare(password, user.password);
         if (!passwordsMatch) return null;
-        return users[0] as any;
+
+        // Важно: вернуть только нужные поля
+        return {
+          id: user.id,
+          nickname: user.nickname,
+          email: user.email,
+        } as ExtendedUser;
       },
     }),
   ],
@@ -34,21 +67,15 @@ export const {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.nickname = user.nickname;
       }
-
       return token;
     },
-    async session({
-      session,
-      token,
-    }: {
-      session: ExtendedSession;
-      token: any;
-    }) {
+    async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.nickname = token.nickname as string;
       }
-
       return session;
     },
   },
