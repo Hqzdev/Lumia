@@ -10,7 +10,15 @@ import {
 } from '@/components/ui/tooltip'
 import { useWindowSize } from 'usehooks-ts'
 
-export function JustifyModeToggle({ onToggle, isJustifyMode: controlledIsJustifyMode, setIsJustifyMode: controlledSetIsJustifyMode }: { onToggle?: () => void, isJustifyMode?: boolean, setIsJustifyMode?: (v: boolean) => void }) {
+export function JustifyModeToggle({
+  onToggle,
+  isJustifyMode: controlledIsJustifyMode,
+  setIsJustifyMode: controlledSetIsJustifyMode,
+}: {
+  onToggle?: () => void,
+  isJustifyMode?: boolean,
+  setIsJustifyMode?: (v: boolean) => void
+}) {
   const [uncontrolledIsJustifyMode, setUncontrolledIsJustifyMode] = useState(true)
   const isControlled = controlledIsJustifyMode !== undefined && controlledSetIsJustifyMode !== undefined;
   const isJustifyMode = isControlled ? controlledIsJustifyMode : uncontrolledIsJustifyMode;
@@ -76,4 +84,18 @@ export function JustifyModeToggle({ onToggle, isJustifyMode: controlledIsJustify
           }}
         >
           <Globe className="size-4" />
-          {(isExpanded || width >
+          {(isExpanded || width > 768) && (
+            <span className="ml-2 text-sm font-medium">
+              Justify
+            </span>
+          )}
+        </Toggle>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" align="center">
+        {isJustifyMode
+          ? 'Justify mode is ON. Answers will be explained and reasoned.'
+          : 'Justify mode is OFF. Toggle to enable detailed explanations.'}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
