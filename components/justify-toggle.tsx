@@ -85,22 +85,15 @@ export function JustifyModeToggle({
         >
           <Globe className="size-4" />
           {(isExpanded || width > 768) && (
-
             <span className="ml-2 text-xs font-medium">
               Search
-            <span className="ml-2 text-sm font-medium">
-              Justify
-
             </span>
           )}
         </Toggle>
       </TooltipTrigger>
       <TooltipContent side="bottom" align="center">
         {isJustifyMode
-
           ? 'Search on the net'
-
-          ? 'Justify mode is ON. Answers will be explained and reasoned.'
           : 'Justify mode is OFF. Toggle to enable detailed explanations.'}
       </TooltipContent>
     </Tooltip>

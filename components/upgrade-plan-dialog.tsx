@@ -41,13 +41,8 @@ const pricingTiers = [
     popular: true,
     buttonText: "Upgrade Now",
     buttonLink: "/signup",
-<<<<<<< HEAD
     icon: "P",
     dbValue: "premium",
-=======
-    icon: "S",
-    dbValue: "starter",
->>>>>>> 933fd8e9341def672de6959d543b9fd4fcffda2d
     features: [
       { name: "Access to all latest models (Lumia V4, GPT-4, etc.)", included: true },
       { name: "Image analysis & file uploads", included: true },
@@ -63,7 +58,6 @@ const pricingTiers = [
   },
   {
     id: 3,
-<<<<<<< HEAD
     name: "Team",
     price: "$25+",
     period: "/month/user",
@@ -82,69 +76,6 @@ const pricingTiers = [
       { name: "Admin controls & permissions", included: true },
       { name: "Best for business & startups", included: true },
       { name: "Custom pricing for large teams", included: true },
-=======
-    name: "Starter Plus",
-    price: "$16",
-    period: "/month",
-    leads: "1,000",
-    popular: true,
-    buttonText: "Get Started",
-    buttonLink: "/signup",
-    icon: "S+",
-    dbValue: "starter_plus",
-    features: [
-      { name: "Free Lumia addresses on a shared domain", included: true },
-      { name: "275+ million leads available", included: true },
-      { name: "AI-powered messaging and personalization", included: true },
-      { name: "AI-powered with CERT", included: true },
-      { name: "Email setup by Lumia", included: true },
-      { name: "Upload leads via API/csv or a CSV file", included: true },
-      { name: "Personalized video landing pages", included: true },
-    ],
-  },
-  {
-    id: 4,
-    name: "Premium",
-    price: "$25",
-    period: "/month",
-    leads: "2,500",
-    popular: false,
-    buttonText: "Get Started",
-    buttonLink: "/signup",
-    icon: "P",
-    dbValue: "premium",
-    features: [
-      { name: "Free Lumia addresses on a shared domain", included: true },
-      { name: "275+ million leads available", included: true },
-      { name: "AI-powered messaging and personalization", included: true },
-      { name: "AI-powered with CERT", included: true },
-      { name: "Email setup by Lumia", included: true },
-      { name: "Upload leads via API/csv or a CSV file", included: true },
-      { name: "Personalized video landing pages", included: true },
-      { name: "Advanced analytics dashboard", included: true },
-    ],
-  },
-  {
-    id: 5,
-    name: "Ultimate",
-    price: "$50",
-    period: "/month",
-    leads: "5,000",
-    popular: false,
-    buttonText: "Get Started",
-    buttonLink: "/signup",
-    icon: "U",
-    dbValue: "ultimate",
-    features: [
-      { name: "Free Lumia addresses on a shared domain", included: true },
-      { name: "275+ million leads available", included: true },
-      { name: "AI-powered messaging and personalization", included: true },
-      { name: "AI-powered with CERT", included: true },
-      { name: "Email setup by Lumia", included: true },
-      { name: "Upload leads via API/csv or a CSV file", included: true },
-      { name: "Personalized video landing pages", included: true },
-      { name: "Advanced analytics dashboard", included: true },
->>>>>>> 933fd8e9341def672de6959d543b9fd4fcffda2d
       { name: "Dedicated account manager", included: true },
     ],
   },
@@ -152,21 +83,11 @@ const pricingTiers = [
 
 const getIconComponent = (tierName: string) => {
   switch (tierName) {
-<<<<<<< HEAD
     case "Free":
-=======
-    case "Starter":
->>>>>>> 933fd8e9341def672de6959d543b9fd4fcffda2d
       return <Zap className="w-6 h-6 text-green-500" />;
-    case "Starter Plus":
-      return <Star className="w-6 h-6 text-yellow-500" />;
     case "Premium":
       return <Award className="w-6 h-6 text-purple-500" />;
-<<<<<<< HEAD
     case "Team":
-=======
-    case "Ultimate":
->>>>>>> 933fd8e9341def672de6959d543b9fd4fcffda2d
       return <Crown className="w-6 h-6 text-red-500" />;
     default:
       return null;
@@ -179,7 +100,6 @@ export function UpgradePlanDialog({ open, onOpenChange, userId }: { open: boolea
   const currentSubscription = session?.user?.subscription ?? null;
   const [localSubscription, setLocalSubscription] = useState<string | null>(null);
 
-<<<<<<< HEAD
   // При монтировании: если есть подписка в localStorage — используем её
   useEffect(() => {
     const saved = localStorage.getItem('selectedSubscription');
@@ -191,23 +111,6 @@ export function UpgradePlanDialog({ open, onOpenChange, userId }: { open: boolea
     setSelectedPlan(planName);
     setLocalSubscription(dbValue);
     localStorage.setItem('selectedSubscription', dbValue);
-=======
-  // При монтировании: если нет подписки в session, пробуем взять из localStorage
-  useEffect(() => {
-    if (!session?.user?.subscription) {
-      const saved = localStorage.getItem('selectedSubscription');
-      if (saved) setLocalSubscription(saved);
-    }
-  }, [session?.user?.subscription]);
-
-  async function handleSelectPlan(planName: string, dbValue: string) {
-    setSelectedPlan(planName);
-    setLocalSubscription(dbValue);
-    localStorage.setItem('selectedSubscription', dbValue);
-    console.log("Вы выбрали подписку:", planName);
-    console.log("userId:", userId);
-    console.log("subscription (отправляется в БД):", dbValue);
->>>>>>> 933fd8e9341def672de6959d543b9fd4fcffda2d
     try {
       const res = await fetch("/api/upgrade-subscription", {
         method: "POST",
@@ -218,24 +121,10 @@ export function UpgradePlanDialog({ open, onOpenChange, userId }: { open: boolea
       const data = await res.json();
       console.log('response data:', data);
       if (res.ok) {
-<<<<<<< HEAD
         console.log('Subscription updated, refreshing session...');
         // Можно очистить localStorage, если хотите, чтобы всегда бралась из БД после обновления
         // localStorage.removeItem('selectedSubscription');
         window.location.reload();
-=======
-        console.log("Подписка успешно обновлена в БД");
-        // Принудительно обновляем сессию через signIn
-        if (session?.user?.nickname) {
-          await signIn("credentials", {
-            redirect: false,
-            nickname: session.user.nickname,
-            password: "__force_refresh__"
-          });
-        } else {
-          window.location.reload();
-        }
->>>>>>> 933fd8e9341def672de6959d543b9fd4fcffda2d
       } else {
         console.error("Ошибка при обновлении подписки", data);
       }
@@ -289,7 +178,6 @@ export function UpgradePlanDialog({ open, onOpenChange, userId }: { open: boolea
                 <button
                   className={cn(
                     "block w-full text-center py-2 px-4 rounded-lg font-medium transition-colors border",
-<<<<<<< HEAD
                     activeSubscription === tier.dbValue
                       ? "bg-white border-blue-600 text-blue-600"
                       : "bg-blue-600 text-white border-transparent hover:bg-blue-700"
@@ -300,15 +188,6 @@ export function UpgradePlanDialog({ open, onOpenChange, userId }: { open: boolea
                   }}
                 >
                   {activeSubscription === tier.dbValue ? "Current Plan" : tier.buttonText}
-=======
-                    (localSubscription ?? currentSubscription) === tier.dbValue
-                      ? "bg-white border-blue-600 text-blue-600"
-                      : "bg-blue-600 text-white border-transparent hover:bg-blue-700"
-                  )}
-                  onClick={() => handleSelectPlan(tier.name, tier.dbValue)}
-                >
-                  {(localSubscription ?? currentSubscription) === tier.dbValue ? "Current Plan" : tier.buttonText}
->>>>>>> 933fd8e9341def672de6959d543b9fd4fcffda2d
                 </button>
               </CardContent>
             </Card>
