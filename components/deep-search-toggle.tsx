@@ -13,6 +13,7 @@ import { useWindowSize } from 'usehooks-ts'
 export function DeepSearchToggle({ isDeepSearchMode, setIsDeepSearchMode }: { isDeepSearchMode: boolean; setIsDeepSearchMode: (v: boolean) => void }) {
   const { width } = useWindowSize();
   const [isPressed, setIsPressed] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleDeepSearchModeChange = (pressed: boolean) => {
     setIsDeepSearchMode(pressed);
@@ -23,13 +24,18 @@ export function DeepSearchToggle({ isDeepSearchMode, setIsDeepSearchMode }: { is
     }
   };
 
-  // Сброс анимации после окончания transition
   useEffect(() => {
     if (isPressed) {
       const timeout = setTimeout(() => setIsPressed(false), 200);
       return () => clearTimeout(timeout);
     }
   }, [isPressed]);
+
+  useEffect(() => {
+    if (width > 768) {
+      setIsExpanded(true); // На больших экранах всегда развернуто
+    }
+  }, [width]);
 
   return (
     <Tooltip>
@@ -39,30 +45,29 @@ export function DeepSearchToggle({ isDeepSearchMode, setIsDeepSearchMode }: { is
           pressed={isDeepSearchMode}
           onPressedChange={(pressed) => {
             setIsPressed(true);
+            setIsExpanded(true); // При нажатии расширяется
             handleDeepSearchModeChange(pressed);
           }}
           className={cn(
-            'gap-0.5 px-3 py-1 rounded-full ml-2 border transition-all duration-300',
+            'gap-0.5 py-1 rounded-full ml-2 border transition-all duration-300 flex items-center justify-center',
             isDeepSearchMode
               ? 'bg-blue-100 text-blue-600 border-blue-100 hover:bg-blue-200 hover:text-blue-700'
               : 'bg-background text-muted-foreground border-gray-200',
-            // Добавляем анимацию нажатия
             isPressed ? 'scale-95 shadow-md' : 'scale-100',
-            'active:scale-95',
-            'focus:outline-none',
-            'transform'
+            'active:scale-95 focus:outline-none transform',
+            width <= 768 ? (isExpanded ? 'w-28 px-3' : 'w-9 px-0') : 'w-28 px-3'
           )}
           style={{
-            transition: 'background 0.3s, color 0.3s, border 0.3s, box-shadow 0.2s, transform 0.15s cubic-bezier(0.4,0,0.2,1)'
+            transition: 'all 0.3s ease',
           }}
         >
           <Telescope className="size-4" />
-          {width > 768 && <span className="text-xs ml-1">Research</span>}
+          {(isExpanded || width > 768) && <span className="text-xs ml-1">Research</span>}
         </Toggle>
       </TooltipTrigger>
       <TooltipContent side="top">
        Deep research
       </TooltipContent>
     </Tooltip>
-  )
+  );
 }
