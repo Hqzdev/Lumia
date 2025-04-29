@@ -71,14 +71,19 @@ const PureChatItem = ({
   onDelete,
   setOpenMobile,
   onRename,
-}: PureChatItemProps) => {
+  hoveredId,
+  setHoveredId,
+}: PureChatItemProps & { hoveredId?: string | null; setHoveredId?: (id: string | null) => void }) => {
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
     initialVisibility: chat.visibility,
   });
 
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem
+      onMouseEnter={() => setHoveredId && setHoveredId(chat.id)}
+      onMouseLeave={() => setHoveredId && setHoveredId(null)}
+    >
       <SidebarMenuButton asChild isActive={isActive}>
         <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
           <span>{chat.title}</span>
@@ -88,7 +93,10 @@ const PureChatItem = ({
       <DropdownMenu modal={true}>
         <DropdownMenuTrigger asChild>
           <SidebarMenuAction
-            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground mr-0.5"
+            className={
+              `mr-0.5 transition-opacity duration-200 bg-transparent hover:bg-transparent focus:bg-transparent text-sidebar-foreground ` +
+              (hoveredId === chat.id ? 'opacity-100' : 'opacity-0')
+            }
             showOnHover={!isActive}
           >
             <MoreHorizontalIcon />
@@ -176,6 +184,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   // Rename dialog state
   const [renameChat, setRenameChat] = useState<Chat | null>(null);
@@ -351,6 +360,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                               setRenameChat(chat);
                               setRenameValue(chat.title);
                             }}
+                            hoveredId={hoveredId}
+                            setHoveredId={setHoveredId}
                           />
                         ))}
                       </>
@@ -375,6 +386,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                               setRenameChat(chat);
                               setRenameValue(chat.title);
                             }}
+                            hoveredId={hoveredId}
+                            setHoveredId={setHoveredId}
                           />
                         ))}
                       </>
@@ -399,6 +412,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                               setRenameChat(chat);
                               setRenameValue(chat.title);
                             }}
+                            hoveredId={hoveredId}
+                            setHoveredId={setHoveredId}
                           />
                         ))}
                       </>
@@ -423,6 +438,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                               setRenameChat(chat);
                               setRenameValue(chat.title);
                             }}
+                            hoveredId={hoveredId}
+                            setHoveredId={setHoveredId}
                           />
                         ))}
                       </>
@@ -447,6 +464,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                               setRenameChat(chat);
                               setRenameValue(chat.title);
                             }}
+                            hoveredId={hoveredId}
+                            setHoveredId={setHoveredId}
                           />
                         ))}
                       </>
