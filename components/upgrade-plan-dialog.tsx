@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Check, X, Zap, Star, Award, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSession, signIn } from "next-auth/react";
 
 const pricingTiers = [
   {
@@ -17,6 +18,7 @@ const pricingTiers = [
     buttonText: "Get Started",
     buttonLink: "/signup",
     icon: "F",
+    dbValue: "free",
     features: [
       { name: "Free Lumia addresses on a shared domain", included: true },
       { name: "275+ million leads available", included: true },
@@ -37,6 +39,7 @@ const pricingTiers = [
     buttonText: "Get Started",
     buttonLink: "/signup",
     icon: "S",
+    dbValue: "starter",
     features: [
       { name: "Free Lumia addresses on a shared domain", included: true },
       { name: "275+ million leads available", included: true },
@@ -57,6 +60,7 @@ const pricingTiers = [
     buttonText: "Get Started",
     buttonLink: "/signup",
     icon: "S+",
+    dbValue: "starter_plus",
     features: [
       { name: "Free Lumia addresses on a shared domain", included: true },
       { name: "275+ million leads available", included: true },
@@ -77,6 +81,7 @@ const pricingTiers = [
     buttonText: "Get Started",
     buttonLink: "/signup",
     icon: "P",
+    dbValue: "premium",
     features: [
       { name: "Free Lumia addresses on a shared domain", included: true },
       { name: "275+ million leads available", included: true },
@@ -98,6 +103,7 @@ const pricingTiers = [
     buttonText: "Get Started",
     buttonLink: "/signup",
     icon: "U",
+    dbValue: "ultimate",
     features: [
       { name: "Free Lumia addresses on a shared domain", included: true },
       { name: "275+ million leads available", included: true },
@@ -116,13 +122,13 @@ const pricingTiers = [
 const getIconComponent = (tierName: string) => {
   switch (tierName) {
     case "Starter":
-      return <Zap className="w-6 h-6 text-blue-500" />;
+      return <Zap className="w-6 h-6 text-green-500" />;
     case "Starter Plus":
-      return <Star className="w-6 h-6 text-blue-500" />;
+      return <Star className="w-6 h-6 text-yellow-500" />;
     case "Premium":
-      return <Award className="w-6 h-6 text-blue-500" />;
+      return <Award className="w-6 h-6 text-purple-500" />;
     case "Ultimate":
-      return <Crown className="w-6 h-6 text-blue-500" />;
+      return <Crown className="w-6 h-6 text-red-500" />;
     default:
       return null;
   }
@@ -130,23 +136,45 @@ const getIconComponent = (tierName: string) => {
 
 export function UpgradePlanDialog({ open, onOpenChange, userId }: { open: boolean, onOpenChange: (open: boolean) => void, userId: string }) {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const currentSubscription = session?.user?.subscription ?? null;
+  const [localSubscription, setLocalSubscription] = useState<string | null>(null);
 
-  async function handleSelectPlan(planName: string) {
+  // При монтировании: если нет подписки в session, пробуем взять из localStorage
+  useEffect(() => {
+    if (!session?.user?.subscription) {
+      const saved = localStorage.getItem('selectedSubscription');
+      if (saved) setLocalSubscription(saved);
+    }
+  }, [session?.user?.subscription]);
+
+  async function handleSelectPlan(planName: string, dbValue: string) {
     setSelectedPlan(planName);
+    setLocalSubscription(dbValue);
+    localStorage.setItem('selectedSubscription', dbValue);
     console.log("Вы выбрали подписку:", planName);
     console.log("userId:", userId);
-    const subscription = planName.toLowerCase().replace(" ", "_");
-    console.log("subscription (отправляется в БД):", subscription);
+    console.log("subscription (отправляется в БД):", dbValue);
     try {
       const res = await fetch("/api/upgrade-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, subscription }),
+        body: JSON.stringify({ userId, subscription: dbValue }),
       });
       const data = await res.json();
       console.log("Ответ сервера:", data);
       if (res.ok) {
         console.log("Подписка успешно обновлена в БД");
+        // Принудительно обновляем сессию через signIn
+        if (session?.user?.nickname) {
+          await signIn("credentials", {
+            redirect: false,
+            nickname: session.user.nickname,
+            password: "__force_refresh__"
+          });
+        } else {
+          window.location.reload();
+        }
       } else {
         console.error("Ошибка при обновлении подписки", data);
       }
@@ -194,13 +222,13 @@ export function UpgradePlanDialog({ open, onOpenChange, userId }: { open: boolea
                 <button
                   className={cn(
                     "block w-full text-center py-2 px-4 rounded-lg font-medium transition-colors border",
-                    selectedPlan === tier.name
+                    (localSubscription ?? currentSubscription) === tier.dbValue
                       ? "bg-white border-blue-600 text-blue-600"
                       : "bg-blue-600 text-white border-transparent hover:bg-blue-700"
                   )}
-                  onClick={() => handleSelectPlan(tier.name)}
+                  onClick={() => handleSelectPlan(tier.name, tier.dbValue)}
                 >
-                  {selectedPlan === tier.name ? "Selected" : tier.buttonText}
+                  {(localSubscription ?? currentSubscription) === tier.dbValue ? "Current Plan" : tier.buttonText}
                 </button>
               </CardContent>
             </Card>

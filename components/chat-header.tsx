@@ -16,7 +16,7 @@ import { signOut, useSession } from 'next-auth/react';
 import { ModelSelector } from '@/components/model-selector';
 import { SidebarToggle } from '@/components/sidebar-toggle';
 import { Button } from '@/components/ui/button';
-import { MessageSquareDiff, UserCircle, Compass, Settings2, Settings, ArrowUpCircle, Search, LogOut, Sun, Moon } from 'lucide-react';
+import { MessageSquareDiff, UserCircle, Compass, Settings2, Settings, ArrowUpCircle, Search, LogOut, Sun, Moon, Zap, Star, Award, Crown } from 'lucide-react';
 import { useSidebar } from './ui/sidebar';
 import { memo, useState, useEffect } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
@@ -69,6 +69,22 @@ function ThemeToggleMenuItem() {
   );
 }
 
+// Функция для выбора иконки по подписке
+function getProfileIconBySubscription(subscription: string | null | undefined) {
+  switch (subscription) {
+    case 'starter':
+      return <Zap className="text-blue-500" />;
+    case 'starter_plus':
+      return <Star className="text-blue-500" />;
+    case 'premium':
+      return <Award className="text-blue-500" />;
+    case 'ultimate':
+      return <Crown className="text-blue-500" />;
+    default:
+      return <UserCircle />;
+  }
+}
+
 function PureChatHeader({
   chatId,
   selectedModelId,
@@ -90,6 +106,7 @@ function PureChatHeader({
   // Получаем userId из сессии
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const userSubscription = session?.user?.subscription ?? (typeof window !== 'undefined' ? localStorage.getItem('selectedSubscription') : null);
 
   // Profile button handler (for now, just go to /profile)
   const handleProfileClick = () => {
@@ -102,7 +119,8 @@ function PureChatHeader({
   return (
     <header
       className={cn(
-        'flex fixed top-0 left-0 w-full z-50 bg-background py-2 items-center px-3 md:px-4 gap-3 shadow-sm transition-all duration-300 h-[56px]',
+        // removed border utility classes if any existed (none present)
+        'flex fixed top-0 left-0 w-full z-50 py-2 items-center px-3 md:px-4 gap-3 shadow-sm transition-all duration-300 h-[56px]',
         open && windowWidth >= 768 ? 'md:ml-[260px]' : 'ml-0'
       )}
     >
@@ -155,7 +173,7 @@ function PureChatHeader({
                     className="p-0 size-[38px] rounded-xl hover:text-[#6B7280] hover:bg-gray-200 [&_svg]:size-[22px] text-[#6B7280] ml-2"
                     aria-label="Profile"
                   >
-                    <UserCircle />
+                    {getProfileIconBySubscription(userSubscription)}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" side="bottom">

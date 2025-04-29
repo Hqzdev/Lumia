@@ -81,9 +81,11 @@ export async function POST(request: Request) {
 
     return createDataStreamResponse({
       execute: (dataStream) => {
+        const sysPrompt = systemPrompt({ selectedChatModel });
+        const system = typeof sysPrompt === 'function' ? sysPrompt() : sysPrompt;
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel }),
+          system,
           messages,
           maxSteps: 5,
           experimental_activeTools:

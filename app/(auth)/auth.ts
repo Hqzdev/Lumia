@@ -10,6 +10,7 @@ import { DefaultSession } from 'next-auth';
 interface ExtendedUser extends User {
   id: string;
   nickname: string;
+  subscription: string;
 }
 
 interface ExtendedSession extends Session {
@@ -20,12 +21,14 @@ declare module 'next-auth' {
   interface User {
     id?: string;
     nickname: string;
+    subscription?: string;
   }
 
   interface Session {
     user: {
       id?: string;
       nickname: string;
+      subscription?: string;
     } & DefaultSession["user"];
   }
 }
@@ -59,6 +62,7 @@ export const {
           id: user.id,
           nickname: user.nickname,
           email: user.email,
+          subscription: user.subscription,
         } as ExtendedUser;
       },
     }),
@@ -68,6 +72,7 @@ export const {
       if (user) {
         token.id = user.id;
         token.nickname = user.nickname;
+        token.subscription = user.subscription;
       }
       return token;
     },
@@ -75,6 +80,7 @@ export const {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.nickname = token.nickname as string;
+        session.user.subscription = token.subscription as string;
       }
       return session;
     },

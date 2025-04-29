@@ -26,7 +26,9 @@ export function SidebarUserNav({ user }: { user: User }) {
             <span className="text-xs text-muted-foreground">Get more access to best features</span>
           </div>
         </SidebarMenuButton>
-        <UpgradePlanDialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen} />
+        {user.id && (
+          <UpgradePlanDialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen} userId={user.id} />
+        )}
       </SidebarMenuItem>
     </SidebarMenu>
   );

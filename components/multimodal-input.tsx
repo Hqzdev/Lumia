@@ -18,6 +18,7 @@ import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useArtifactSelector, useArtifact } from '@/hooks/use-artifact';
 import { cn } from '@/lib/utils';
+import { useSession } from 'next-auth/react';
 
 import { ArrowUpIcon, StopIcon } from './icons';
 import { ArrowUp, Square, Paperclip, Search, Lightbulb, PlusIcon, MessageSquareDiff, Globe, Paintbrush, Image, SearchCheck } from 'lucide-react';
@@ -75,6 +76,9 @@ function PureMultimodalInput({
   const { open, openMobile } = useSidebar();
   const [isJustifyMode, setIsJustifyMode] = useState(true);
   const [isDeepSearchMode, setIsDeepSearchMode] = useState(false);
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+  const [customization, setCustomization] = useState<any>(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -117,6 +121,19 @@ function PureMultimodalInput({
     setLocalStorageInput(input);
   }, [input, setLocalStorageInput]);
 
+  useEffect(() => {
+    if (userId) {
+      fetch(`/api/user-profile?userId=${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          setCustomization(data.customization || null);
+        })
+        .catch(err => {
+          console.error('[MultimodalInput] Error fetching customization:', err);
+        });
+    }
+  }, [userId]);
+
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
     setInput(value);
@@ -142,6 +159,8 @@ function PureMultimodalInput({
       systemPrompt = justifyPrompt;
     } else if (isDeepSearchMode) {
       systemPrompt = deepSearchPrompt;
+    } else {
+      systemPrompt = regularPrompt(customization);
     }
     if (systemPrompt) {
       console.log('systemPrompt для ИИ:', systemPrompt);
@@ -158,7 +177,7 @@ function PureMultimodalInput({
     }
     // Лог финального сообщения
     console.log('Отправлен в ИИ (только пользовательский текст):', userPrompt);
-  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isJustifyMode, isSearchMode, isDeepSearchMode, setInput]);
+  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isJustifyMode, isSearchMode, isDeepSearchMode, setInput, customization]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
