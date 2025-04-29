@@ -72,12 +72,22 @@ function ThemeToggleMenuItem() {
 // Функция для выбора иконки по подписке
 function getProfileIconBySubscription(subscription: string | null | undefined) {
   switch (subscription) {
+<<<<<<< HEAD
     case 'Free':
       return <Zap className="text-blue-500" />;
   
     case 'premium':
       return <Award className="text-blue-500" />;
     case 'Team':
+=======
+    case 'starter':
+      return <Zap className="text-blue-500" />;
+    case 'starter_plus':
+      return <Star className="text-blue-500" />;
+    case 'premium':
+      return <Award className="text-blue-500" />;
+    case 'ultimate':
+>>>>>>> 933fd8e9341def672de6959d543b9fd4fcffda2d
       return <Crown className="text-blue-500" />;
     default:
       return <UserCircle />;
@@ -105,6 +115,7 @@ function PureChatHeader({
   // Получаем userId из сессии
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const userSubscription = session?.user?.subscription ?? (typeof window !== 'undefined' ? localStorage.getItem('selectedSubscription') : null);
 
   // Локальный стейт для подписки (для мгновенного обновления иконки)
   const [localSubscription, setLocalSubscription] = useState<string | null>(
