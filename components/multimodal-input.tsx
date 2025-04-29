@@ -18,6 +18,7 @@ import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useArtifactSelector, useArtifact } from '@/hooks/use-artifact';
 import { cn } from '@/lib/utils';
+import { useSession } from 'next-auth/react';
 
 import { ArrowUpIcon, StopIcon } from './icons';
 import { ArrowUp, Square, Paperclip, Search, Lightbulb, PlusIcon, MessageSquareDiff, Globe, Paintbrush, Image, SearchCheck } from 'lucide-react';
@@ -75,6 +76,9 @@ function PureMultimodalInput({
   const { open, openMobile } = useSidebar();
   const [isJustifyMode, setIsJustifyMode] = useState(true);
   const [isDeepSearchMode, setIsDeepSearchMode] = useState(false);
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+  const [customization, setCustomization] = useState<any>(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -117,6 +121,19 @@ function PureMultimodalInput({
     setLocalStorageInput(input);
   }, [input, setLocalStorageInput]);
 
+  useEffect(() => {
+    if (userId) {
+      fetch(`/api/user-profile?userId=${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          setCustomization(data.customization || null);
+        })
+        .catch(err => {
+          console.error('[MultimodalInput] Error fetching customization:', err);
+        });
+    }
+  }, [userId]);
+
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
     setInput(value);
@@ -142,6 +159,8 @@ function PureMultimodalInput({
       systemPrompt = justifyPrompt;
     } else if (isDeepSearchMode) {
       systemPrompt = deepSearchPrompt;
+    } else {
+      systemPrompt = regularPrompt(customization);
     }
     if (systemPrompt) {
       console.log('systemPrompt для ИИ:', systemPrompt);
@@ -158,7 +177,7 @@ function PureMultimodalInput({
     }
     // Лог финального сообщения
     console.log('Отправлен в ИИ (только пользовательский текст):', userPrompt);
-  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isJustifyMode, isSearchMode, isDeepSearchMode, setInput]);
+  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isJustifyMode, isSearchMode, isDeepSearchMode, setInput, customization]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
@@ -216,12 +235,12 @@ function PureMultimodalInput({
   return (
     <div
       className={cn(
-        'fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full max-w-[800px] z-40 bg-white flex flex-col justify-center items-center transition-all duration-300',
+        'fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full max-w-[800px] z-40 bg-white dark:bg-black flex flex-col justify-center items-center transition-all duration-300',
         open && width >= 768 && !openMobile && 'md:ml-[130px]', // половина ширины сайдбара
         messages.length === 0 ? 'md:bottom-[30px] bottom-0' : 'bottom-0' // Поднимаем контейнер выше только на десктопе
       )}
     >
-      <div className="relative w-full max-w-2xl flex flex-col gap-4 rounded-[30px] bg-white shadow-lg border border-gray-200 -mb-4">
+      <div className="relative w-full max-w-2xl flex flex-col gap-4 rounded-[30px] bg-white dark:bg-black  shadow-lg border border-gray-200 -mb-4">
         <div className="flex items-center w-full relative">
           <Textarea
             data-testid="multimodal-input"
@@ -230,7 +249,7 @@ function PureMultimodalInput({
             value={isMenuSelected ? (input + ' →') : input}
             onChange={handleInput}
             className={cx(
-              'min-h-[60px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-[30px] !text-base bg-white pb-16 px-6 pt-4 border border-gray-200 focus:border-gray-200 focus-visible:border-gray-200 focus:ring-0 focus-visible:ring-0',
+              'min-h-[60px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-[30px] !text-base bg-white dark:bg-gray-900 pb-16 px-6 pt-4 border border-gray-200 dark:border-gray-600 focus:border-gray-200 focus-visible:border-gray-200 focus:ring-0 focus-visible:ring-0',
               ((isCommandMenuOpen && /^(Justify|Search|Research|Deep Research|Generate Image)\b/.test(input)) || isMenuSelected) && 'font-bold text-blue-600',
               className,
             )}

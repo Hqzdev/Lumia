@@ -2,8 +2,9 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion"; 
+import { useSession } from 'next-auth/react';
 
 const TRAITS = [
   "Bold",
@@ -26,6 +27,8 @@ const CAPABILITIES = [
 ];
 
 export function CustomizeLumiaDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
   const [nickname, setNickname] = useState("");
   const [occupation, setOccupation] = useState("");
   const [traits, setTraits] = useState<string[]>([]);
@@ -38,6 +41,77 @@ export function CustomizeLumiaDialog({ open, onOpenChange }: { open: boolean, on
     canvas: true,
     voice: true,
   });
+  const [loading, setLoading] = useState(false);
+
+  // Загрузка кастомизации при открытии
+  useEffect(() => {
+    if (open && userId) {
+      setLoading(true);
+      console.log('[CustomizeLumiaDialog] Fetching customization for userId:', userId);
+      fetch(`/api/user-profile?userId=${userId}`)
+        .then(res => {
+          console.log('[CustomizeLumiaDialog] GET /api/user-profile status:', res.status);
+          return res.json();
+        })
+        .then(data => {
+          console.log('[CustomizeLumiaDialog] Received customization:', data);
+          const customization = data.customization || {};
+          setNickname(customization.nickname || "");
+          setOccupation(customization.occupation || "");
+          setTraits(customization.traits || []);
+          setAdditional(customization.additional || "");
+          setForNewChats(customization.forNewChats !== undefined ? customization.forNewChats : true);
+          setCapabilities({
+            web: customization.capabilities?.web ?? true,
+            dalle: customization.capabilities?.dalle ?? true,
+            code: customization.capabilities?.code ?? true,
+            canvas: customization.capabilities?.canvas ?? true,
+            voice: customization.capabilities?.voice ?? true,
+          });
+        })
+        .catch(err => {
+          console.error('[CustomizeLumiaDialog] Error fetching customization:', err);
+        })
+        .finally(() => setLoading(false));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, userId]);
+
+  const handleSave = async () => {
+    if (!userId) {
+      console.error('[CustomizeLumiaDialog] No userId, cannot save');
+      return;
+    }
+    setLoading(true);
+    const customization = {
+      nickname,
+      occupation,
+      traits,
+      additional,
+      forNewChats,
+      capabilities,
+    };
+    console.log('[CustomizeLumiaDialog] Saving customization:', customization, 'for userId:', userId);
+    // Скрываем окно сразу
+    onOpenChange(false);
+    try {
+      const res = await fetch('/api/user-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, customization }),
+      });
+      console.log('[CustomizeLumiaDialog] POST /api/user-profile status:', res.status);
+      const data = await res.json();
+      console.log('[CustomizeLumiaDialog] POST /api/user-profile response:', data);
+      if (!res.ok) {
+        console.error('[CustomizeLumiaDialog] Error saving customization:', data);
+      }
+    } catch (err) {
+      console.error('[CustomizeLumiaDialog] Network or server error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleTrait = (trait: string) => {
     setTraits((prev) => prev.includes(trait) ? prev.filter(t => t !== trait) : [...prev, trait]);
@@ -45,11 +119,6 @@ export function CustomizeLumiaDialog({ open, onOpenChange }: { open: boolean, on
 
   const toggleCapability = (key: string) => {
     setCapabilities((prev) => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
-  };
-
-  const handleSave = () => {
-    // Save logic here
-    onOpenChange(false);
   };
 
   return (
@@ -61,7 +130,7 @@ export function CustomizeLumiaDialog({ open, onOpenChange }: { open: boolean, on
             Introduce yourself to get more personalized answers from Lumia.
           </DialogDescription>
         </DialogHeader>
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={e => { e.preventDefault(); handleSave(); }}>
           <div>
             <label className="block text-sm font-medium mb-1">How should Lumia address you?</label>
             <input
@@ -151,8 +220,8 @@ export function CustomizeLumiaDialog({ open, onOpenChange }: { open: boolean, on
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button className='bg-blue-600'type="button" onClick={handleSave}>
-              Save
+            <Button className='bg-blue-600' type="submit" disabled={loading}>
+              {loading ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </form>

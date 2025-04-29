@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Check, X, Zap, Star, Award, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSession, signIn } from "next-auth/react";
 
 const pricingTiers = [
   {
@@ -12,117 +13,84 @@ const pricingTiers = [
     name: "Free",
     price: "$0",
     period: "Forever free",
-    leads: "100",
+    leads: "Unlimited*",
     popular: false,
     buttonText: "Get Started",
     buttonLink: "/signup",
     icon: "F",
+    dbValue: "free",
     features: [
-      { name: "Free Lumia addresses on a shared domain", included: true },
-      { name: "275+ million leads available", included: true },
-      { name: "AI-powered messaging and personalization", included: true },
-      { name: "AI-powered with CERT", included: false },
-      { name: "Email setup by Lumia", included: false },
-      { name: "Upload leads via API/csv or a CSV file", included: false },
-      { name: "Personalized video landing pages", included: false },
+      { name: "Model: Lumia V2 (legacy, less powerful version)", included: true },
+      { name: "Unlimited usage* (may be limited during peak hours)", included: true },
+      { name: "Slower response speed", included: true },
+      { name: "Lower understanding of complex queries", included: true },
+      { name: "Sometimes struggles with long tasks", included: true },
+      { name: "No image analysis, file uploads, or plugins", included: true },
+      { name: "No team features", included: false },
+      { name: "No advanced security", included: false },
+      { name: "No API integrations", included: false },
+      { name: "No priority support", included: false },
     ],
   },
   {
     id: 2,
-    name: "Starter",
-    price: "$12",
+    name: "Premium",
+    price: "$20",
     period: "/month",
-    leads: "300",
-    popular: false,
-    buttonText: "Get Started",
+    leads: "Unlimited*",
+    popular: true,
+    buttonText: "Upgrade Now",
     buttonLink: "/signup",
-    icon: "S",
+    icon: "P",
+    dbValue: "premium",
     features: [
-      { name: "Free Lumia addresses on a shared domain", included: true },
-      { name: "275+ million leads available", included: true },
-      { name: "AI-powered messaging and personalization", included: true },
-      { name: "AI-powered with CERT", included: true },
-      { name: "Email setup by Lumia", included: false },
-      { name: "Upload leads via API/csv or a CSV file", included: true },
-      { name: "Personalized video landing pages", included: false },
+      { name: "Access to all latest models (Lumia V4, GPT-4, etc.)", included: true },
+      { name: "Image analysis & file uploads", included: true },
+      { name: "Fast response speed, almost no queue", included: true },
+      { name: "Best quality for complex tasks (code, business, SEO, essays)", included: true },
+      { name: "Hourly request limit: 80 messages per 3 hours", included: true },
+      { name: "No team workspace", included: false },
+      { name: "No advanced security", included: false },
+      { name: "No private model API integration", included: false },
+      { name: "Priority support", included: true },
+      { name: "Most popular for power users", included: true },
     ],
   },
   {
     id: 3,
-    name: "Starter Plus",
-    price: "$16",
-    period: "/month",
-    leads: "1,000",
-    popular: true,
-    buttonText: "Get Started",
-    buttonLink: "/signup",
-    icon: "S+",
-    features: [
-      { name: "Free Lumia addresses on a shared domain", included: true },
-      { name: "275+ million leads available", included: true },
-      { name: "AI-powered messaging and personalization", included: true },
-      { name: "AI-powered with CERT", included: true },
-      { name: "Email setup by Lumia", included: true },
-      { name: "Upload leads via API/csv or a CSV file", included: true },
-      { name: "Personalized video landing pages", included: true },
-    ],
-  },
-  {
-    id: 4,
-    name: "Premium",
-    price: "$25",
-    period: "/month",
-    leads: "2,500",
+    name: "Team",
+    price: "$25+",
+    period: "/month/user",
+    leads: "Unlimited*",
     popular: false,
-    buttonText: "Get Started",
-    buttonLink: "/signup",
-    icon: "P",
+    buttonText: "Contact Sales",
+    buttonLink: "/contact-sales",
+    icon: "T",
+    dbValue: "team",
     features: [
-      { name: "Free Lumia addresses on a shared domain", included: true },
-      { name: "275+ million leads available", included: true },
-      { name: "AI-powered messaging and personalization", included: true },
-      { name: "AI-powered with CERT", included: true },
-      { name: "Email setup by Lumia", included: true },
-      { name: "Upload leads via API/csv or a CSV file", included: true },
-      { name: "Personalized video landing pages", included: true },
-      { name: "Advanced analytics dashboard", included: true },
-    ],
-  },
-  {
-    id: 5,
-    name: "Ultimate",
-    price: "$50",
-    period: "/month",
-    leads: "5,000",
-    popular: false,
-    buttonText: "Get Started",
-    buttonLink: "/signup",
-    icon: "U",
-    features: [
-      { name: "Free Lumia addresses on a shared domain", included: true },
-      { name: "275+ million leads available", included: true },
-      { name: "AI-powered messaging and personalization", included: true },
-      { name: "AI-powered with CERT", included: true },
-      { name: "Email setup by Lumia", included: true },
-      { name: "Upload leads via API/csv or a CSV file", included: true },
-      { name: "Personalized video landing pages", included: true },
-      { name: "Advanced analytics dashboard", included: true },
+      { name: "Everything in Premium", included: true },
+      { name: "Shared workspace for your team", included: true },
+      { name: "Custom folders & project management", included: true },
+      { name: "Advanced security settings", included: true },
+      { name: "Private model API integration", included: true },
+      { name: "Admin controls & permissions", included: true },
+      { name: "Best for business & startups", included: true },
+      { name: "Custom pricing for large teams", included: true },
       { name: "Dedicated account manager", included: true },
-      { name: "Custom integrations", included: true },
     ],
   },
 ];
 
 const getIconComponent = (tierName: string) => {
   switch (tierName) {
-    case "Starter":
-      return <Zap className="w-6 h-6 text-blue-500" />;
+    case "Free":
+      return <Zap className="w-6 h-6 text-green-500" />;
     case "Starter Plus":
-      return <Star className="w-6 h-6 text-blue-500" />;
+      return <Star className="w-6 h-6 text-yellow-500" />;
     case "Premium":
-      return <Award className="w-6 h-6 text-blue-500" />;
-    case "Ultimate":
-      return <Crown className="w-6 h-6 text-blue-500" />;
+      return <Award className="w-6 h-6 text-purple-500" />;
+    case "Team":
+      return <Crown className="w-6 h-6 text-red-500" />;
     default:
       return null;
   }
@@ -130,23 +98,35 @@ const getIconComponent = (tierName: string) => {
 
 export function UpgradePlanDialog({ open, onOpenChange, userId }: { open: boolean, onOpenChange: (open: boolean) => void, userId: string }) {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const currentSubscription = session?.user?.subscription ?? null;
+  const [localSubscription, setLocalSubscription] = useState<string | null>(null);
 
-  async function handleSelectPlan(planName: string) {
+  // При монтировании: если есть подписка в localStorage — используем её
+  useEffect(() => {
+    const saved = localStorage.getItem('selectedSubscription');
+    if (saved) setLocalSubscription(saved);
+  }, []);
+
+  async function handleSelectPlan(planName: string, dbValue: string) {
+    console.log('handleSelectPlan called', planName, dbValue);
     setSelectedPlan(planName);
-    console.log("Вы выбрали подписку:", planName);
-    console.log("userId:", userId);
-    const subscription = planName.toLowerCase().replace(" ", "_");
-    console.log("subscription (отправляется в БД):", subscription);
+    setLocalSubscription(dbValue);
+    localStorage.setItem('selectedSubscription', dbValue);
     try {
       const res = await fetch("/api/upgrade-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, subscription }),
+        body: JSON.stringify({ userId, subscription: dbValue }),
       });
+      console.log('fetch response:', res);
       const data = await res.json();
-      console.log("Ответ сервера:", data);
+      console.log('response data:', data);
       if (res.ok) {
-        console.log("Подписка успешно обновлена в БД");
+        console.log('Subscription updated, refreshing session...');
+        // Можно очистить localStorage, если хотите, чтобы всегда бралась из БД после обновления
+        // localStorage.removeItem('selectedSubscription');
+        window.location.reload();
       } else {
         console.error("Ошибка при обновлении подписки", data);
       }
@@ -154,6 +134,12 @@ export function UpgradePlanDialog({ open, onOpenChange, userId }: { open: boolea
       console.error("Ошибка сети при обновлении подписки", e);
     }
   }
+
+  // Для UI используем localSubscription если есть, иначе currentSubscription
+  const activeSubscription = localSubscription ?? currentSubscription;
+
+  // Логируем сессию для диагностики
+  console.log('session:', session);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -194,13 +180,16 @@ export function UpgradePlanDialog({ open, onOpenChange, userId }: { open: boolea
                 <button
                   className={cn(
                     "block w-full text-center py-2 px-4 rounded-lg font-medium transition-colors border",
-                    selectedPlan === tier.name
+                    activeSubscription === tier.dbValue
                       ? "bg-white border-blue-600 text-blue-600"
                       : "bg-blue-600 text-white border-transparent hover:bg-blue-700"
                   )}
-                  onClick={() => handleSelectPlan(tier.name)}
+                  onClick={() => {
+                    console.log('Клик по кнопке смены плана', tier.name, tier.dbValue);
+                    handleSelectPlan(tier.name, tier.dbValue);
+                  }}
                 >
-                  {selectedPlan === tier.name ? "Selected" : tier.buttonText}
+                  {activeSubscription === tier.dbValue ? "Current Plan" : tier.buttonText}
                 </button>
               </CardContent>
             </Card>

@@ -11,10 +11,12 @@ import {
 import { VisibilityType } from '@/components/visibility-selector';
 import { myProvider } from '@/lib/ai/providers';
 
-export async function saveChatModelAsCookie(model: string) {
-  const cookieStore = await cookies();
-  cookieStore.set('chat-model', model);
-}
+    export async function saveChatModelAsCookie(model: string) {
+      const cookieStore = await cookies();
+      cookieStore.set('chat-model', model);
+    }
+
+
 
 export async function generateTitleFromUserMessage({
   message,

@@ -120,7 +120,7 @@ export const Overview = ({ nickname }: { nickname?: string }) => {
             letterSpacing: '0.01em',
           }}
         >
-          <span className="text-gray-600 mr-2">Hi,</span>
+          <span className="text-gray-600 dark:text-gray-400 mr-2">Hi,</span>
           <span
             className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
             style={{
@@ -138,9 +138,9 @@ export const Overview = ({ nickname }: { nickname?: string }) => {
         style={{ lineHeight: 1.05, minHeight: isMobile ? 40 : 36 }}
       >
         <span
-          className="text-gray-600"
+          className="text-gray-600 dark:text-gray-400"
           style={{
-            color: '#505050',
+            
             letterSpacing: '0.01em',
             transition: 'color 0.2s',
           }}

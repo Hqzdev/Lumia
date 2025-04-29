@@ -15,6 +15,8 @@ import {
   message,
   vote,
   type DBMessage,
+  // userProfile,
+  // type UserProfile,
 } from './schema';
 import { ArtifactKind } from '@/components/artifact';
 
@@ -364,13 +366,49 @@ export async function updateChatVisiblityById({
   }
 }
 
-export async function updateUserSubscription({ userId, subscription }: { userId: string, subscription: 'free' | 'starter' | 'starter_plus' | 'premium' | 'ultimate' }) {
+export async function updateUserSubscription({ userId, subscription }: { userId: string, subscription: 'free' | 'free'  | 'premium' | 'Team' }) {
   try {
-    return await db.update(user)
+    console.log('Updating subscription for user:', userId, 'to:', subscription);
+    const result = await db.update(user)
       .set({ subscription })
-      .where(eq(user.id, userId));
+      .where(eq(user.id, userId))
+      .returning();
+    
+    console.log('Update result:', result);
+    
+    if (!result || result.length === 0) {
+      throw new Error(`User with id ${userId} not found`);
+    }
+    
+    return result;
   } catch (error) {
-    console.error('Failed to update user subscription in database');
+    console.error('Failed to update user subscription in database:', error);
+    throw error;
+  }
+}
+
+export async function getUserCustomization(userId: string) {
+  try {
+    const [result] = await db.select({ customization: user.customization }).from(user).where(eq(user.id, userId));
+    return result?.customization ?? null;
+  } catch (error) {
+    console.error('Failed to get user customization from database', error);
+    throw error;
+  }
+}
+
+export async function updateUserCustomization({ userId, customization }: { userId: string, customization: any }) {
+  try {
+    const result = await db.update(user)
+      .set({ customization })
+      .where(eq(user.id, userId))
+      .returning();
+    if (!result || result.length === 0) {
+      throw new Error(`User with id ${userId} not found`);
+    }
+    return result[0];
+  } catch (error) {
+    console.error('Failed to update user customization in database', error);
     throw error;
   }
 }
