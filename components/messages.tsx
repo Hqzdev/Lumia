@@ -42,30 +42,40 @@ function PureMessages({
     >
       {messages.length === 0 && <Overview nickname={nickname} />}
       <AnimatePresence initial={false}>
-        {messages.map((message, index) => (
-          <motion.div
-            key={message.id || `msg-${index}`}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120, damping: 18 } }}
-            exit={{ y: 20, opacity: 0, transition: { duration: 0.2 } }}
-            layout
-          >
-            <PreviewMessage
-              chatId={chatId}
-              message={message}
-              isLoading={status === 'streaming' && messages.length - 1 === index}
-              vote={
-                votes
-                  ? votes.find((vote) => vote.messageId === message.id)
-                  : undefined
-              }
-              setMessages={setMessages}
-              reload={reload}
-              isReadonly={isReadonly}
-              selectedChatModel={selectedChatModel}
-            />
-          </motion.div>
-        ))}
+        {messages.map((message, index) => {
+          // Count user messages to determine if we need margin
+          const userMessageCount = messages
+            .slice(0, index + 1)
+            .filter(m => m.role === 'user')
+            .length;
+          const needsMargin = userMessageCount % 3 === 0 && message.role === 'user';
+
+          return (
+            <motion.div
+              key={message.id || `msg-${index}`}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120, damping: 18 } }}
+              exit={{ y: 20, opacity: 0, transition: { duration: 0.2 } }}
+              layout
+              className={needsMargin ? 'mb-48' : ''}
+            >
+              <PreviewMessage
+                chatId={chatId}
+                message={message}
+                isLoading={status === 'streaming' && messages.length - 1 === index}
+                vote={
+                  votes
+                    ? votes.find((vote) => vote.messageId === message.id)
+                    : undefined
+                }
+                setMessages={setMessages}
+                reload={reload}
+                isReadonly={isReadonly}
+                selectedChatModel={selectedChatModel}
+              />
+            </motion.div>
+          );
+        })}
       </AnimatePresence>
       {status === 'submitted' &&
         messages.length > 0 &&

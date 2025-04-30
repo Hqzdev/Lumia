@@ -133,7 +133,7 @@ function PureChatHeader({
     <header
       className={cn(
         // removed border utility classes if any existed (none present)
-        'flex fixed top-0 left-0 w-full z-50 py-2 items-center px-3 md:px-4 gap-3 shadow-sm transition-all duration-300 h-[56px]',
+        'flex fixed top-0 left-0 w-full z-50 py-2 items-center bg-background dark:bg-background-dark px-3 md:px-4 gap-3 shadow-sm transition-all duration-300 h-[56px]',
         open && windowWidth >= 768 ? 'md:ml-[260px]' : 'ml-0'
       )}
     >

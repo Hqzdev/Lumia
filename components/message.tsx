@@ -125,7 +125,7 @@ const PurePreviewMessage = ({
                         })}
                       >
                         {message.role === 'assistant' ? (
-                          <TypingText text={part.text} />
+                          <TypingText text={part.text} animated={isLoading} />
                         ) : (
                           <Markdown>{part.text}</Markdown>
                         )}
@@ -318,9 +318,13 @@ export const ThinkingMessage = memo(() => {
 ThinkingMessage.displayName = 'ThinkingMessage';
 
 // Typing animation for assistant messages
-function TypingText({ text }: { text: string }) {
-  const [displayed, setDisplayed] = useState('');
+function TypingText({ text, animated = false }: { text: string; animated?: boolean }) {
+  const [displayed, setDisplayed] = useState(animated ? '' : text);
   useEffect(() => {
+    if (!animated) {
+      setDisplayed(text);
+      return;
+    }
     setDisplayed('');
     if (!text) return;
     const words = text.split(/(\s+)/); // сохраняем пробелы
@@ -329,8 +333,8 @@ function TypingText({ text }: { text: string }) {
       setDisplayed((prev) => prev + words[i]);
       i++;
       if (i >= words.length) clearInterval(interval);
-    }, 80); // скорость появления слов
+    }, 25); // скорость появления слов
     return () => clearInterval(interval);
-  }, [text]);
+  }, [text, animated]);
   return <Markdown>{displayed}</Markdown>;
 }

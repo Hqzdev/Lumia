@@ -235,7 +235,7 @@ function PureMultimodalInput({
   return (
     <div
       className={cn(
-        'fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full max-w-[800px] z-40 bg-white dark:bg-black flex flex-col justify-center items-center transition-all duration-300',
+        'fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full  max-w-[800px] z-40 bg-white dark:bg-black flex flex-col justify-center items-center transition-all duration-300',
         open && width >= 768 && !openMobile && 'md:ml-[130px]', // половина ширины сайдбара
         messages.length === 0 ? 'md:bottom-[30px] bottom-0' : 'bottom-0' // Поднимаем контейнер выше только на десктопе
       )}
