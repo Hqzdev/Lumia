@@ -177,7 +177,7 @@ function PureMultimodalInput({
     }
     // Лог финального сообщения
     console.log('Отправлен в ИИ (только пользовательский текст):', userPrompt);
-  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isJustifyMode, isSearchMode, isDeepSearchMode, setInput, customization]);
+  }, [attachments, append, setAttachments, setLocalStorageInput, width, chatId, input, isJustifyMode, isDeepSearchMode, setInput, customization]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
@@ -235,12 +235,12 @@ function PureMultimodalInput({
   return (
     <div
       className={cn(
-        'fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full  max-w-[800px] z-40 bg-white dark:bg-black flex flex-col justify-center items-center transition-all duration-300',
+        'fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full max-w-[95%] md:max-w-[800px] z-40 bg-white dark:bg-black flex flex-col justify-center items-center transition-all duration-300',
         open && width >= 768 && !openMobile && 'md:ml-[130px]', // половина ширины сайдбара
         messages.length === 0 ? 'md:bottom-[30px] bottom-0' : 'bottom-0' // Поднимаем контейнер выше только на десктопе
       )}
     >
-      <div className="relative w-full max-w-2xl flex flex-col gap-4 rounded-[30px] bg-white dark:bg-black  shadow-lg border border-gray-200 -mb-4">
+      <div className="relative w-full max-w-[95%] md:max-w-2xl flex flex-col gap-4 rounded-[30px] bg-white dark:bg-black  shadow-lg border border-gray-200 -mb-4">
         <div className="flex items-center w-full relative">
           <Textarea
             data-testid="multimodal-input"
@@ -369,7 +369,7 @@ function PureMultimodalInput({
         )}
       </div>
       {messages.length > 0 && (
-        <p className="mt-5 text-center text-sm text-gray-500">
+        <p className="mt-5 text-center text-sm text-gray-500 hidden md:block">
           Lumia may contain errors. We recommend that you check important
           information.
         </p>

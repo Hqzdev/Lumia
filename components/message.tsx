@@ -3,7 +3,7 @@
 import type { UIMessage } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect, useRef } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
@@ -47,7 +47,7 @@ const PurePreviewMessage = ({
     <AnimatePresence>
       <motion.div
         data-testid={`message-${message.role}`}
-        className="w-full mx-auto max-w-3xl px-4 group/message"
+        className="w-full mx-auto max-w-[95%] md:max-w-3xl px-4 group/message"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120, damping: 18 } }}
         exit={{ y: 20, opacity: 0, transition: { duration: 0.2 } }}
@@ -56,7 +56,7 @@ const PurePreviewMessage = ({
       >
         <div
           className={cn(
-            'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
+            'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-[95%] md:group-data-[role=user]/message:max-w-2xl',
             {
               'w-full': mode === 'edit',
               'group-data-[role=user]/message:w-fit': mode !== 'edit',
@@ -251,11 +251,57 @@ export const PreviewMessage = memo(
 
 export const ThinkingMessage = memo(() => {
   const role = 'assistant';
+  const [currentPhrase, setCurrentPhrase] = useState('Thinking...');
+
+  // 10 вариантов текста для раздумья
+  const thinkingPhrases = [
+    'Thinking...',
+    'Searching on the net...',
+    'Analyzing your question...',
+    'Looking for the best answer...',
+    'Consulting my knowledge base...',
+    'Gathering information...',
+    'Formulating a response...',
+    'Checking facts...',
+    'Reviewing related topics...',
+    'Synthesizing data...',
+  ];
+
+  function getRandomInt(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+    let timeout: NodeJS.Timeout;
+
+    function showNextPhrase() {
+      if (!isMounted) return;
+
+      // Выбираем новую фразу, не повторяя текущую
+      const remaining = thinkingPhrases.filter(p => p !== currentPhrase);
+      if (remaining.length === 0) return;
+
+      const nextPhrase = remaining[getRandomInt(0, remaining.length - 1)];
+      setCurrentPhrase(nextPhrase);
+
+      // Следующий апдейт через рандомное время (0.8-2.2 сек)
+      timeout = setTimeout(showNextPhrase, getRandomInt(800, 2200));
+    }
+
+    // Первый апдейт через рандомное время (0.8-2.2 сек)
+    timeout = setTimeout(showNextPhrase, getRandomInt(800, 2200));
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeout);
+    };
+  }, [currentPhrase]);
 
   return (
     <motion.div
       data-testid="message-assistant-loading"
-      className="w-full mx-auto max-w-3xl px-4 group/message "
+      className="w-full mx-auto max-w-[95%] md:max-w-3xl px-4 group/message"
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: { delay: 0.2, type: 'spring', stiffness: 120, damping: 18 } }}
       exit={{ y: 20, opacity: 0, transition: { duration: 0.2 } }}
@@ -264,52 +310,49 @@ export const ThinkingMessage = memo(() => {
     >
       <div
         className={cx(
-          'flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl',
+          'flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-[95%] md:group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl',
           {
             'group-data-[role=user]': true,
           },
         )}
       >
-       
-
         <div className="flex flex-col gap-2 w-full">
           <div className="relative inline-block">
             {/* Base gray text */}
-            <span className="text-gray-500">Thinking...</span>
-
+            <span className="text-gray-500">{currentPhrase}</span>
             {/* White highlight overlay */}
             <span className="absolute inset-0 white-wave-effect">
-              Thinking...
+              {currentPhrase}
             </span>
           </div>
 
           <style jsx>{`
-        .white-wave-effect {
-          color: transparent;
-          background: linear-gradient(
-            to right,
-            transparent 0%,
-            transparent 45%,
-            white 48%,
-            white 52%,
-            transparent 55%,
-            transparent 100%
-          );
-          -webkit-background-clip: text;
-          background-clip: text;
-          background-size: 200% 100%;
-          animation: whiteWave 4s linear infinite;
-        }
-        
-        @keyframes whiteWave {
-          0% {
-            background-position: -100% 0;
-          }
-          100% {
-            background-position: 100% 0;
-          }
-        }
-      `}</style>
+            .white-wave-effect {
+              color: transparent;
+              background: linear-gradient(
+                to right,
+                transparent 0%,
+                transparent 45%,
+                white 48%,
+                white 52%,
+                transparent 55%,
+                transparent 100%
+              );
+              -webkit-background-clip: text;
+              background-clip: text;
+              background-size: 200% 100%;
+              animation: whiteWave 4s linear infinite;
+            }
+            
+            @keyframes whiteWave {
+              0% {
+                background-position: -100% 0;
+              }
+              100% {
+                background-position: 100% 0;
+              }
+            }
+          `}</style>
         </div>
       </div>
     </motion.div>
@@ -333,7 +376,7 @@ function TypingText({ text, animated = false }: { text: string; animated?: boole
       setDisplayed((prev) => prev + words[i]);
       i++;
       if (i >= words.length) clearInterval(interval);
-    }, 25); // скорость появления слов
+    }, 40); // скорость появления слов
     return () => clearInterval(interval);
   }, [text, animated]);
   return <Markdown>{displayed}</Markdown>;
