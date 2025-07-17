@@ -16,7 +16,7 @@ export default function Page() {
   const router = useRouter();
 
   const [email, setEmail] = useState('');
-  const [nickname, setNickname] = useState('');       // Новое поле
+  const [nickname, setNickname] = useState(''); // Новое поле
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
@@ -105,7 +105,7 @@ export default function Page() {
             >
               Sign in
             </a>
-            {' instead.'}
+            {'.'}
           </p>
         </AuthForm>
       </div>

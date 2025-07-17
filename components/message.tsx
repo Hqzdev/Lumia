@@ -48,11 +48,7 @@ const PurePreviewMessage = ({
       <motion.div
         data-testid={`message-${message.role}`}
         className="w-full mx-auto max-w-[95%] md:max-w-3xl px-4 group/message"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120, damping: 18 } }}
-        exit={{ y: 20, opacity: 0, transition: { duration: 0.2 } }}
         data-role={message.role}
-        layout
       >
         <div
           className={cn(
@@ -63,8 +59,6 @@ const PurePreviewMessage = ({
             },
           )}
         >
-       
-
           <div className="flex flex-col gap-4 w-full">
             {message.experimental_attachments && (
               <div
@@ -125,7 +119,7 @@ const PurePreviewMessage = ({
                         })}
                       >
                         {message.role === 'assistant' ? (
-                          <TypingText text={part.text} animated={isLoading} />
+                          <TypingText text={part.text} />
                         ) : (
                           <Markdown>{part.text}</Markdown>
                         )}
@@ -244,7 +238,8 @@ export const PreviewMessage = memo(
     if (prevProps.message.id !== nextProps.message.id) return false;
     if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
     if (!equal(prevProps.vote, nextProps.vote)) return false;
-    if (prevProps.selectedChatModel !== nextProps.selectedChatModel) return false;
+    if (prevProps.selectedChatModel !== nextProps.selectedChatModel)
+      return false;
     return true;
   },
 );
@@ -279,7 +274,7 @@ export const ThinkingMessage = memo(() => {
       if (!isMounted) return;
 
       // Выбираем новую фразу, не повторяя текущую
-      const remaining = thinkingPhrases.filter(p => p !== currentPhrase);
+      const remaining = thinkingPhrases.filter((p) => p !== currentPhrase);
       if (remaining.length === 0) return;
 
       const nextPhrase = remaining[getRandomInt(0, remaining.length - 1)];
@@ -303,7 +298,11 @@ export const ThinkingMessage = memo(() => {
       data-testid="message-assistant-loading"
       className="w-full mx-auto max-w-[95%] md:max-w-3xl px-4 group/message"
       initial={{ y: 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1, transition: { delay: 0.2, type: 'spring', stiffness: 120, damping: 18 } }}
+      animate={{
+        y: 0,
+        opacity: 1,
+        transition: { delay: 0.2, type: 'spring', stiffness: 120, damping: 18 },
+      }}
       exit={{ y: 20, opacity: 0, transition: { duration: 0.2 } }}
       data-role={role}
       layout
@@ -361,23 +360,6 @@ export const ThinkingMessage = memo(() => {
 ThinkingMessage.displayName = 'ThinkingMessage';
 
 // Typing animation for assistant messages
-function TypingText({ text, animated = false }: { text: string; animated?: boolean }) {
-  const [displayed, setDisplayed] = useState(animated ? '' : text);
-  useEffect(() => {
-    if (!animated) {
-      setDisplayed(text);
-      return;
-    }
-    setDisplayed('');
-    if (!text) return;
-    const words = text.split(/(\s+)/); // сохраняем пробелы
-    let i = 0;
-    const interval = setInterval(() => {
-      setDisplayed((prev) => prev + words[i]);
-      i++;
-      if (i >= words.length) clearInterval(interval);
-    }, 40); // скорость появления слов
-    return () => clearInterval(interval);
-  }, [text, animated]);
-  return <Markdown>{displayed}</Markdown>;
+function TypingText({ text }: { text: string }) {
+  return <Markdown>{text}</Markdown>;
 }

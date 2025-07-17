@@ -33,7 +33,7 @@ function PureMessages({
   nickname,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
-    useScrollToBottom<HTMLDivElement>();
+    useScrollToBottom<HTMLDivElement>([messages.length]);
 
   return (
     <div
@@ -43,26 +43,19 @@ function PureMessages({
       {messages.length === 0 && <Overview nickname={nickname} />}
       <AnimatePresence initial={false}>
         {messages.map((message, index) => {
-          // Count user messages to determine if we need margin
-          const userMessageCount = messages
-            .slice(0, index + 1)
-            .filter(m => m.role === 'user')
-            .length;
-          const needsMargin = userMessageCount % 3 === 0 && message.role === 'user';
-
+          // Гарантируем уникальный ключ для каждого сообщения
+          const safeKey =
+            message.id && message.id !== ''
+              ? message.id
+              : `fallback-${index}-${Date.now()}`;
           return (
-            <motion.div
-              key={message.id || `msg-${index}`}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120, damping: 18 } }}
-              exit={{ y: 20, opacity: 0, transition: { duration: 0.2 } }}
-              layout
-              className={needsMargin ? 'mb-48' : ''}
-            >
+            <motion.div key={safeKey} className="">
               <PreviewMessage
                 chatId={chatId}
                 message={message}
-                isLoading={status === 'streaming' && messages.length - 1 === index}
+                isLoading={
+                  status === 'streaming' && messages.length - 1 === index
+                }
                 vote={
                   votes
                     ? votes.find((vote) => vote.messageId === message.id)

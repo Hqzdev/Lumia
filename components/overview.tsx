@@ -4,20 +4,18 @@ import { useEffect, useState, useRef } from 'react';
 
 // Фразы с выделением слов в <>
 const phrases = [
-  "How can I assist you?",
-  "What are you curious about?",
+  'How can I assist you?',
+  'What are you curious about?',
   "Ask me anything, I'm ready!",
-  "Need help with something?",
+  'Need help with something?',
   "What's on your mind?",
-  "Looking for advice?",
-  "How can I support you?",
-  "What can I do for you?",
-  "Ready when you are!",
+  'Looking for advice?',
+  'How can I support you?',
+  'What can I do for you?',
+  'Ready when you are!',
   "Let's find the answer together!",
-  "Designed by Motay",
-  "Made by HT",
+  'Made by HT',
 ];
-
 
 // Функция для парсинга строки с <...> и возвращения массива React-элементов
 function parsePhraseWithBlue(text: string) {
@@ -36,7 +34,7 @@ function parsePhraseWithBlue(text: string) {
     result.push(
       <span key={idx++} className="text-blue-600">
         {match[1]}
-      </span>
+      </span>,
     );
     lastIndex = regex.lastIndex;
   }
@@ -140,7 +138,6 @@ export const Overview = ({ nickname }: { nickname?: string }) => {
         <span
           className="text-gray-600 dark:text-gray-400"
           style={{
-            
             letterSpacing: '0.01em',
             transition: 'color 0.2s',
           }}
@@ -153,7 +150,7 @@ export const Overview = ({ nickname }: { nickname?: string }) => {
             color: '#6b7280', // Tailwind gray-500
             WebkitTextStroke: '1px #fff',
             fontWeight: 900,
-            animation: 'blink 1.8s steps(1) infinite' // медленнее и плавнее
+            animation: 'blink 1.8s steps(1) infinite', // медленнее и плавнее
           }}
         >
           |
