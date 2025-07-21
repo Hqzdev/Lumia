@@ -315,5 +315,6 @@ ThinkingMessage.displayName = 'ThinkingMessage';
 
 // Typing animation for assistant messages
 function TypingText({ text }: { text: string }) {
+  // Мгновенно показываем весь текст без задержки
   return <Markdown>{text}</Markdown>;
 }
