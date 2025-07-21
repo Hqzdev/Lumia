@@ -143,7 +143,7 @@ export default function PrivacyPolicy() {
                 use, disclose, and safeguard your information when you use our
                 artificial intelligence chatbot service and related
                 applications, websites, and services (collectively, the
-                "Service").
+                &quot;Service&quot;).
               </p>
               <p className="text-gray-700 leading-relaxed mb-4">
                 We are committed to protecting your privacy and ensuring

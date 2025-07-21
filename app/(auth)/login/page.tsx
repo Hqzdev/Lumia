@@ -224,7 +224,7 @@ export default function Page() {
           </form>
           <div className="w-full flex flex-col items-center gap-2">
             <span className="text-sm text-gray-700">
-              Don't have an account?
+              Already have an account?
             </span>
             <a
               href="/register"

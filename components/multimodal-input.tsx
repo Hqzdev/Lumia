@@ -1,8 +1,6 @@
-'use client';
-
+import React from 'react';
 import type { Attachment, Message } from 'ai';
 import cx from 'classnames';
-import type React from 'react';
 import { useRef, useEffect, useState, useCallback, memo } from 'react';
 import type { Dispatch, SetStateAction, ChangeEvent } from 'react';
 import { toast } from 'sonner';
@@ -25,6 +23,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { ArrowUpIcon, StopIcon } from './icons';
 import {
@@ -202,6 +201,181 @@ function ChatSearchDialog({
   );
 }
 
+// --- PROMPT ARRAYS FOR MODES ---
+const PROMPTS = {
+  web: [
+    'What is the latest news in technology?',
+    'Find me a recipe for a healthy breakfast',
+    'What&apos;s the weather like in Tokyo?',
+    'How do I start learning Python?',
+    'Best places to visit in Europe',
+    'Explain quantum computing in simple terms',
+    'What are the top movies this year?',
+    'How to improve productivity at work?',
+    'What is the stock price of Apple?',
+    'Tips for remote work',
+    'What is AI and how does it work?',
+    'How to cook pasta al dente?',
+    'What are the symptoms of flu?',
+    'How to meditate effectively?',
+    'What is the capital of Australia?',
+    'How to save money on groceries?',
+    'What is the best smartphone in 2024?',
+    'How to learn a new language fast?',
+    'What are the benefits of yoga?',
+    'How to write a resume?',
+  ],
+  deep: [
+    'Analyze the impact of social media on society',
+    'Research the history of electric vehicles',
+    'Compare renewable energy sources',
+    'What are the causes of climate change?',
+    'Explore the future of artificial intelligence',
+    'Investigate the effects of sleep deprivation',
+    'Study the evolution of the internet',
+    'What are the challenges of space travel?',
+    'Examine the psychology of motivation',
+    'Research the benefits of mindfulness',
+    'How does blockchain technology work?',
+    'What are the risks of genetic engineering?',
+    'Explore the history of jazz music',
+    'Analyze the global economy trends',
+    'What is quantum entanglement?',
+    'Study the migration patterns of birds',
+    'Investigate the causes of inflation',
+    'What are the effects of pollution on health?',
+    'Research the origins of language',
+    'Examine the role of women in science',
+  ],
+  image: [
+    'A futuristic cityscape at sunset',
+    'A cat astronaut floating in space',
+    'A serene mountain lake in autumn',
+    'A cyberpunk street scene at night',
+    'A magical forest with glowing plants',
+    'A portrait of a robot artist',
+    'A cozy cabin in a snowy landscape',
+    'A surreal dreamscape with floating islands',
+    'A detailed steampunk airship',
+    'A vibrant underwater coral reef',
+    'A fantasy castle on a hill',
+    'A retro 80s neon city',
+    'A group of animals having a tea party',
+    'A dragon flying over mountains',
+    'A peaceful zen garden',
+    'A bustling medieval marketplace',
+    'A close-up of a colorful butterfly',
+    'A futuristic sports car',
+    'A mystical portal in the woods',
+    'A child&apos;s drawing of their family',
+  ],
+  canvas: [
+    'Draw a tree with autumn leaves',
+    'Sketch a smiling sun',
+    'Draw a house with a garden',
+    'Create a pattern with circles and lines',
+    'Draw a cat playing with a ball',
+    'Sketch a mountain landscape',
+    'Draw a rocket ship blasting off',
+    'Create a doodle of your favorite food',
+    'Draw a flower bouquet',
+    'Sketch a rainy day scene',
+    'Draw a fantasy creature',
+    'Create a geometric abstract art',
+    'Draw a city skyline',
+    'Sketch a person riding a bicycle',
+    'Draw a night sky with stars',
+    'Create a mandala pattern',
+    'Draw a picnic scene',
+    'Sketch a dog chasing its tail',
+    'Draw a magical forest',
+    'Create a comic strip panel',
+  ],
+  think: [
+    'Explain the meaning of life',
+    'What are your goals for this year?',
+    'Describe your perfect day',
+    'What inspires you the most?',
+    'Share a childhood memory',
+    'What is your biggest dream?',
+    'Describe a challenge you overcame',
+    'What makes you happy?',
+    'Share your favorite quote',
+    'What is your favorite book and why?',
+    'Describe a place you want to visit',
+    'What is your favorite hobby?',
+    'Share a lesson you learned recently',
+    'What is your favorite movie?',
+    'Describe your morning routine',
+    'What is your favorite food?',
+    'Share a fun fact about yourself',
+    'What is your favorite season?',
+    'Describe your ideal weekend',
+    'What motivates you to succeed?',
+  ],
+};
+
+function getRandomPrompts(arr: string[], n: number) {
+  const shuffled = arr.slice().sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, n);
+}
+
+function SuggestedPrompts({
+  mode,
+  input,
+  onSelect,
+}: {
+  mode: 'web' | 'deep' | 'image' | 'canvas' | 'think' | null;
+  input: string;
+  onSelect: (prompt: string) => void;
+}) {
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  useEffect(() => {
+    if (mode && !input) {
+      setSuggestions(getRandomPrompts(PROMPTS[mode], 4));
+    } else if (input.length > 0) {
+      // fetch AI suggestions
+      fetch(`/api/suggest-prompts?input=${encodeURIComponent(input)}`)
+        .then((res) => res.json())
+        .then((data) => setSuggestions(data.prompts || []));
+    } else {
+      setSuggestions([]);
+    }
+  }, [mode, input]);
+
+  if (suggestions.length === 0) return null;
+  return (
+    <AnimatePresence>
+      <motion.div
+        className="flex flex-col gap-2 mb-2"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -24 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+      >
+        {suggestions.map((prompt, i) => (
+          <React.Fragment key={prompt}>
+            <button
+              type="button"
+              className="text-left text-gray-700 hover:text-black border-none px-4 py-2 cursor-pointer text-base transition-colors rounded-xl w-full"
+              onClick={() => onSelect(prompt)}
+              style={{
+                marginBottom:
+                  i !== suggestions.length - 1 ? '0.5rem' : undefined,
+              }}
+            >
+              {prompt}
+            </button>
+            {i !== suggestions.length - 1 && (
+              <div className="h-0.5 bg-gray-100 mx-8" />
+            )}
+          </React.Fragment>
+        ))}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 function PureMultimodalInput({
   chatId,
   input,
@@ -251,6 +425,10 @@ function PureMultimodalInput({
   const [isInstrumentsOpen, setIsInstrumentsOpen] = useState(false);
   const [isStylePopoverOpen, setIsStylePopoverOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const hasUserMessage = useMemo(
+    () => messages.some((m) => m.role === 'user'),
+    [messages],
+  );
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -305,6 +483,11 @@ function PureMultimodalInput({
         });
     }
   }, [userId]);
+
+  useEffect(() => {
+    adjustHeight();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input]);
 
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
@@ -462,7 +645,28 @@ function PureMultimodalInput({
         </div>
       )}
       {/* Удаляем старое меню стилей сверху */}
-      <div className="relative w-full max-w-[95%] md:max-w-2xl flex flex-col gap-4 rounded-[30px] bg-white dark:bg-black  shadow-lg border border-gray-200 -mb-4">
+      <div className="relative w-full max-w-[95%] md:max-w-2xl bg-white hover:bg-white flex flex-col gap-4  -mb-4">
+        {!hasUserMessage && !input && (
+          <SuggestedPrompts
+            mode={
+              isJustifyMode
+                ? 'web'
+                : isDeepSearchMode
+                  ? 'deep'
+                  : isCreateImageMode
+                    ? 'image'
+                    : isCanvasMode
+                      ? 'canvas'
+                      : isThinkLongerMode
+                        ? 'think'
+                        : null
+            }
+            input={input}
+            onSelect={(prompt) => {
+              append({ role: 'user', content: prompt }); // отправить сразу
+            }}
+          />
+        )}
         <div className="flex items-center w-full relative">
           <Textarea
             data-testid="multimodal-input"

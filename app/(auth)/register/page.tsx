@@ -235,13 +235,13 @@ export default function Page() {
             <span className="text-sm text-gray-700">
               Already have an account?
             </span>
-            <a
+            <Link
               href="/login"
               onClick={handleNavigateLogin}
               className="text-blue-600 text-sm font-medium hover:underline cursor-pointer"
             >
               Sign in
-            </a>
+            </Link>
           </div>
           <div className="w-full flex items-center gap-2 my-1">
             <div className="flex-1 h-px bg-gray-200" />
