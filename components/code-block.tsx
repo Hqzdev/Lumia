@@ -44,8 +44,9 @@ export function CodeBlock({
   }
 
   return (
-    <div className="not-prose flex flex-col relative group">
+    <span className="not-prose flex flex-col relative group block">
       <button
+        type="button"
         onClick={copyToClipboard}
         className="absolute top-2 right-2 z-10 p-1.5 text-zinc-400 hover:text-zinc-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
         aria-label="Copy code"
@@ -74,6 +75,6 @@ export function CodeBlock({
       >
         {code}
       </SyntaxHighlighter>
-    </div>
+    </span>
   );
 }

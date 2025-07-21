@@ -1,11 +1,12 @@
-import { UIMessage } from 'ai';
+import type { UIMessage } from 'ai';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
+import { useEffect } from 'react';
 import { Overview } from './overview';
 import { memo } from 'react';
-import { Vote } from '@/lib/db/schema';
+import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
-import { UseChatHelpers } from '@ai-sdk/react';
+import type { UseChatHelpers } from '@ai-sdk/react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface MessagesProps {
@@ -32,8 +33,23 @@ function PureMessages({
   selectedChatModel,
   nickname,
 }: MessagesProps) {
-  const [messagesContainerRef, messagesEndRef] =
-    useScrollToBottom<HTMLDivElement>([messages.length]);
+  const {
+    containerRef: messagesContainerRef,
+    endRef: messagesEndRef,
+    scrollToBottom,
+  } = useScrollToBottom();
+
+  useEffect(() => {
+    scrollToBottom('auto'); // scroll instantly when new message added
+  }, [messages.length, status]);
+
+  // Плавный скролл во время генерации сообщения
+  useEffect(() => {
+    if (status === 'streaming' && messages.length > 0) {
+      scrollToBottom('smooth');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, messages[messages.length - 1]?.content]);
 
   return (
     <div

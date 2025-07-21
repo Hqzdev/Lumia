@@ -15,6 +15,16 @@ import {
 import { useArtifactSelector, useArtifact } from '@/hooks/use-artifact';
 import { cn } from '@/lib/utils';
 import { useSession } from 'next-auth/react';
+import useSWR from 'swr';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 
 import { ArrowUpIcon, StopIcon } from './icons';
 import {
@@ -35,6 +45,15 @@ import {
   Image as ImageIcon,
   Mic,
   AudioLines,
+  Palette,
+  Camera,
+  Film,
+  User,
+  Brush,
+  Smile,
+  Sun,
+  Moon,
+  Zap,
 } from 'lucide-react';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
@@ -44,7 +63,7 @@ import { SuggestedActions } from './suggested-actions';
 import { DeepSearchToggle } from './deep-search-toggle';
 import { JustifyModeToggle } from './justify-toggle';
 import equal from 'fast-deep-equal';
-import { UseChatHelpers, UseChatOptions } from '@ai-sdk/react';
+import type { UseChatHelpers, UseChatOptions } from '@ai-sdk/react';
 import { EllipsisModeToggle } from './three-button-toggle';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -54,6 +73,134 @@ import {
   justifyPrompt,
   deepSearchPrompt,
 } from '@/lib/ai/prompts';
+
+// Стили для генерации изображений
+const IMAGE_STYLES = [
+  {
+    key: 'cyberpunk',
+    label: 'Cyberpunk',
+    prompt:
+      'A cyberpunk painting, neon lights, futuristic city, high-tech atmosphere, glowing accents, dark tones',
+    icon: <Zap className="w-14 h-14 mx-auto" />,
+  },
+  {
+    key: 'anime',
+    label: 'Anime',
+    prompt:
+      'A painting in anime style, vibrant colors, cel shading, expressive characters, scenic background, clean outlines',
+    icon: <Smile className="w-14 h-14 mx-auto" />,
+  },
+  {
+    key: 'dramatic',
+    label: 'Dramatic headshot',
+    prompt:
+      'A dramatic portrait painting, cinematic lighting, close-up composition, intense expression, rich contrast',
+    icon: <User className="w-14 h-14 mx-auto" />,
+  },
+  {
+    key: 'coloring',
+    label: 'Coloring book',
+    prompt:
+      'A black and white line drawing, simplified outlines, no color, made for coloring books, clean and clear shapes',
+    icon: <Brush className="w-14 h-14 mx-auto" />,
+  },
+  {
+    key: 'photoshoot',
+    label: 'Photoshoot',
+    prompt:
+      'A hyper-realistic studio painting, professional lighting, detailed textures, polished and photo-like quality',
+    icon: <Camera className="w-14 h-14 mx-auto" />,
+  },
+  {
+    key: 'retrocartoon',
+    label: 'Retro cartoon',
+    prompt:
+      'A painting in retro cartoon style, vintage aesthetics, flat colors, bold outlines, nostalgic and playful',
+    icon: <Film className="w-14 h-14 mx-auto" />,
+  },
+  {
+    key: 'glamour-80s',
+    label: 'Glamour 80s',
+    prompt:
+      'An 80s glamour painting, neon glow, soft-focus lighting, retro fashion vibes, pastel and metallic tones',
+    icon: <Sparkles className="w-14 h-14 mx-auto" />,
+  },
+  {
+    key: 'art-nouveau',
+    label: 'Art-Nouveau',
+    prompt:
+      'A painting in Art Nouveau style, decorative floral elements, flowing lines, organic forms, muted earthy tones',
+    icon: <Palette className="w-14 h-14 mx-auto" />,
+  },
+  {
+    key: 'synthwave',
+    label: 'Synthwave',
+    prompt:
+      'A synthwave-inspired painting, neon pinks and purples, grid landscapes, retro-futuristic atmosphere, 80s vibe',
+    icon: <Sun className="w-14 h-14 mx-auto" />,
+  },
+];
+
+function ChatSearchDialog({
+  open,
+  onOpenChange,
+  user,
+}: { open: boolean; onOpenChange: (v: boolean) => void; user: any }) {
+  const router = useRouter();
+  const [query, setQuery] = useState('');
+  const { data: chats, isLoading } = useSWR<
+    Array<{ id: string; title: string }>
+  >(user ? '/api/history' : null);
+
+  const filtered = useMemo(() => {
+    if (!chats) return [];
+    if (!query.trim()) return chats;
+    return chats.filter((chat) =>
+      chat.title.toLowerCase().includes(query.trim().toLowerCase()),
+    );
+  }, [chats, query]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Search Chats</DialogTitle>
+        </DialogHeader>
+        <Input
+          autoFocus
+          placeholder="Search by chat title..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="mb-4"
+        />
+        <div className="max-h-72 overflow-y-auto">
+          {isLoading ? (
+            <div className="text-center text-gray-400 py-8">Loading...</div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">No chats found</div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {filtered.map((chat) => (
+                <li key={chat.id}>
+                  <button
+                    type="button"
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded transition"
+                    onClick={() => {
+                      onOpenChange(false);
+                      router.push(`/chat/${chat.id}`);
+                    }}
+                  >
+                    {chat.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function PureMultimodalInput({
   chatId,
@@ -93,7 +240,7 @@ function PureMultimodalInput({
   const [isCommandMenuOpen, setIsCommandMenuOpen] = useState(false);
   const [isMenuSelected, setIsMenuSelected] = useState(false);
   const { open, openMobile } = useSidebar();
-  const [isJustifyMode, setIsJustifyMode] = useState(true);
+  const [isJustifyMode, setIsJustifyMode] = useState(false);
   const [isDeepSearchMode, setIsDeepSearchMode] = useState(false);
   const [isCreateImageMode, setIsCreateImageMode] = useState(false);
   const [isCanvasMode, setIsCanvasMode] = useState(false);
@@ -102,6 +249,8 @@ function PureMultimodalInput({
   const userId = session?.user?.id;
   const [customization, setCustomization] = useState<any>(null);
   const [isInstrumentsOpen, setIsInstrumentsOpen] = useState(false);
+  const [isStylePopoverOpen, setIsStylePopoverOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -280,32 +429,48 @@ function PureMultimodalInput({
     placeholder = 'Describe what you want to draw on the canvas…';
   else if (isThinkLongerMode) placeholder = 'Ask for a more detailed answer…';
 
+  // Показывать меню стилей только если выбран режим Create image
+  useEffect(() => {
+    if (isCreateImageMode) {
+      setIsStylePopoverOpen(true);
+    } else {
+      setIsStylePopoverOpen(false);
+    }
+  }, [isCreateImageMode]);
+
   return (
     <div
-      className={cn(
-        'fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full max-w-[95%] md:max-w-[800px] z-40 bg-white dark:bg-black flex flex-col justify-center items-center transition-all duration-100 ease-in-out',
-        open && width >= 768 && !openMobile && 'md:ml-[130px]', // половина ширины сайдбара
-        messages.length === 0 ? 'md:bottom-[30px] bottom-0' : 'bottom-0', // Поднимаем контейнер выше только на десктопе
-      )}
+      className={`fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full max-w-[95%] md:max-w-[800px] z-40 bg-white dark:bg-black flex flex-col justify-center items-center transition-all duration-100 ease-in-out${open && width >= 768 && !openMobile ? ' md:ml-[130px]' : ''}${messages.length === 0 ? ' md:bottom-[30px] bottom-0' : ' bottom-0'}`}
     >
+      {/* Кнопка поиска чатов */}
+      {userId && (
+        <div className="w-full flex justify-end mb-2 pr-2">
+          <Button
+            type="button"
+            variant="ghost"
+            className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+            onClick={() => setIsSearchOpen(true)}
+            aria-label="Search chats"
+          >
+            <Search className="size-6" />
+          </Button>
+          <ChatSearchDialog
+            open={isSearchOpen}
+            onOpenChange={setIsSearchOpen}
+            user={session?.user}
+          />
+        </div>
+      )}
+      {/* Удаляем старое меню стилей сверху */}
       <div className="relative w-full max-w-[95%] md:max-w-2xl flex flex-col gap-4 rounded-[30px] bg-white dark:bg-black  shadow-lg border border-gray-200 -mb-4">
         <div className="flex items-center w-full relative">
           <Textarea
             data-testid="multimodal-input"
             ref={textareaRef}
             placeholder={placeholder}
-            value={isMenuSelected ? input + ' →' : input}
+            value={isMenuSelected ? `${input} →` : input}
             onChange={handleInput}
-            className={cx(
-              'min-h-[60px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-[30px] !text-base bg-white dark:bg-gray-900 pb-16 px-6 pt-4 border border-gray-200 dark:border-gray-600 focus:border-gray-200 focus-visible:border-gray-200 focus:ring-0 focus-visible:ring-0',
-              ((isCommandMenuOpen &&
-                /^(Justify|Search|Research|Deep Research|Generate Image)\b/.test(
-                  input,
-                )) ||
-                isMenuSelected) &&
-                'font-bold text-blue-600',
-              className,
-            )}
+            className={`min-h-[60px] max-h-[400px] overflow-auto resize-none rounded-[30px] !text-base bg-white dark:bg-gray-900 pb-16 px-6 pt-4 border border-gray-200 dark:border-gray-600 focus:border-gray-200 focus-visible:border-gray-200 focus:ring-0 focus-visible:ring-0 transition-[height] duration-200 ease-in-out${(isCommandMenuOpen && /^(Justify|Search|Research|Deep Research|Generate Image)\b/.test(input)) || isMenuSelected ? ' font-bold text-blue-600' : ''}${className ? ` ${className}` : ''}`}
             rows={1}
             autoFocus
             onKeyDown={(event) => {
@@ -473,33 +638,93 @@ function PureMultimodalInput({
               isThinkLongerMode) && (
               <>
                 <span className="mx-1 h-6 w-px bg-gray-200 inline-block align-middle" />
-                <button
-                  type="button"
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-base font-normal text-blue-600 bg-white hover:bg-blue-50 transition shadow-none"
-                  onClick={() => {
-                    setIsJustifyMode(false);
-                    setIsDeepSearchMode(false);
-                    setIsCreateImageMode(false);
-                    setIsCanvasMode(false);
-                    setIsThinkLongerMode(false);
-                  }}
-                >
-                  {isJustifyMode && <Lightbulb className="size-4" />}
-                  {isDeepSearchMode && <Telescope className="size-4" />}
-                  {isCreateImageMode && <ImageIcon className="size-4" />}
-                  {isCanvasMode && <Paintbrush className="size-4" />}
-                  {isThinkLongerMode && <Sparkles className="size-4" />}
-                  <span className="ml-1">
-                    {isJustifyMode && 'Web search'}
-                    {isDeepSearchMode && 'Deep research'}
-                    {isCreateImageMode && 'Create image'}
-                    {isCanvasMode && 'Canvas'}
-                    {isThinkLongerMode && 'Think longer'}
-                  </span>
-                  <span className="ml-1 cursor-pointer text-blue-400 hover:text-blue-600">
-                    ×
-                  </span>
-                </button>
+                {/* Кнопка "Изображение" и "Стили" только для Create image */}
+                {isCreateImageMode && (
+                  <>
+                    <span className="flex items-center gap-2">
+                      <ImageIcon className="size-5 text-blue-500" />
+                      <span className="text-blue-600 font-medium">Image</span>
+                      <button
+                        type="button"
+                        className="ml-1 text-gray-400 hover:text-gray-600 text-lg"
+                        onClick={() => {
+                          setIsCreateImageMode(false);
+                        }}
+                        aria-label="Убрать изображение"
+                      >
+                        ×
+                      </button>
+                    </span>
+                    <Popover
+                      open={isStylePopoverOpen}
+                      onOpenChange={setIsStylePopoverOpen}
+                    >
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          className="ml-4 flex items-center gap-2 px-2 py-1 rounded-full text-sm font-normal text-black bg-white hover:bg-gray-100 shadow-none"
+                          variant="ghost"
+                        >
+                          <Palette className="size-5" />
+                          <span className="ml-1">Styles</span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        className="w-[200px] p-1 flex flex-col gap-0.5 rounded-xl shadow-lg border border-gray-200"
+                      >
+                        <div className="grid grid-cols-3 gap-2">
+                          {IMAGE_STYLES.map((style) => (
+                            <button
+                              key={style.key}
+                              className="flex flex-col items-center px-1 py-2 rounded-md hover:bg-gray-100 transition-colors focus:outline-none"
+                              onClick={() => {
+                                setInput(style.prompt);
+                                setIsStylePopoverOpen(false);
+                              }}
+                              type="button"
+                            >
+                              <span className="w-7 h-7 flex items-center justify-center bg-gray-100 rounded-full mb-1">
+                                {style.icon}
+                              </span>
+                              <span className="text-xs text-black text-center leading-tight">
+                                {style.label}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </>
+                )}
+                {/* Кнопка закрытия режима */}
+                {!isCreateImageMode && (
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-base font-normal text-blue-600 bg-white hover:bg-blue-50 transition shadow-none"
+                    onClick={() => {
+                      setIsJustifyMode(false);
+                      setIsDeepSearchMode(false);
+                      setIsCreateImageMode(false);
+                      setIsCanvasMode(false);
+                      setIsThinkLongerMode(false);
+                    }}
+                  >
+                    {isJustifyMode && <Lightbulb className="size-4" />}
+                    {isDeepSearchMode && <Telescope className="size-4" />}
+                    {isCanvasMode && <Paintbrush className="size-4" />}
+                    {isThinkLongerMode && <Sparkles className="size-4" />}
+                    <span className="ml-1">
+                      {isJustifyMode && 'Web search'}
+                      {isDeepSearchMode && 'Deep research'}
+                      {isCanvasMode && 'Canvas'}
+                      {isThinkLongerMode && 'Think longer'}
+                    </span>
+                    <span className="ml-1 cursor-pointer text-blue-400 hover:text-blue-600">
+                      ×
+                    </span>
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -513,19 +738,26 @@ function PureMultimodalInput({
                     className="rounded-full size-12 flex items-center justify-center bg-white text-gray-500 hover:bg-gray-100"
                     disabled
                   >
-                    <Mic className="size-11" />
+                    <Mic className="size-12" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="top">soon</TooltipContent>
+                <TooltipContent side="top">
+                  Voice input (coming soon)
+                </TooltipContent>
               </Tooltip>
               {status === 'submitted' ? (
                 <StopButton stop={stop} setMessages={setMessages} />
               ) : (
-                <SendButton
-                  input={input}
-                  submitForm={submitForm}
-                  uploadQueue={uploadQueue}
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SendButton
+                      input={input}
+                      submitForm={submitForm}
+                      uploadQueue={uploadQueue}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent side="top">Send message</TooltipContent>
+                </Tooltip>
               )}
             </div>
           </div>

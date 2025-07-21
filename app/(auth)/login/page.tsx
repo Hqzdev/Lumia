@@ -280,21 +280,19 @@ export default function Page() {
               <TooltipContent>soon</TooltipContent>
             </Tooltip>
           </div>
-          <div className="w-full flex flex-row justify-center gap-4 mt-8 text-xs text-gray-500">
-            <button
-              type="button"
-              className="hover:underline bg-transparent border-none p-0 m-0 text-inherit cursor-pointer w-40 h-8 rounded-full"
-              onClick={() => router.push('/policy')}
-            >
-              Terms of Service
-            </button>
-            <button
-              type="button"
-              className="hover:underline bg-transparent border-none p-0 m-0 text-inherit cursor-pointer w-40 h-8 rounded-full"
-              onClick={() => router.push('/privacy')}
+          <div className="w-full flex flex-row justify-center gap-4 mt-4 text-xs text-gray-500">
+            <Link
+              href="/policy"
+              className="hover:underline bg-transparent border-none p-0 m-0 text-inherit cursor-pointer w-40 h-8 rounded-full flex items-center justify-center"
             >
               Privacy Policy
-            </button>
+            </Link>
+            <Link
+              href="/privacy"
+              className="hover:underline bg-transparent border-none p-0 m-0 text-inherit cursor-pointer w-40 h-8 rounded-full flex items-center justify-center"
+            >
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>

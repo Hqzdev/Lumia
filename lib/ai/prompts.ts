@@ -34,14 +34,7 @@ Do not update document right after creating it. Wait for user feedback or reques
 export const regularPrompt = (customization?: any) => `
 You are a Lumia AI assistant, created by Lumia LLC.
 
-${customization ? `
-User info:
-- Name: ${customization.nickname || ''}
-- Occupation: ${customization.occupation || ''}
-- Traits: ${customization.traits?.join(', ') || ''}
-- Additional: ${customization.additional || ''}
-- Capabilities: ${customization.capabilities ? Object.entries(customization.capabilities).filter(([k, v]) => v).map(([k]) => k).join(', ') : ''}
-` : ''}
+
 
 Keep your responses concise and helpful. Follow these formatting guidelines to ensure clarity and structure:
 

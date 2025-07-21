@@ -1,6 +1,7 @@
 'use client';
 
-import type { Attachment, UIMessage } from 'ai';
+import type { Attachment } from 'ai';
+import type { UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useState, memo } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -72,9 +73,14 @@ export const Chat = memo(function Chat({
   return (
     <AnimatePresence>
       <motion.div
+        key="chat-main"
         className="flex flex-col min-w-0 h-dvh bg-background pt-[56px]"
         initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } }}
+        animate={{
+          opacity: 1,
+          y: 0,
+          transition: { type: 'spring', stiffness: 120, damping: 18 },
+        }}
         exit={{ opacity: 0, y: 30, transition: { duration: 0.2 } }}
         layout
       >
@@ -84,8 +90,9 @@ export const Chat = memo(function Chat({
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
         />
-        <div className={`flex-1 flex flex-col ${messages.length === 0 ? 'justify-center' : ''} pb-28`}>
-          
+        <div
+          className={`flex-1 flex flex-col ${messages.length === 0 ? 'justify-center' : ''} pb-28`}
+        >
           <Messages
             chatId={id}
             status={status}
@@ -118,6 +125,7 @@ export const Chat = memo(function Chat({
         )}
       </motion.div>
       <Artifact
+        key="chat-artifact"
         chatId={id}
         input={input}
         setInput={setInput}

@@ -8,13 +8,11 @@ import { Markdown } from './markdown';
 interface MessageReasoningProps {
   isLoading: boolean;
   reasoning: string;
-  selectedChatModel?: string;
 }
 
 export function MessageReasoning({
   isLoading,
   reasoning,
-  selectedChatModel,
 }: MessageReasoningProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -32,8 +30,6 @@ export function MessageReasoning({
       marginBottom: '0.5rem',
     },
   };
-
-
 
   return (
     <div className="flex flex-col">

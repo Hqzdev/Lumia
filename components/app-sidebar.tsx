@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { SidebarHistory } from '@/components/sidebar-history';
 import { SidebarUserNav } from '@/components/sidebar-user-nav';
 import { Button } from '@/components/ui/button';
-import { MessageSquareDiff, FolderPlus, Plus } from 'lucide-react'
+import { MessageSquareDiff, FolderPlus, Plus } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -15,18 +15,31 @@ import {
   SidebarMenu,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { SidebarToggle } from './sidebar-toggle';
+import useSWR from 'swr';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useState, useMemo } from 'react';
+import type { Chat } from '@/lib/db/schema';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Handler for search button
   const handleSearchClick = () => {
-    setOpenMobile(false);
-    router.push('/search');
-    router.refresh();
+    setIsSearchOpen(true);
   };
 
   // Handler for new chat
@@ -85,8 +98,22 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   >
                     <span className="sr-only">Search</span>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
-                      <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <circle
+                        cx="11"
+                        cy="11"
+                        r="7"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                      <line
+                        x1="16.65"
+                        y1="16.65"
+                        x2="21"
+                        y2="21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
                     </svg>
                   </Button>
                 </TooltipTrigger>
@@ -97,12 +124,81 @@ export function AppSidebar({ user }: { user: User | undefined }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className={sidebarBg}>
-       
-      
-       
         <SidebarHistory user={user} />
       </SidebarContent>
-      <SidebarFooter className={sidebarBg}>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+      <SidebarFooter className={sidebarBg}>
+        {user && <SidebarUserNav user={user} />}
+      </SidebarFooter>
+      <ChatSearchDialog
+        open={isSearchOpen}
+        onOpenChange={setIsSearchOpen}
+        user={user}
+      />
     </Sidebar>
+  );
+}
+
+function ChatSearchDialog({
+  open,
+  onOpenChange,
+  user,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  user: User | undefined;
+}) {
+  const router = useRouter();
+  const [query, setQuery] = useState('');
+  const { data: chats, isLoading } = useSWR<Array<Chat>>(
+    user ? '/api/history' : null,
+  );
+
+  const filtered = useMemo(() => {
+    if (!chats) return [];
+    if (!query.trim()) return chats;
+    return chats.filter((chat) =>
+      chat.title.toLowerCase().includes(query.trim().toLowerCase()),
+    );
+  }, [chats, query]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Search Chats</DialogTitle>
+        </DialogHeader>
+        <Input
+          autoFocus
+          placeholder="Search by chat title..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="mb-4"
+        />
+        <div className="max-h-72 overflow-y-auto">
+          {isLoading ? (
+            <div className="text-center text-gray-400 py-8">Loading...</div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">No chats found</div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {filtered.map((chat) => (
+                <li key={chat.id}>
+                  <button
+                    type="button"
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded transition"
+                    onClick={() => {
+                      onOpenChange(false);
+                      router.push(`/chat/${chat.id}`);
+                    }}
+                  >
+                    {chat.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
