@@ -1,6 +1,12 @@
 'use client';
 
-import React, { startTransition, useMemo, useOptimistic, useState, useEffect } from 'react';
+import React, {
+  startTransition,
+  useMemo,
+  useOptimistic,
+  useState,
+  useEffect,
+} from 'react';
 
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
@@ -51,7 +57,7 @@ function AnimatedVersion({ version }: { version: string }) {
     <span
       className={cn(
         'transition-opacity duration-200',
-        fade ? 'opacity-0' : 'opacity-100'
+        fade ? 'opacity-0' : 'opacity-100',
       )}
       style={{ display: 'inline-block' }}
     >
@@ -106,17 +112,12 @@ export function ModelSelector({
         <DropdownMenuContent align="start" className="min-w-[300px]">
           <div className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-muted-foreground select-none">
             <span>Model</span>
-            <button
-              type="button"
-              className="ml-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
-              aria-label="Model info"
-            >
-            <Info className='h-6 w-6' />
-            </button>
           </div>
           {chatModels.map((chatModel) => {
             const { id } = chatModel;
-            const { base: itemBase, version: itemVersion } = splitModelName(chatModel.name);
+            const { base: itemBase, version: itemVersion } = splitModelName(
+              chatModel.name,
+            );
 
             return (
               <DropdownMenuItem

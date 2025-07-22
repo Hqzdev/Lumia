@@ -17,14 +17,4 @@ export const chatModels: Array<ChatModel> = [
     name: 'Lumia V1 Max',
     description: 'Enhanced performance for writing and idea exploration',
   },
-  {
-    id: 'chat',
-    name: 'Lumia V2',
-    description: 'Advanced reasoning and code understanding',
-  },
-  {
-    id: 'chat-reasoning',
-    name: 'Lumia V2 Pro',
-    description: 'Best for code, visual reasoning, and complex tasks',
-  },
 ];

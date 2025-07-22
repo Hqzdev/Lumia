@@ -107,7 +107,7 @@ export const Overview = ({ nickname }: { nickname?: string }) => {
   return (
     <div
       key="overview"
-      className="max-w-5xl mx-auto md:mt-32 px-4 size-full flex flex-col justify-center items-center"
+      className="max-w-5xl mx-auto md:mt-22 px-4 size-full flex flex-col justify-center items-center"
     >
       {nickname && (
         <div
@@ -131,31 +131,34 @@ export const Overview = ({ nickname }: { nickname?: string }) => {
           </span>
         </div>
       )}
-      <div
-        className={`flex gap-[2px] ${textSize} font-bold justify-center mb-8`}
-        style={{ lineHeight: 1.05, minHeight: isMobile ? 40 : 36 }}
-      >
-        <span
-          className="text-gray-600 dark:text-gray-400"
-          style={{
-            letterSpacing: '0.01em',
-            transition: 'color 0.2s',
-          }}
+      {/* Фразы показываем только на desktop */}
+      {!isMobile && (
+        <div
+          className={`flex gap-[2px] ${textSize} font-bold justify-center mb-8`}
+          style={{ lineHeight: 1.05, minHeight: 36 }}
         >
-          {displayedText}
-        </span>
-        <span
-          className="ml-1"
-          style={{
-            color: '#6b7280', // Tailwind gray-500
-            WebkitTextStroke: '1px #fff',
-            fontWeight: 900,
-            animation: 'blink 1.8s steps(1) infinite', // медленнее и плавнее
-          }}
-        >
-          |
-        </span>
-      </div>
+          <span
+            className="text-gray-600 dark:text-gray-400"
+            style={{
+              letterSpacing: '0.01em',
+              transition: 'color 0.2s',
+            }}
+          >
+            {displayedText}
+          </span>
+          <span
+            className="ml-1"
+            style={{
+              color: '#6b7280', // Tailwind gray-500
+              WebkitTextStroke: '1px #fff',
+              fontWeight: 900,
+              animation: 'blink 1.8s steps(1) infinite', // медленнее и плавнее
+            }}
+          >
+            |
+          </span>
+        </div>
+      )}
       <style>
         {`
           @keyframes blink {
