@@ -44,14 +44,14 @@ export function CodeBlock({
   }
 
   return (
-    <span className="not-prose flex flex-col relative group block">
+    <span className="not-prose flex flex-col relative group">
       <button
         type="button"
         onClick={copyToClipboard}
         className="absolute top-2 right-2 z-10 p-1.5 text-zinc-400 hover:text-zinc-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
         aria-label="Copy code"
       >
-        <ClipboardIcon className="h-3 w-3" />
+        <ClipboardIcon className="size-3" />
       </button>
 
       <SyntaxHighlighter

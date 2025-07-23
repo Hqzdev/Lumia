@@ -29,18 +29,18 @@ export default function PrivacyPolicy() {
             aria-label="Close"
             onClick={() => router.back()}
           >
-            <CloseIcon className="h-6 w-6" />
+            <CloseIcon className="size-6" />
           </button>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             Privacy Policy
           </h1>
           <div className="flex items-center gap-4 text-sm text-gray-500">
             <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
+              <Calendar className="size-4" />
               Last updated: January 15, 2024
             </div>
             <div className="flex items-center gap-1">
-              <Globe className="h-4 w-4" />
+              <Globe className="size-4" />
               Effective globally
             </div>
           </div>
@@ -132,7 +132,7 @@ export default function PrivacyPolicy() {
           {/* Introduction */}
           <section id="introduction">
             <div className="flex items-center gap-2 mb-4">
-              <Shield className="h-5 w-5 text-blue-600" />
+              <Shield className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 1. Introduction
               </h2>
@@ -165,7 +165,7 @@ export default function PrivacyPolicy() {
           {/* Information We Collect */}
           <section id="information-we-collect">
             <div className="flex items-center gap-2 mb-4">
-              <Database className="h-5 w-5 text-blue-600" />
+              <Database className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 2. Information We Collect
               </h2>
@@ -250,7 +250,7 @@ export default function PrivacyPolicy() {
           {/* How We Use Information */}
           <section id="how-we-use-information">
             <div className="flex items-center gap-2 mb-4">
-              <Eye className="h-5 w-5 text-blue-600" />
+              <Eye className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 3. How We Use Information
               </h2>
@@ -328,7 +328,7 @@ export default function PrivacyPolicy() {
           {/* Information Sharing */}
           <section id="information-sharing">
             <div className="flex items-center gap-2 mb-4">
-              <Users className="h-5 w-5 text-blue-600" />
+              <Users className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 4. Information Sharing and Disclosure
               </h2>
@@ -393,7 +393,7 @@ export default function PrivacyPolicy() {
           {/* Data Retention */}
           <section id="data-retention">
             <div className="flex items-center gap-2 mb-4">
-              <Database className="h-5 w-5 text-blue-600" />
+              <Database className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 5. Data Retention
               </h2>
@@ -452,7 +452,7 @@ export default function PrivacyPolicy() {
           {/* Security */}
           <section id="security">
             <div className="flex items-center gap-2 mb-4">
-              <Lock className="h-5 w-5 text-blue-600" />
+              <Lock className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 6. Security
               </h2>
@@ -513,7 +513,7 @@ export default function PrivacyPolicy() {
           {/* Your Rights */}
           <section id="your-rights">
             <div className="flex items-center gap-2 mb-4">
-              <Shield className="h-5 w-5 text-blue-600" />
+              <Shield className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 7. Your Rights and Choices
               </h2>
@@ -578,7 +578,7 @@ export default function PrivacyPolicy() {
           {/* Contact */}
           <section id="contact">
             <div className="flex items-center gap-2 mb-4">
-              <Globe className="h-5 w-5 text-blue-600" />
+              <Globe className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 12. Contact Us
               </h2>

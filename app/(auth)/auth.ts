@@ -1,20 +1,14 @@
 import { compare } from 'bcrypt-ts';
-import NextAuth, { type User, type Session } from 'next-auth';
+import NextAuth, { DefaultSession } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import 'next-auth';
 
 import { getUserByNickname } from '@/lib/db/queries';
 import { authConfig } from './auth.config';
-import { DefaultSession } from 'next-auth';
 
-interface ExtendedUser extends User {
+interface AppUser {
   id: string;
   nickname: string;
   subscription: string;
-}
-
-interface ExtendedSession extends Session {
-  user: ExtendedUser;
 }
 
 declare module 'next-auth' {
@@ -29,7 +23,7 @@ declare module 'next-auth' {
       id?: string;
       nickname: string;
       subscription?: string;
-    } & DefaultSession["user"];
+    } & DefaultSession['user'];
   }
 }
 
@@ -44,7 +38,10 @@ export const {
     Credentials({
       credentials: {},
       async authorize(credentials) {
-        const { nickname, password } = credentials as { nickname: string; password: string };
+        const { nickname, password } = credentials as {
+          nickname: string;
+          password: string;
+        };
 
         const users = await getUserByNickname(nickname);
 
@@ -63,7 +60,7 @@ export const {
           nickname: user.nickname,
           email: user.email,
           subscription: user.subscription,
-        } as ExtendedUser;
+        } as AppUser;
       },
     }),
   ],

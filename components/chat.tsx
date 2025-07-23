@@ -1,7 +1,5 @@
 'use client';
 
-import type { Attachment } from 'ai';
-import type { UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useState, memo } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -27,7 +25,7 @@ export const Chat = memo(function Chat({
   nickname,
 }: {
   id: string;
-  initialMessages: Array<UIMessage>;
+  initialMessages: Array<import('ai').UIMessage>;
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
@@ -67,7 +65,9 @@ export const Chat = memo(function Chat({
     fetcher,
   );
 
-  const [attachments, setAttachments] = useState<Array<Attachment>>([]);
+  const [attachments, setAttachments] = useState<
+    Array<import('ai').Attachment>
+  >([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   return (

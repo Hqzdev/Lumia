@@ -73,6 +73,10 @@ import {
   justifyPrompt,
   deepSearchPrompt,
 } from '@/lib/ai/prompts';
+import { SearchResults } from './search-results';
+import { SearchResultsImageSection } from './search-results-image';
+import { VideoSearchResults } from './video-search-results';
+import { Markdown } from './markdown';
 
 // Стили для генерации изображений
 const IMAGE_STYLES = [
@@ -207,7 +211,7 @@ const PROMPTS = {
   web: [
     'What is the latest news in technology?',
     'Find me a recipe for a healthy breakfast',
-    'What&apos;s the weather like in Tokyo?',
+    "What's the weather like in Tokyo?",
     'How do I start learning Python?',
     'Best places to visit in Europe',
     'Explain quantum computing in simple terms',
@@ -268,7 +272,7 @@ const PROMPTS = {
     'A close-up of a colorful butterfly',
     'A futuristic sports car',
     'A mystical portal in the woods',
-    'A child&apos;s drawing of their family',
+    'A child;s drawing of their family',
   ],
   canvas: [
     'Draw a tree with autumn leaves',
@@ -456,6 +460,8 @@ function PureMultimodalInput({
     [messages],
   );
   const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const [webSearchResults, setWebSearchResults] = useState<any>(null);
+  const [webSearchLoading, setWebSearchLoading] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -538,7 +544,29 @@ function PureMultimodalInput({
     let systemPrompt = undefined;
     // Обычный режим
     if (isJustifyMode) {
-      systemPrompt = justifyPrompt;
+      setWebSearchLoading(true);
+      setWebSearchResults(null);
+      try {
+        const res = await fetch('/api/websearch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: userPrompt }),
+        });
+        const data = await res.json();
+        setWebSearchResults(data);
+      } catch (e) {
+        toast.error('Ошибка поиска в интернете');
+      } finally {
+        setWebSearchLoading(false);
+      }
+      setAttachments([]);
+      setLocalStorageInput('');
+      setInput('');
+      resetHeight();
+      if (width && width > 768) {
+        textareaRef.current?.focus();
+      }
+      return;
     } else if (isDeepSearchMode) {
       systemPrompt = deepSearchPrompt;
     } else {
@@ -676,7 +704,7 @@ function PureMultimodalInput({
         Promise.all(files.map(uploadFile)).then((uploadedAttachments) => {
           const successfullyUploadedAttachments: Attachment[] =
             uploadedAttachments
-              .filter((a): a is Attachment => !!a && typeof a.url === 'string')
+              .filter((a) => !!a && typeof a.url === 'string')
               .map((a) => a as Attachment);
           setAttachments((current) => [
             ...current,
@@ -689,7 +717,7 @@ function PureMultimodalInput({
   );
 
   // Выбор placeholder в зависимости от режима
-  let placeholder = 'What&apos;s up?';
+  let placeholder = 'What’s up?';
   if (isJustifyMode) placeholder = 'Ask anything for web search…';
   else if (isDeepSearchMode) placeholder = 'Ask for deep research…';
   else if (isCreateImageMode)
@@ -1142,6 +1170,56 @@ function PureMultimodalInput({
           </p>
         )}
       </div>
+      {isJustifyMode && (webSearchLoading || webSearchResults) && (
+        <div className="mb-4">
+          {webSearchLoading && (
+            <div className="text-gray-400">Поиск в интернете…</div>
+          )}
+          {webSearchResults && (
+            <>
+              {webSearchResults.formatted && (
+                <div className="mb-4">
+                  <Markdown>{webSearchResults.formatted}</Markdown>
+                </div>
+              )}
+              {webSearchResults.results?.length > 0 && (
+                <div className="mb-2">
+                  <div className="font-semibold mb-1">Результаты поиска</div>
+                  <SearchResults
+                    results={webSearchResults.results.map((r: any) => ({
+                      title: r.title,
+                      url: r.url,
+                      content: r.snippet,
+                    }))}
+                  />
+                </div>
+              )}
+              {webSearchResults.images?.length > 0 && (
+                <div className="mb-2">
+                  <div className="font-semibold mb-1">Изображения</div>
+                  <SearchResultsImageSection
+                    images={webSearchResults.images.map((img: any) => ({
+                      url: img.url,
+                      description: img.alt,
+                    }))}
+                  />
+                </div>
+              )}
+              {webSearchResults.videos?.length > 0 && (
+                <div className="mb-2">
+                  <div className="font-semibold mb-1">Видео</div>
+                  <VideoSearchResults
+                    results={{
+                      videos: webSearchResults.videos,
+                      searchParameters: { q: '', type: '', engine: '' },
+                    }}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </>
   );
 }

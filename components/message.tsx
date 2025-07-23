@@ -18,7 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
-import { UseChatHelpers } from '@ai-sdk/react';
+import type { UseChatHelpers } from '@ai-sdk/react';
 import { Sparkles, Pencil } from 'lucide-react';
 
 const PurePreviewMessage = ({
@@ -84,7 +84,6 @@ const PurePreviewMessage = ({
                     key={key}
                     isLoading={isLoading}
                     reasoning={part.reasoning}
-                    selectedChatModel={selectedChatModel}
                   />
                 );
               }
@@ -280,7 +279,7 @@ export const ThinkingMessage = memo(() => {
       isMounted = false;
       clearTimeout(timeout);
     };
-  }, [currentPhrase]);
+  }, [currentPhrase, thinkingPhrases]);
 
   return (
     <motion.div

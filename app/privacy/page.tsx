@@ -20,7 +20,7 @@ export default function TermsAndPrivacyPage() {
         {/* Header */}
         <div className="mb-8">
           <Button variant="ghost" className="mb-4 -ml-2">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="size-4" />
             Back to Settings
           </Button>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -28,11 +28,11 @@ export default function TermsAndPrivacyPage() {
           </h1>
           <div className="flex items-center gap-4 text-sm text-gray-500">
             <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
+              <Calendar className="size-4" />
               Last updated: January 15, 2024
             </div>
             <div className="flex items-center gap-1">
-              <FileText className="h-4 w-4" />
+              <FileText className="size-4" />
               Version 2.1
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function TermsAndPrivacyPage() {
           {/* Acceptance */}
           <section id="acceptance">
             <div className="flex items-center gap-2 mb-4">
-              <FileText className="h-5 w-5 text-blue-600" />
+              <FileText className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 1. Acceptance of Terms
               </h2>
@@ -163,7 +163,7 @@ export default function TermsAndPrivacyPage() {
               </p>
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  <AlertTriangle className="size-5 text-red-600 shrink-0" />
                   <p className="text-red-800 text-sm">
                     <strong>Important:</strong> These Terms include important
                     information about future changes to the Terms, limitations
@@ -178,7 +178,7 @@ export default function TermsAndPrivacyPage() {
           {/* Description of Service */}
           <section id="description">
             <div className="flex items-center gap-2 mb-4">
-              <Zap className="h-5 w-5 text-blue-600" />
+              <Zap className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 2. Description of Service
               </h2>
@@ -225,7 +225,7 @@ export default function TermsAndPrivacyPage() {
           {/* Eligibility */}
           <section id="eligibility">
             <div className="flex items-center gap-2 mb-4">
-              <Users className="h-5 w-5 text-blue-600" />
+              <Users className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 3. Eligibility
               </h2>
@@ -270,7 +270,7 @@ export default function TermsAndPrivacyPage() {
           {/* Account Registration */}
           <section id="account">
             <div className="flex items-center gap-2 mb-4">
-              <Shield className="h-5 w-5 text-blue-600" />
+              <Shield className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 4. Account Registration and Security
               </h2>
@@ -321,7 +321,7 @@ export default function TermsAndPrivacyPage() {
           {/* Acceptable Use Policy */}
           <section id="acceptable-use">
             <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="h-5 w-5 text-blue-600" />
+              <AlertTriangle className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 5. Acceptable Use Policy
               </h2>
@@ -357,7 +357,7 @@ export default function TermsAndPrivacyPage() {
               <ul className="list-disc pl-6 mb-6 space-y-2 text-gray-700">
                 <li>Attempt to reverse engineer or extract model weights</li>
                 <li>Use automated tools to access the Service excessively</li>
-                <li>Interfere with or disrupt the Service&apos;s operation</li>
+                <li>Interfere with or disrupt the Service's operation</li>
                 <li>Circumvent usage limits or access controls</li>
                 <li>Use the Service for competitive intelligence gathering</li>
                 <li>Resell or redistribute access to the Service</li>
@@ -386,7 +386,7 @@ export default function TermsAndPrivacyPage() {
           {/* User Content */}
           <section id="content">
             <div className="flex items-center gap-2 mb-4">
-              <FileText className="h-5 w-5 text-blue-600" />
+              <FileText className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 6. User Content and Data
               </h2>
@@ -454,7 +454,7 @@ export default function TermsAndPrivacyPage() {
           {/* Payment and Billing */}
           <section id="payment">
             <div className="flex items-center gap-2 mb-4">
-              <Scale className="h-5 w-5 text-blue-600" />
+              <Scale className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 8. Payment and Billing
               </h2>
@@ -514,7 +514,7 @@ export default function TermsAndPrivacyPage() {
           {/* Disclaimers */}
           <section id="disclaimers">
             <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="h-5 w-5 text-blue-600" />
+              <AlertTriangle className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 10. Disclaimers and Limitations
               </h2>
@@ -569,7 +569,7 @@ export default function TermsAndPrivacyPage() {
 
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  <AlertTriangle className="size-5 text-red-600 shrink-0" />
                   <p className="text-red-800 text-sm">
                     <strong>Important:</strong> Do not rely on Generated Content
                     for medical, legal, financial, or safety-critical decisions
@@ -583,7 +583,7 @@ export default function TermsAndPrivacyPage() {
           {/* Termination */}
           <section id="termination">
             <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="h-5 w-5 text-blue-600" />
+              <AlertTriangle className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 12. Termination
               </h2>
@@ -634,7 +634,7 @@ export default function TermsAndPrivacyPage() {
           {/* Contact */}
           <section id="contact">
             <div className="flex items-center gap-2 mb-4">
-              <FileText className="h-5 w-5 text-blue-600" />
+              <FileText className="size-5 text-blue-600" />
               <h2 className="text-2xl font-semibold text-gray-900">
                 15. Contact Information
               </h2>

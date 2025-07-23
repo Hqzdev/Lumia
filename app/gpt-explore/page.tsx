@@ -7,13 +7,13 @@ const models = [
   {
     name: 'Lumia v1',
     description: 'Fast, efficient, and reliable for everyday tasks.',
-    icon: <Zap className="w-8 h-8 text-blue-500" />,
+    icon: <Zap className="size-8 text-blue-500" />,
     link: '#',
   },
   {
     name: 'Lumia v1 Max',
     description: 'Enhanced version of v1 with more context and power.',
-    icon: <Star className="w-8 h-8 text-purple-500" />,
+    icon: <Star className="size-8 text-purple-500" />,
     link: '#',
   },
 ];

@@ -48,7 +48,11 @@ export default function SettingsDialog(props: SettingsDialogProps) {
     typeof props.open === 'boolean' && typeof props.onOpenChange === 'function';
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = isControlled ? props.open : internalOpen;
-  const setIsOpen = isControlled ? props.onOpenChange! : setInternalOpen;
+  const setIsOpen = isControlled
+    ? (open: boolean) => {
+        if (props.onOpenChange) props.onOpenChange(open);
+      }
+    : setInternalOpen;
 
   // Settings state
   const [settings, setSettings] = useState({
@@ -108,6 +112,7 @@ export default function SettingsDialog(props: SettingsDialogProps) {
               return (
                 <button
                   key={item.id}
+                  type="button"
                   onClick={() => setActiveSection(item.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
                     isActive ? 'bg-gray-100' : 'hover:bg-gray-100'
@@ -168,21 +173,19 @@ function GeneralSettings({ settings, updateSetting }: any) {
     <div className="space-y-8">
       <div>
         <h3 className="text-2xl font-medium text-gray-900 mb-2">Settings</h3>
-        <div className="h-px bg-gray-200 mb-8"></div>
+        <div className="h-px bg-gray-200 mb-8" />
       </div>
 
       <div className="space-y-8">
         <div className="flex items-center justify-between">
-          <div>
-            <label className="text-base text-gray-900">Theme</label>
-          </div>
+          <span className="text-base text-gray-900">Theme</span>
           <Select
             value={settings.theme}
             onValueChange={(value) => updateSetting('theme', value)}
           >
             <SelectTrigger className="w-32 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm">
               <SelectValue />
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="size-4" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="system">System</SelectItem>
@@ -193,16 +196,14 @@ function GeneralSettings({ settings, updateSetting }: any) {
         </div>
 
         <div className="flex items-center justify-between">
-          <div>
-            <label className="text-base text-gray-900">Language</label>
-          </div>
+          <span className="text-base text-gray-900">Language</span>
           <Select
             value={settings.language}
             onValueChange={(value) => updateSetting('language', value)}
           >
             <SelectTrigger className="w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm">
               <SelectValue />
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="size-4" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="auto">Auto-detect</SelectItem>
@@ -215,12 +216,13 @@ function GeneralSettings({ settings, updateSetting }: any) {
 
         <div className="space-y-4">
           <div>
-            <label className="text-base text-gray-900">
+            <span className="text-base text-gray-900">
               Conversation Language
-            </label>
+            </span>
             <p className="text-sm text-gray-500 mt-1">
-              For best results, select the language you primarily speak. If it's
-              not listed, it may still be supported through automatic detection.
+              For best results, select the language you primarily speak. If
+              it&apos;s not listed, it may still be supported through automatic
+              detection.
             </p>
           </div>
           <Select
@@ -231,7 +233,7 @@ function GeneralSettings({ settings, updateSetting }: any) {
           >
             <SelectTrigger className="w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm">
               <SelectValue />
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="size-4" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="auto">Auto-detect</SelectItem>
@@ -244,7 +246,7 @@ function GeneralSettings({ settings, updateSetting }: any) {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <label className="text-base text-gray-900">Voice</label>
+            <span className="text-base text-gray-900">Voice</span>
             <Play className="h-4 w-4 text-gray-400" />
             <span className="text-sm text-gray-600">Play</span>
           </div>
@@ -254,7 +256,7 @@ function GeneralSettings({ settings, updateSetting }: any) {
           >
             <SelectTrigger className="w-32 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm">
               <SelectValue />
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="size-4" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="breeze">Breeze</SelectItem>
@@ -265,11 +267,9 @@ function GeneralSettings({ settings, updateSetting }: any) {
         </div>
 
         <div className="flex items-center justify-between">
-          <div>
-            <label className="text-base text-gray-900">
-              Show follow-up suggestions in chats
-            </label>
-          </div>
+          <span className="text-base text-gray-900">
+            Show follow-up suggestions in chats
+          </span>
           <Switch
             checked={settings.showSuggestions}
             onCheckedChange={(checked) =>
@@ -290,13 +290,13 @@ function NotificationSettings({ settings, updateSetting }: any) {
         <h3 className="text-2xl font-medium text-gray-900 mb-2">
           Notifications
         </h3>
-        <div className="h-px bg-gray-200 mb-8"></div>
+        <div className="h-px bg-gray-200 mb-8" />
       </div>
 
       <div className="space-y-8">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <label className="text-base text-gray-900">Responses</label>
+            <span className="text-base text-gray-900">Responses</span>
             <Select
               value={settings.responseNotifications}
               onValueChange={(value) =>
@@ -305,7 +305,7 @@ function NotificationSettings({ settings, updateSetting }: any) {
             >
               <SelectTrigger className="w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm">
                 <SelectValue />
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="size-4" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="push">Push notifications</SelectItem>
@@ -323,7 +323,7 @@ function NotificationSettings({ settings, updateSetting }: any) {
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <label className="text-base text-gray-900">Tasks</label>
+            <span className="text-base text-gray-900">Tasks</span>
             <Select
               value={settings.taskNotifications}
               onValueChange={(value) =>
@@ -332,7 +332,7 @@ function NotificationSettings({ settings, updateSetting }: any) {
             >
               <SelectTrigger className="w-64 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm">
                 <SelectValue />
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="size-4" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="push-email">
@@ -346,7 +346,7 @@ function NotificationSettings({ settings, updateSetting }: any) {
           </div>
           <div>
             <p className="text-sm text-gray-500">
-              Get notifications when tasks you've created are updated.
+              Get notifications when tasks you&apos;ve created are updated.
             </p>
             <button
               type="button"
@@ -369,30 +369,30 @@ function PersonalizationSettings({ settings, updateSetting }: any) {
         <h3 className="text-2xl font-medium text-gray-900 mb-2">
           Personalization
         </h3>
-        <div className="h-px bg-gray-200 mb-8"></div>
+        <div className="h-px bg-gray-200 mb-8" />
       </div>
 
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <label className="text-base text-gray-900">User instructions</label>
+            <span className="text-base text-gray-900">User instructions</span>
             <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
               Enabled
             </span>
-            <ChevronRight className="h-4 w-4 text-gray-400" />
+            <ChevronRight className="size-4" />
           </div>
         </div>
 
         <div className="space-y-6">
           <div className="flex items-center gap-2">
             <h4 className="text-lg font-medium text-gray-900">Memory</h4>
-            <HelpCircle className="h-4 w-4 text-gray-400" />
+            <HelpCircle className="size-4" />
           </div>
 
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <label className="text-base text-gray-900">
+                <label htmlFor="saveMemory" className="text-base text-gray-900">
                   Save to memory
                 </label>
                 <p className="text-sm text-gray-500 mt-1">
@@ -400,6 +400,7 @@ function PersonalizationSettings({ settings, updateSetting }: any) {
                 </p>
               </div>
               <Switch
+                id="saveMemory"
                 checked={settings.saveMemory}
                 onCheckedChange={(checked) =>
                   updateSetting('saveMemory', checked)
@@ -410,7 +411,10 @@ function PersonalizationSettings({ settings, updateSetting }: any) {
 
             <div className="flex items-center justify-between">
               <div>
-                <label className="text-base text-gray-900">
+                <label
+                  htmlFor="referenceHistory"
+                  className="text-base text-gray-900"
+                >
                   Reference chat history
                 </label>
                 <p className="text-sm text-gray-500 mt-1">
@@ -418,6 +422,7 @@ function PersonalizationSettings({ settings, updateSetting }: any) {
                 </p>
               </div>
               <Switch
+                id="referenceHistory"
                 checked={settings.referenceHistory}
                 onCheckedChange={(checked) =>
                   updateSetting('referenceHistory', checked)
@@ -451,7 +456,7 @@ function ConnectedAppsSettings() {
         <h3 className="text-2xl font-medium text-gray-900 mb-2">
           File Uploads
         </h3>
-        <div className="h-px bg-gray-200 mb-4"></div>
+        <div className="h-px bg-gray-200 mb-4" />
         <p className="text-sm text-gray-500">
           These apps allow you to add files to LumiaAI messages.
         </p>
@@ -461,7 +466,7 @@ function ConnectedAppsSettings() {
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg flex items-center justify-center">
-              <Globe className="h-6 w-6 text-white" />
+              <Globe className="size-6" />
             </div>
             <div>
               <h4 className="text-base font-medium text-gray-900">
@@ -486,7 +491,7 @@ function ConnectedAppsSettings() {
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Globe className="h-6 w-6 text-white" />
+              <Globe className="size-6" />
             </div>
             <div>
               <h4 className="text-base font-medium text-gray-900">
@@ -510,7 +515,7 @@ function ConnectedAppsSettings() {
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-blue-700 rounded-lg flex items-center justify-center">
-              <Globe className="h-6 w-6 text-white" />
+              <Globe className="size-6" />
             </div>
             <div>
               <h4 className="text-base font-medium text-gray-900">
@@ -543,19 +548,19 @@ function DataControlsSettings({ settings, updateSetting }: any) {
         <h3 className="text-2xl font-medium text-gray-900 mb-2">
           Data Controls
         </h3>
-        <div className="h-px bg-gray-200 mb-8"></div>
+        <div className="h-px bg-gray-200 mb-8" />
       </div>
 
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <label className="text-base text-gray-900">
+            <span className="text-base text-gray-900">
               Improve model for everyone
-            </label>
+            </span>
             <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
               Enabled
             </span>
-            <ChevronRight className="h-4 w-4 text-gray-400" />
+            <ChevronRight className="size-4" />
           </div>
         </div>
 
@@ -628,16 +633,17 @@ function SecuritySettings({ settings, updateSetting }: any) {
     <div className="space-y-8">
       <div>
         <h3 className="text-2xl font-medium text-gray-900 mb-2">Security</h3>
-        <div className="h-px bg-gray-200 mb-8"></div>
+        <div className="h-px bg-gray-200 mb-8" />
       </div>
 
       <div className="space-y-8">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <label className="text-base text-gray-900">
+            <label htmlFor="mfaEnabled" className="text-base text-gray-900">
               Multi-factor authentication
             </label>
             <Switch
+              id="mfaEnabled"
               checked={settings.mfaEnabled}
               onCheckedChange={(checked) =>
                 updateSetting('mfaEnabled', checked)
@@ -647,8 +653,8 @@ function SecuritySettings({ settings, updateSetting }: any) {
           </div>
           <p className="text-sm text-gray-500">
             Requires additional security verification when logging into the
-            system. If you can't pass this verification, you'll have the option
-            to recover your account via email.
+            system. If you can&apos;t pass this verification, you&apos;ll have
+            the option to recover your account via email.
           </p>
         </div>
 
@@ -705,8 +711,8 @@ function SecuritySettings({ settings, updateSetting }: any) {
 
           <div className="bg-gray-100 rounded-lg p-4">
             <p className="text-sm text-gray-700">
-              You haven't used LumiaAI to log into any websites or apps yet.
-              Once you do, they'll appear here.
+              You haven&apos;t used LumiaAI to log into any websites or apps
+              yet. Once you do, they&apos;ll appear here.
             </p>
           </div>
         </div>
@@ -720,7 +726,7 @@ function AccountSettings() {
     <div className="space-y-8">
       <div>
         <h3 className="text-2xl font-medium text-gray-900 mb-2">Account</h3>
-        <div className="h-px bg-gray-200 mb-8"></div>
+        <div className="h-px bg-gray-200 mb-8" />
       </div>
 
       <div className="space-y-8">
@@ -747,7 +753,7 @@ function AccountSettings() {
 
           <div className="text-center py-8">
             <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <Database className="h-8 w-8 text-gray-400" />
+              <Database className="size-8" />
             </div>
             <p className="text-xs text-gray-400 mb-2">Preview</p>
             <h4 className="text-base font-medium text-gray-900 mb-1">
@@ -758,7 +764,7 @@ function AccountSettings() {
 
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <div className="flex items-start gap-3">
-              <HelpCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <HelpCircle className="size-5" />
               <div>
                 <p className="text-sm text-blue-900 font-medium mb-1">
                   Complete verification to publish GPTs for everyone.
@@ -776,10 +782,10 @@ function AccountSettings() {
           <h4 className="text-lg font-medium text-gray-900">Links</h4>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4 text-gray-400" />
+              <Globe className="size-4" />
               <span className="text-base text-gray-900">Select domain</span>
             </div>
-            <ChevronDown className="h-4 w-4 text-gray-400" />
+            <ChevronDown className="size-4" />
           </div>
         </div>
       </div>
