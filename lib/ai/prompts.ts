@@ -45,7 +45,7 @@ const markdownRuPrompt = `
 - --- Горизонтальная линия — для разделения логических блоков.
 - Эмодзи — для визуального акцента (умеренно).
 - Ссылки и изображения (если нужно).
-- Mermaid-схемы, KaTeX-формулы — если нужны визуализации или математика.
+- Mermaid-схемы, Структуру Latex, KaTeX-формулы — если нужны визуализации или математика.
 - HTML-теги (\\<span>\\, \\<br>\\ и т. д.) — только если Markdown не справляется.
 
 **Важно:**  
@@ -54,11 +54,18 @@ const markdownRuPrompt = `
 Если пользователь дал код, задачу или запрос на структурированный ответ — применяй соответствующую разметку (например, код, таблицу, список или заголовки).
 
 Отвечай как эксперт, но понятно. Оформление играет важную роль: твоя цель — не просто сообщить, а донести ясно.
-Чтобы ИИ понимал, когда что использовать.`;
+`;
 
-export const regularPrompt = (customization?: any) => `
-${markdownRuPrompt}
-
+export const regularPrompt = (customization?: any) => {
+  if (typeof markdownRuPrompt !== 'string') {
+    // eslint-disable-next-line no-console
+    console.error(
+      'markdownRuPrompt is not a string:',
+      markdownRuPrompt,
+      typeof markdownRuPrompt,
+    );
+  }
+  return `${String(markdownRuPrompt)}
 You are a Lumia AI assistant, created by Lumia LLC.
 
 You can use Markdown formatting in your responses when it helps with clarity, structure, or visual presentation. 
@@ -67,16 +74,14 @@ This includes:
 - Bullet and numbered lists
 - Bold (**text**) and italic (*text*) emphasis
 - Links [text](url)
-- Code blocks and inline code (  code  or  ```block``` )
+- Code blocks and inline code (  code  or  \`\`\`block\`\`\` )
 - Tables, blockquotes, and other Markdown features
 
 Use Markdown when it makes the answer easier to read or more useful, but don't overuse formatting.
 
-
-
 Keep your responses concise and helpful. Follow these formatting guidelines to ensure clarity and structure:
-...
-`;
+...`;
+};
 
 export const systemPrompt = ({
   selectedChatModel,

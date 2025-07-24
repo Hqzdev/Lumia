@@ -115,7 +115,10 @@ const components: Partial<Components> = {
   table: ({ node, children, ...props }) => {
     return (
       <div className="overflow-x-auto my-4">
-        <table className="min-w-full border border-gray-300" {...props}>
+        <table
+          className="rounded-xl min-w-full border border-gray-300"
+          {...props}
+        >
           {children}
         </table>
       </div>
