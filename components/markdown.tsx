@@ -4,7 +4,6 @@ import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import remarkFootnotes from 'remark-footnotes';
 import rehypeRaw from 'rehype-raw';
 import { CodeBlock } from './code-block';
 
@@ -183,7 +182,7 @@ const components: Partial<Components> = {
   },
 };
 
-const remarkPlugins = [remarkGfm, remarkMath, remarkFootnotes];
+const remarkPlugins = [remarkGfm, remarkMath];
 const rehypePlugins = [rehypeKatex, rehypeRaw];
 
 const NonMemoizedMarkdown = ({ children }: { children: string }) => {
