@@ -15,11 +15,11 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from '@/components/ui/tooltip';
-import { Mail, Phone, Apple, Eye, EyeOff } from 'lucide-react';
+import { Mail, Eye, EyeOff } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useActionState } from 'react';
 import { login, type LoginActionState } from '../actions';
-import { GoogleIcon, AppleIcon, PhoneIcon } from '@/components/icons';
+import { GoogleIcon, AppleIcon } from '@/components/icons';
 
 export default function Page() {
   const router = useRouter();
