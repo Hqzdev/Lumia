@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from '@/components/toast';
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff, Apple, Phone } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -14,7 +14,7 @@ import {
 import { register, type RegisterActionState } from '../actions';
 import { useActionState } from 'react';
 import Link from 'next/link';
-import { GoogleIcon, AppleIcon, PhoneIcon } from '@/components/icons';
+import { GoogleIcon, AppleIcon } from '@/components/icons';
 
 export default function Page() {
   const router = useRouter();

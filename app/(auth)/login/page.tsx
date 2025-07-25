@@ -7,7 +7,7 @@ import { toast } from '@/components/toast';
 
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
-import { LogoGoogle } from '@/components/icons';
+import { GoogleIcon, AppleIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
