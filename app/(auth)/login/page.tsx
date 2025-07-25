@@ -19,6 +19,7 @@ import { Mail, Phone, Apple, Eye, EyeOff } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useActionState } from 'react';
 import { login, type LoginActionState } from '../actions';
+import { GoogleIcon, AppleIcon, PhoneIcon } from '@/components/icons';
 
 export default function Page() {
   const router = useRouter();
@@ -101,7 +102,7 @@ export default function Page() {
   return (
     <TooltipProvider>
       <div className="relative flex h-dvh w-screen flex-col items-center justify-center overflow-hidden bg-[#fafafa]">
-        <div className="absolute left-4 top-4 text-2xl font-bold select-none">
+        <div className="absolute left-4 top-4 text-2xl font-bold select-none hidden md:block">
           Lumia
         </div>
         <div className="z-10 w-full max-w-md flex flex-col items-center justify-center gap-8">
@@ -248,6 +249,7 @@ export default function Page() {
                   tabIndex={-1}
                   disabled
                 >
+                  <GoogleIcon size={20} />
                   Continue with Google
                 </button>
               </TooltipTrigger>
@@ -261,38 +263,28 @@ export default function Page() {
                   tabIndex={-1}
                   disabled
                 >
+                  <AppleIcon size={20} />
                   Continue with Apple
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>soon</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="w-80 h-14 rounded-full border border-gray-200 flex items-center gap-2 px-6 text-base font-medium bg-white text-black cursor-not-allowed justify-start"
-                  tabIndex={-1}
-                  disabled
-                >
-                  Continue with phone number
                 </button>
               </TooltipTrigger>
               <TooltipContent>soon</TooltipContent>
             </Tooltip>
           </div>
           <div className="w-full flex flex-row justify-center gap-4 mt-4 text-xs text-gray-500">
-            <Link
-              href="/policy"
+            <button
+              type="button"
+              onClick={() => router.push('/privacy')}
               className="hover:underline bg-transparent border-none p-0 m-0 text-inherit cursor-pointer w-40 h-8 rounded-full flex items-center justify-center"
             >
               Privacy Policy
-            </Link>
-            <Link
-              href="/privacy"
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/policy')}
               className="hover:underline bg-transparent border-none p-0 m-0 text-inherit cursor-pointer w-40 h-8 rounded-full flex items-center justify-center"
             >
               Terms of Service
-            </Link>
+            </button>
           </div>
         </div>
       </div>
