@@ -7,7 +7,6 @@ import { toast } from '@/components/toast';
 
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
-import { GoogleIcon, AppleIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -19,7 +18,6 @@ import { Mail, Eye, EyeOff } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useActionState } from 'react';
 import { login, type LoginActionState } from '../actions';
-import { GoogleIcon, AppleIcon } from '@/components/icons';
 
 export default function Page() {
   const router = useRouter();
@@ -249,7 +247,6 @@ export default function Page() {
                   tabIndex={-1}
                   disabled
                 >
-                  <GoogleIcon size={20} />
                   Continue with Google
                 </button>
               </TooltipTrigger>
@@ -263,7 +260,6 @@ export default function Page() {
                   tabIndex={-1}
                   disabled
                 >
-                  <AppleIcon size={20} />
                   Continue with Apple
                 </button>
               </TooltipTrigger>

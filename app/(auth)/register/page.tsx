@@ -14,7 +14,6 @@ import {
 import { register, type RegisterActionState } from '../actions';
 import { useActionState } from 'react';
 import Link from 'next/link';
-import { GoogleIcon, AppleIcon } from '@/components/icons';
 
 export default function Page() {
   const router = useRouter();
@@ -258,7 +257,6 @@ export default function Page() {
                   tabIndex={-1}
                   disabled
                 >
-                  <GoogleIcon size={20} />
                   Continue with Google
                 </button>
               </TooltipTrigger>
@@ -272,7 +270,6 @@ export default function Page() {
                   tabIndex={-1}
                   disabled
                 >
-                  <AppleIcon size={20} />
                   Continue with Apple
                 </button>
               </TooltipTrigger>
