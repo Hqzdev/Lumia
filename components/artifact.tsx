@@ -1,4 +1,4 @@
-import type { Attachment, UIMessage } from 'ai';
+import type { UIMessage } from '@ai-sdk/ui-utils';
 import { formatDistance } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -320,8 +320,6 @@ function PureArtifact({
                   isReadonly={isReadonly}
                   artifactStatus={artifact.status}
                 />
-
-                
               </div>
             </motion.div>
           )}
