@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import cn from 'classnames';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import type { Message } from 'ai';
+import type { Message } from '@ai-sdk/ui-utils';
 import type { Vote } from '@/lib/db/schema';
 
 import { Button } from './ui/button';
@@ -17,8 +17,14 @@ import { useArtifact } from '@/hooks/use-artifact';
 
 function CheckmarkIcon() {
   return (
-    <svg className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+    <svg
+      className="size-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
     </svg>
   );
 }
@@ -52,12 +58,13 @@ export const PureMessageActions = memo(function PureMessageActions({
   return (
     <AnimatePresence>
       <motion.div
-        className={cn(
-          'inline-flex items-center gap-1  p-1 ',
-          className,
-        )}
+        className={cn('inline-flex items-center gap-1  p-1 ', className)}
         initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } }}
+        animate={{
+          opacity: 1,
+          y: 0,
+          transition: { type: 'spring', stiffness: 120, damping: 18 },
+        }}
         exit={{ opacity: 0, y: 10, transition: { duration: 0.2 } }}
         layout
       >
@@ -192,7 +199,11 @@ export const PureMessageActions = memo(function PureMessageActions({
             setArtifact({
               documentId: message.id,
               kind: 'text',
-              content: message.parts?.filter((part) => part.type === 'text').map((part) => part.text).join('\n') || '',
+              content:
+                message.parts
+                  ?.filter((part) => part.type === 'text')
+                  .map((part) => part.text)
+                  .join('\n') || '',
               title: 'Edit message',
               isVisible: true,
               status: 'idle',
