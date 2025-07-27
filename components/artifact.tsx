@@ -1,4 +1,4 @@
-import type { UIMessage } from '@ai-sdk/ui-utils';
+import type { UIMessage, Message } from '@ai-sdk/ui-utils';
 import { formatDistance } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -316,7 +316,11 @@ function PureArtifact({
                   status={status}
                   votes={votes}
                   messages={messages}
-                  setMessages={setMessages}
+                  setMessages={
+                    setMessages as unknown as React.Dispatch<
+                      React.SetStateAction<UIMessage[]>
+                    >
+                  }
                   reload={reload}
                   isReadonly={isReadonly}
                   artifactStatus={artifact.status}

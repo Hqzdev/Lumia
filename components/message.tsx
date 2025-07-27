@@ -1,6 +1,6 @@
 'use client';
 
-import type { UIMessage } from '@ai-sdk/ui-utils';
+import type { UIMessage, Message } from '@ai-sdk/ui-utils';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -78,7 +78,9 @@ const PurePreviewMessage = ({
   message: UIMessage;
   vote: Vote | undefined;
   isLoading: boolean;
-  setMessages: React.Dispatch<React.SetStateAction<UIMessage[]>>;
+  setMessages: (
+    messages: Message[] | ((messages: Message[]) => Message[]),
+  ) => void;
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   selectedChatModel?: string;
