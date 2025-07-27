@@ -1,16 +1,9 @@
 'use client';
 
-import type { UIMessage, Message } from '@ai-sdk/ui-utils';
+import type { UIMessage } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  memo,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useLayoutEffect,
-} from 'react';
+import { memo, useState, useEffect, useRef } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
@@ -28,42 +21,6 @@ import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { Sparkles, Pencil } from 'lucide-react';
 
-const AskLumiaButton = ({
-  selection,
-  onAsk,
-  position,
-}: {
-  selection: string;
-  onAsk: (text: string) => void;
-  position: { top: number; left: number; width: number } | null;
-}) => {
-  if (!position) return null;
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        top: position.top,
-        left: position.left,
-        transform: 'translateX(-50%)',
-        zIndex: 9999,
-        pointerEvents: 'auto',
-      }}
-    >
-      <div
-        onClick={() => onAsk(selection)}
-        className="flex items-center px-3 py-1.5 bg-white border border-gray-300  rounded-xl text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition"
-        style={{
-          whiteSpace: 'nowrap',
-          gap: 6,
-        }}
-      >
-        <Sparkles size={16} />
-        <span>Ask to Lumia AI</span>
-      </div>
-    </div>
-  );
-};
-
 const PurePreviewMessage = ({
   chatId,
   message,
@@ -78,66 +35,13 @@ const PurePreviewMessage = ({
   message: UIMessage;
   vote: Vote | undefined;
   isLoading: boolean;
-  setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[]),
-  ) => void;
+  setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   selectedChatModel?: string;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [copied, setCopied] = useState(false);
-  const [selection, setSelection] = useState<string | null>(null);
-  const selectionListener = useCallback(() => {
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0) {
-      const text = sel.toString();
-      setSelection(text && text.length > 0 ? text : null);
-    } else {
-      setSelection(null);
-    }
-  }, []);
-  useEffect(() => {
-    document.addEventListener('selectionchange', selectionListener);
-    return () =>
-      document.removeEventListener('selectionchange', selectionListener);
-  }, [selectionListener]);
-  const handleAsk = (text: string) => {
-    // Здесь должна быть логика отправки текста + "Что это значит?"
-    // Например, вызвать функцию отправки сообщения или открыть input с этим текстом
-    // alert(`${text}\n\nЧто это значит?`);
-    // TODO: интеграция с вашим чатом
-    window.dispatchEvent(
-      new CustomEvent('ask-lumia', { detail: `${text}\n\nЧто это значит?` }),
-    );
-    setSelection(null);
-    window.getSelection()?.removeAllRanges();
-  };
-
-  const messageContentRef = useRef<HTMLDivElement | null>(null);
-  const [buttonPosition, setButtonPosition] = useState<{
-    top: number;
-    left: number;
-    width: number;
-  } | null>(null);
-  useLayoutEffect(() => {
-    if (selection) {
-      const sel = window.getSelection();
-      if (sel && sel.rangeCount > 0) {
-        const range = sel.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-
-        // Центр и верх выделения
-        setButtonPosition({
-          top: rect.top + window.scrollY - 28, // чуть выше выделения
-          left: rect.left + window.scrollX + rect.width - 1, // правый край выделения
-          width: rect.width,
-        });
-      }
-    } else {
-      setButtonPosition(null);
-    }
-  }, [selection]);
 
   return (
     <AnimatePresence>
@@ -207,7 +111,6 @@ const PurePreviewMessage = ({
                       )}
 
                       <div
-                        ref={messageContentRef}
                         data-testid="message-content"
                         className={cn('flex flex-col gap-4', {
                           'bg-gray-200 dark:bg-muted text-secondary-foreground px-3 py-2 rounded-[15px]':
@@ -215,16 +118,7 @@ const PurePreviewMessage = ({
                         })}
                       >
                         {message.role === 'assistant' ? (
-                          <>
-                            {selection && (
-                              <AskLumiaButton
-                                selection={selection}
-                                onAsk={handleAsk}
-                                position={buttonPosition}
-                              />
-                            )}
-                            <TypingText text={part.text} />
-                          </>
+                          <TypingText text={part.text} />
                         ) : (
                           <Markdown>{part.text}</Markdown>
                         )}

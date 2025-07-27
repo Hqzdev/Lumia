@@ -1,18 +1,16 @@
 'use client';
 
-import type { ChatRequestOptions } from 'ai';
-import type { UIMessage } from '@ai-sdk/ui-utils';
+import { ChatRequestOptions, Message } from 'ai';
 import { Button } from './ui/button';
-import type { Dispatch, SetStateAction } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { Textarea } from './ui/textarea';
 import { deleteTrailingMessages } from '@/app/(chat)/actions';
-import type { UseChatHelpers } from '@ai-sdk/react';
+import { UseChatHelpers } from '@ai-sdk/react';
 
 export type MessageEditorProps = {
-  message: UIMessage;
+  message: Message;
   setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
-  setMessages: React.Dispatch<React.SetStateAction<UIMessage[]>>;
+  setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
 };
 

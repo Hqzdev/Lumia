@@ -4,5 +4,5 @@
 import { signOut } from '@/app/(auth)/auth';
 
 export async function signOutAction() {
-  await signOut({ redirectTo: '/' });
+  await signOut({ redirectTo: 'auth.lumiaai.ru' });
 }

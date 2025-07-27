@@ -1,4 +1,4 @@
-import type { UIMessage } from '@ai-sdk/ui-utils';
+import type { UIMessage } from 'ai';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 import { useEffect } from 'react';

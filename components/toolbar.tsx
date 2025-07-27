@@ -1,6 +1,6 @@
 'use client';
 
-import type { UIMessage } from '@ai-sdk/ui-utils';
+import type { ChatRequestOptions, CreateMessage, Message } from 'ai';
 import cx from 'classnames';
 import {
   AnimatePresence,
@@ -40,7 +40,7 @@ type ToolProps = {
   setIsToolbarVisible?: Dispatch<SetStateAction<boolean>>;
   isAnimating: boolean;
   append: (
-    message: UIMessage,
+    message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
   onClick: ({
@@ -108,10 +108,7 @@ const Tool = ({
             }
           }}
           initial={{ scale: 1, opacity: 0 }}
-          animate={{
-            opacity: 1,
-            transition: { delay: 0.1, duration: 0.5, ease: [0.4, 0, 0.2, 1] },
-          }}
+          animate={{ opacity: 1, transition: { delay: 0.1, duration: 0.5, ease: [0.4, 0, 0.2, 1] } }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           exit={{
@@ -147,7 +144,7 @@ const ReadingLevelSelector = ({
   setSelectedTool: Dispatch<SetStateAction<string | null>>;
   isAnimating: boolean;
   append: (
-    message: UIMessage,
+    message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
 }) => {
@@ -261,7 +258,7 @@ export const Tools = ({
   selectedTool: string | null;
   setSelectedTool: Dispatch<SetStateAction<string | null>>;
   append: (
-    message: UIMessage,
+    message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
   isAnimating: boolean;
@@ -274,16 +271,8 @@ export const Tools = ({
     <motion.div
       className="flex flex-col gap-1.5"
       initial={{ opacity: 0, scale: 0.95 }}
-      animate={{
-        opacity: 1,
-        scale: 1,
-        transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
-      }}
-      exit={{
-        opacity: 0,
-        scale: 0.95,
-        transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
-      }}
+      animate={{ opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] } }}
+      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
     >
       <AnimatePresence>
         {isToolbarVisible &&
@@ -330,7 +319,7 @@ const PureToolbar = ({
   status: UseChatHelpers['status'];
   append: UseChatHelpers['append'];
   stop: UseChatHelpers['stop'];
-  setMessages: Dispatch<SetStateAction<UIMessage[]>>;
+  setMessages: Dispatch<SetStateAction<Message[]>>;
   artifactKind: ArtifactKind;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -401,31 +390,19 @@ const PureToolbar = ({
                   opacity: 1,
                   y: 0,
                   height: 6 * 43,
-                  transition: {
-                    delay: 0,
-                    duration: 0.6,
-                    ease: [0.4, 0, 0.2, 1],
-                  },
+                  transition: { delay: 0, duration: 0.6, ease: [0.4, 0, 0.2, 1] },
                   scale: 0.95,
                 }
               : {
                   opacity: 1,
                   y: 0,
                   height: toolsByArtifactKind.length * 50,
-                  transition: {
-                    delay: 0,
-                    duration: 0.6,
-                    ease: [0.4, 0, 0.2, 1],
-                  },
+                  transition: { delay: 0, duration: 0.6, ease: [0.4, 0, 0.2, 1] },
                   scale: 1,
                 }
             : { opacity: 1, y: 0, height: 54, transition: { delay: 0 } }
         }
-        exit={{
-          opacity: 0,
-          y: -20,
-          transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
-        }}
+        exit={{ opacity: 0, y: -20, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
         transition={{ type: 'spring', stiffness: 180, damping: 32 }}
         onHoverStart={() => {
           if (status === 'streaming') return;

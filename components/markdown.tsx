@@ -2,9 +2,6 @@ import Link from 'next/link';
 import React, { memo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import rehypeRaw from 'rehype-raw';
 import { CodeBlock } from './code-block';
 
 const components: Partial<Components> = {
@@ -94,106 +91,13 @@ const components: Partial<Components> = {
       </h6>
     );
   },
-  del: ({ node, children, ...props }) => {
-    return (
-      <del className="line-through text-gray-500" {...props}>
-        {children}
-      </del>
-    );
-  },
-  blockquote: ({ node, children, ...props }) => {
-    return (
-      <blockquote
-        className="border-l-4 border-blue-400 pl-4 italic text-gray-700 my-4"
-        {...props}
-      >
-        {children}
-      </blockquote>
-    );
-  },
-  table: ({ node, children, ...props }) => {
-    return (
-      <div className="overflow-x-auto my-4">
-        <table
-          className="rounded-xl min-w-full border border-gray-300"
-          {...props}
-        >
-          {children}
-        </table>
-      </div>
-    );
-  },
-  thead: ({ node, children, ...props }) => {
-    return (
-      <thead className="bg-gray-100" {...props}>
-        {children}
-      </thead>
-    );
-  },
-  tbody: ({ node, children, ...props }) => {
-    return <tbody {...props}>{children}</tbody>;
-  },
-  tr: ({ node, children, ...props }) => {
-    return (
-      <tr className="border-b border-gray-200" {...props}>
-        {children}
-      </tr>
-    );
-  },
-  th: ({ node, children, ...props }) => {
-    return (
-      <th
-        className="px-4 py-2 font-semibold text-left border-b border-gray-300"
-        {...props}
-      >
-        {children}
-      </th>
-    );
-  },
-  td: ({ node, children, ...props }) => {
-    return (
-      <td className="px-4 py-2 border-b border-gray-200" {...props}>
-        {children}
-      </td>
-    );
-  },
-  hr: ({ ...props }) => <hr className="my-6 border-gray-300" {...props} />, // горизонтальная линия
-  img: ({ node, ...props }) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      className="max-w-full h-auto rounded shadow my-2"
-      {...props}
-      alt={props.alt || ''}
-    />
-  ),
-  input: ({ node, ...props }) => {
-    // Чекбоксы для списков задач
-    if (props.type === 'checkbox') {
-      return (
-        <input
-          type="checkbox"
-          className="mr-2 align-middle"
-          checked={props.checked}
-          readOnly
-        />
-      );
-    }
-    return <input {...props} />;
-  },
 };
 
-const remarkPlugins = [remarkGfm, remarkMath];
-const rehypePlugins = [rehypeKatex, rehypeRaw];
+const remarkPlugins = [remarkGfm];
 
 const NonMemoizedMarkdown = ({ children }: { children: string }) => {
   return (
-    <ReactMarkdown
-      remarkPlugins={remarkPlugins}
-      rehypePlugins={rehypePlugins}
-      components={components}
-      // allow dangerous HTML for raw HTML support
-      skipHtml={false}
-    >
+    <ReactMarkdown remarkPlugins={remarkPlugins} components={components}>
       {children}
     </ReactMarkdown>
   );
