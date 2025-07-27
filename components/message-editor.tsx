@@ -1,7 +1,7 @@
 'use client';
 
 import type { ChatRequestOptions } from 'ai';
-import type { Message } from '@ai-sdk/ui-utils';
+import type { UIMessage } from '@ai-sdk/ui-utils';
 import { Button } from './ui/button';
 import type { Dispatch, SetStateAction } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -10,9 +10,9 @@ import { deleteTrailingMessages } from '@/app/(chat)/actions';
 import type { UseChatHelpers } from '@ai-sdk/react';
 
 export type MessageEditorProps = {
-  message: Message;
+  message: UIMessage;
   setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
-  setMessages: UseChatHelpers['setMessages'];
+  setMessages: React.Dispatch<React.SetStateAction<UIMessage[]>>;
   reload: UseChatHelpers['reload'];
 };
 

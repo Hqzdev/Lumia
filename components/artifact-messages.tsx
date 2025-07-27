@@ -11,8 +11,8 @@ interface ArtifactMessagesProps {
   chatId: string;
   status: UseChatHelpers['status'];
   votes: Array<Vote> | undefined;
-  messages: Array<UIMessage>;
-  setMessages: UseChatHelpers['setMessages'];
+  messages: UIMessage[];
+  setMessages: React.Dispatch<React.SetStateAction<UIMessage[]>>;
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   artifactStatus: UIArtifact['status'];
