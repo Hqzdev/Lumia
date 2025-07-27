@@ -78,7 +78,7 @@ const PurePreviewMessage = ({
   message: UIMessage;
   vote: Vote | undefined;
   isLoading: boolean;
-  setMessages: UseChatHelpers['setMessages'];
+  setMessages: React.Dispatch<React.SetStateAction<UIMessage[]>>;
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   selectedChatModel?: string;
