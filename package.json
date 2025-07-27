@@ -112,6 +112,9 @@
     "vfile": "^6.0.3",
     "zod": "^3.23.8"
   },
+  "overrides": {
+    "@ai-sdk/ui-utils": "1.2.11"
+  },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@playwright/test": "^1.50.1",
