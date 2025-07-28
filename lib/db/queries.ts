@@ -37,7 +37,9 @@ export async function getUserByEmail(email: string): Promise<Array<User>> {
   }
 }
 
-export async function getUserByNickname(nickname: string): Promise<Array<User>> {
+export async function getUserByNickname(
+  nickname: string,
+): Promise<Array<User>> {
   try {
     return await db.select().from(user).where(eq(user.nickname, nickname));
   } catch (error) {
@@ -46,16 +48,20 @@ export async function getUserByNickname(nickname: string): Promise<Array<User>> 
   }
 }
 
-export async function createUser(email: string, password: string, nickname: string) {
+export async function createUser(
+  email: string,
+  password: string,
+  nickname: string,
+) {
   const salt = genSaltSync(10);
   const hash = hashSync(password, salt);
 
   try {
-    return await db.insert(user).values({ 
-      email, 
-      password: hash, 
+    return await db.insert(user).values({
+      email,
+      password: hash,
       nickname,
-      subscription: 'free'
+      subscription: 'free',
     });
   } catch (error) {
     console.error('Failed to create user in database');
@@ -366,20 +372,24 @@ export async function updateChatVisiblityById({
   }
 }
 
-export async function updateUserSubscription({ userId, subscription }: { userId: string, subscription: 'free' | 'free'  | 'premium' | 'Team' }) {
+export async function updateUserSubscription({
+  userId,
+  subscription,
+}: { userId: string; subscription: 'free' | 'free' | 'premium' | 'Team' }) {
   try {
     console.log('Updating subscription for user:', userId, 'to:', subscription);
-    const result = await db.update(user)
+    const result = await db
+      .update(user)
       .set({ subscription })
       .where(eq(user.id, userId))
       .returning();
-    
+
     console.log('Update result:', result);
-    
+
     if (!result || result.length === 0) {
       throw new Error(`User with id ${userId} not found`);
     }
-    
+
     return result;
   } catch (error) {
     console.error('Failed to update user subscription in database:', error);
@@ -389,7 +399,10 @@ export async function updateUserSubscription({ userId, subscription }: { userId:
 
 export async function getUserCustomization(userId: string) {
   try {
-    const [result] = await db.select({ customization: user.customization }).from(user).where(eq(user.id, userId));
+    const [result] = await db
+      .select({ customization: user.customization })
+      .from(user)
+      .where(eq(user.id, userId));
     return result?.customization ?? null;
   } catch (error) {
     console.error('Failed to get user customization from database', error);
@@ -397,9 +410,13 @@ export async function getUserCustomization(userId: string) {
   }
 }
 
-export async function updateUserCustomization({ userId, customization }: { userId: string, customization: any }) {
+export async function updateUserCustomization({
+  userId,
+  customization,
+}: { userId: string; customization: any }) {
   try {
-    const result = await db.update(user)
+    const result = await db
+      .update(user)
       .set({ customization })
       .where(eq(user.id, userId))
       .returning();
@@ -409,6 +426,23 @@ export async function updateUserCustomization({ userId, customization }: { userI
     return result[0];
   } catch (error) {
     console.error('Failed to update user customization in database', error);
+    throw error;
+  }
+}
+
+export async function updateUserLastLogin(userId: string) {
+  try {
+    const result = await db
+      .update(user)
+      .set({ lastLoginAt: new Date() })
+      .where(eq(user.id, userId))
+      .returning();
+    if (!result || result.length === 0) {
+      throw new Error(`User with id ${userId} not found`);
+    }
+    return result[0];
+  } catch (error) {
+    console.error('Failed to update user last login time in database', error);
     throw error;
   }
 }

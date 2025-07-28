@@ -1,16 +1,18 @@
+import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getUserByNickname, updateUserLastLogin } from './db/queries';
-import { getAuthToken, getUserData } from './utils/cookies';
+import { getUserByNickname, updateUserLastLogin } from '@/lib/db/queries';
 
-// Функция аутентификации, которая проверяет куки и возвращает данные пользователя
-export async function auth() {
+export async function POST(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const authToken = cookieStore.get('lumia_auth_token')?.value;
     const userDataCookie = cookieStore.get('lumia_user_data')?.value;
 
     if (!authToken || !userDataCookie) {
-      return null;
+      return NextResponse.json(
+        { error: 'No authentication data found' },
+        { status: 401 },
+      );
     }
 
     // Парсим данные пользователя из куки
@@ -18,13 +20,13 @@ export async function auth() {
     const nickname = userData.nickname;
 
     if (!nickname) {
-      return null;
+      return NextResponse.json({ error: 'Invalid user data' }, { status: 400 });
     }
 
     // Получаем пользователя из базы данных
     const users = await getUserByNickname(nickname);
     if (users.length === 0) {
-      return null;
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const user = users[0];
@@ -32,17 +34,22 @@ export async function auth() {
     // Обновляем время последнего входа
     await updateUserLastLogin(user.id);
 
-    return {
+    // Возвращаем данные пользователя
+    return NextResponse.json({
+      success: true,
       user: {
         id: user.id,
         nickname: user.nickname,
         email: user.email,
         subscription: user.subscription,
+        lastLoginAt: user.lastLoginAt,
       },
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
-    };
+    });
   } catch (error) {
-    console.error('Error in auth function:', error);
-    return null;
+    console.error('Error in auto-login:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    );
   }
 }

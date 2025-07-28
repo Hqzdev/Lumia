@@ -5,7 +5,7 @@ import { Chat } from '@/components/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
-import { AuthGuard } from '@/components/auth-guard';
+import { AutoLogin } from '@/components/auto-login';
 
 export default async function Page() {
   const id = generateUUID();
@@ -30,5 +30,5 @@ export default async function Page() {
     </>
   );
 
-  return <AuthGuard>{chatComponent}</AuthGuard>;
+  return <AutoLogin>{chatComponent}</AutoLogin>;
 }
