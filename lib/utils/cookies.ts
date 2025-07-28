@@ -2,13 +2,34 @@
 const isClient =
   typeof window !== 'undefined' && typeof document !== 'undefined';
 
+// Определяем домен для куки
+const getCookieDomain = () => {
+  if (!isClient) return '';
+
+  const hostname = window.location.hostname;
+
+  // Если мы на поддомене, устанавливаем куки для основного домена
+  if (hostname.includes('lumiaai.ru')) {
+    return '.lumiaai.ru'; // Точка в начале позволяет использовать куки на всех поддоменах
+  }
+
+  // Для локальной разработки
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return '';
+  }
+
+  return '';
+};
+
 export function setCookie(name: string, value: string, days = 30) {
   if (!isClient) return;
 
   const date = new Date();
   date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
   const expires = `expires=${date.toUTCString()}`;
-  document.cookie = `${name}=${value};${expires};path=/`;
+  const domain = getCookieDomain();
+  const domainPart = domain ? `;domain=${domain}` : '';
+  document.cookie = `${name}=${value};${expires};path=/${domainPart}`;
 }
 
 export function getCookie(name: string): string | null {
@@ -27,7 +48,9 @@ export function getCookie(name: string): string | null {
 export function deleteCookie(name: string) {
   if (!isClient) return;
 
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+  const domain = getCookieDomain();
+  const domainPart = domain ? `;domain=${domain}` : '';
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/${domainPart}`;
 }
 
 // Аутентификационные куки
@@ -36,6 +59,8 @@ export const AUTH_COOKIES = {
   LAST_NICKNAME: 'lumia_last_nickname',
   LOGIN_ATTEMPTS: 'lumia_login_attempts',
   LAST_LOGIN: 'lumia_last_login',
+  AUTH_TOKEN: 'lumia_auth_token', // Добавляем токен для кросс-доменной аутентификации
+  USER_DATA: 'lumia_user_data', // Добавляем данные пользователя
 };
 
 // Функции для работы с аутентификационными куки
@@ -45,10 +70,12 @@ export function setAuthCookie(name: string, value: string, days = 30) {
   const date = new Date();
   date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
   const expires = `expires=${date.toUTCString()}`;
+  const domain = getCookieDomain();
+  const domainPart = domain ? `;domain=${domain}` : '';
   // Добавляем флаги безопасности для аутентификационных куки
   const secure = window.location.protocol === 'https:' ? ';secure' : '';
-  const sameSite = ';samesite=strict';
-  document.cookie = `${name}=${value};${expires};path=/${secure}${sameSite}`;
+  const sameSite = ';samesite=lax'; // Изменяем на lax для кросс-доменного взаимодействия
+  document.cookie = `${name}=${value};${expires};path=/${domainPart}${secure}${sameSite}`;
 }
 
 export function getAuthCookie(name: string): string | null {
@@ -63,6 +90,7 @@ export function deleteAuthCookie(name: string) {
 export function saveLoginCredentials(
   nickname: string,
   rememberMe: boolean = false,
+  userData?: any, // Добавляем данные пользователя
 ) {
   if (!isClient) return;
 
@@ -75,6 +103,15 @@ export function saveLoginCredentials(
 
   // Сохраняем время последнего входа
   setAuthCookie(AUTH_COOKIES.LAST_LOGIN, new Date().toISOString(), 30);
+
+  // Сохраняем данные пользователя если переданы
+  if (userData) {
+    setAuthCookie(
+      AUTH_COOKIES.USER_DATA,
+      JSON.stringify(userData),
+      rememberMe ? 365 : 7,
+    );
+  }
 }
 
 export function getSavedCredentials() {
@@ -82,15 +119,27 @@ export function getSavedCredentials() {
     return {
       nickname: null,
       rememberMe: false,
+      userData: null,
     };
   }
 
   const rememberMe = getAuthCookie(AUTH_COOKIES.REMEMBER_ME) === 'true';
   const nickname = getAuthCookie(AUTH_COOKIES.LAST_NICKNAME);
+  const userDataStr = getAuthCookie(AUTH_COOKIES.USER_DATA);
+
+  let userData = null;
+  if (userDataStr) {
+    try {
+      userData = JSON.parse(userDataStr);
+    } catch (e) {
+      console.warn('Failed to parse user data from cookie:', e);
+    }
+  }
 
   return {
     nickname,
     rememberMe,
+    userData,
   };
 }
 
@@ -101,6 +150,8 @@ export function clearLoginCredentials() {
   deleteAuthCookie(AUTH_COOKIES.LAST_NICKNAME);
   deleteAuthCookie(AUTH_COOKIES.LAST_LOGIN);
   deleteAuthCookie(AUTH_COOKIES.LOGIN_ATTEMPTS);
+  deleteAuthCookie(AUTH_COOKIES.AUTH_TOKEN);
+  deleteAuthCookie(AUTH_COOKIES.USER_DATA);
 }
 
 export function incrementLoginAttempts(): number {
@@ -123,4 +174,38 @@ export function resetLoginAttempts() {
   if (!isClient) return;
 
   deleteAuthCookie(AUTH_COOKIES.LOGIN_ATTEMPTS);
+}
+
+// Новые функции для кросс-доменного взаимодействия
+export function setAuthToken(token: string, days = 30) {
+  if (!isClient) return;
+  setAuthCookie(AUTH_COOKIES.AUTH_TOKEN, token, days);
+}
+
+export function getAuthToken(): string | null {
+  return getAuthCookie(AUTH_COOKIES.AUTH_TOKEN);
+}
+
+export function setUserData(userData: any, days = 30) {
+  if (!isClient) return;
+  setAuthCookie(AUTH_COOKIES.USER_DATA, JSON.stringify(userData), days);
+}
+
+export function getUserData(): any {
+  const userDataStr = getAuthCookie(AUTH_COOKIES.USER_DATA);
+  if (!userDataStr) return null;
+
+  try {
+    return JSON.parse(userDataStr);
+  } catch (e) {
+    console.warn('Failed to parse user data from cookie:', e);
+    return null;
+  }
+}
+
+// Функция для проверки аутентификации на chat домене
+export function isAuthenticated(): boolean {
+  const token = getAuthToken();
+  const userData = getUserData();
+  return !!(token && userData);
 }

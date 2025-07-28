@@ -46,14 +46,14 @@ export function useCookies() {
     if (!isClient) return;
 
     saveLoginCredentials(nickname, rememberMe);
-    setSavedCredentials({ nickname, rememberMe });
+    setSavedCredentials({ nickname, rememberMe, userData: null });
   };
 
   const clearCredentials = () => {
     if (!isClient) return;
 
     clearLoginCredentials();
-    setSavedCredentials({ nickname: null, rememberMe: false });
+    setSavedCredentials({ nickname: null, rememberMe: false, userData: null });
   };
 
   const incrementAttempts = () => {

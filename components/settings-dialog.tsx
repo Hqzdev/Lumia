@@ -748,7 +748,7 @@ function AccountSettings() {
 
   const handleClearCredentials = () => {
     clearLoginCredentials();
-    setSavedCredentials({ nickname: null, rememberMe: false });
+    setSavedCredentials({ nickname: null, rememberMe: false, userData: null });
     toast({
       type: 'success',
       description: 'Login credentials cleared successfully',

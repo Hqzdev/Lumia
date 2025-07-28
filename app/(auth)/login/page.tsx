@@ -20,6 +20,10 @@ import { signIn } from 'next-auth/react';
 import { useActionState } from 'react';
 import { login, type LoginActionState } from '../actions';
 import { useCookies } from '@/hooks/use-cookies';
+import {
+  handleSuccessfulAuth,
+  initializeCrossDomain,
+} from '@/lib/utils/cross-domain';
 
 export default function Page() {
   const router = useRouter();
@@ -50,10 +54,14 @@ export default function Page() {
     },
   );
 
-  // Загружаем сохраненные данные при монтировании компонента
+  // Инициализируем кросс-доменное взаимодействие
   useEffect(() => {
     setMounted(true);
+    initializeCrossDomain();
+  }, []);
 
+  // Загружаем сохраненные данные при монтировании компонента
+  useEffect(() => {
     if (savedCredentials.nickname) {
       setNickname(savedCredentials.nickname);
       setRememberMe(savedCredentials.rememberMe);
@@ -98,9 +106,16 @@ export default function Page() {
       // Сбрасываем счетчик попыток при успешном входе
       resetAttempts();
 
-      router.refresh();
+      // Обрабатываем успешную аутентификацию с кросс-доменным перенаправлением
+      const userData = {
+        nickname,
+        email: savedCredentials.userData?.email,
+        subscription: savedCredentials.userData?.subscription,
+      };
+
+      handleSuccessfulAuth(userData, rememberMe);
     }
-  }, [state.status, router, nickname, rememberMe]);
+  }, [state.status, router, nickname, rememberMe, savedCredentials.userData]);
 
   const handleSubmit = (formData: FormData) => {
     // This function is no longer used as the form is not connected to a backend action
