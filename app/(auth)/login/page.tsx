@@ -20,10 +20,7 @@ import { signIn } from 'next-auth/react';
 import { useActionState } from 'react';
 import { login, type LoginActionState } from '../actions';
 import { useCookies } from '@/hooks/use-cookies';
-import {
-  handleSuccessfulAuth,
-  initializeCrossDomain,
-} from '@/lib/utils/cross-domain';
+import { initializeCrossDomain } from '@/lib/utils/cross-domain';
 
 export default function Page() {
   const router = useRouter();
@@ -106,14 +103,17 @@ export default function Page() {
       // Сбрасываем счетчик попыток при успешном входе
       resetAttempts();
 
-      // Обрабатываем успешную аутентификацию с кросс-доменным перенаправлением
+      // Сохраняем данные пользователя для использования в чате
       const userData = {
         nickname,
         email: savedCredentials.userData?.email,
         subscription: savedCredentials.userData?.subscription,
       };
 
-      handleSuccessfulAuth(userData, rememberMe);
+      // Сохраняем данные пользователя в куки для чата
+      import('@/lib/utils/cookies').then(({ setUserData }) => {
+        setUserData(userData, rememberMe ? 365 : 7);
+      });
     }
   }, [state.status, router, nickname, rememberMe, savedCredentials.userData]);
 
@@ -143,13 +143,34 @@ export default function Page() {
 
   if (!mounted) return null;
 
-  const handleNavigateRegister = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsLeaving(true);
-    setTimeout(() => {
-      router.push('/register');
-    }, 500); // match slide-out duration
-  };
+  // Если пользователь успешно вошел, показываем чат
+  if (isSuccessful) {
+    return (
+      <div className="relative flex h-dvh w-screen flex-col bg-[#fafafa]">
+        <div className="absolute left-4 top-4 text-2xl font-bold select-none">
+          Lumia
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center p-4">
+          <div className="w-full max-w-4xl h-full flex flex-col">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-semibold mb-2">
+                Welcome, {nickname}!
+              </h1>
+              <p className="text-gray-600">
+                You are now logged in and can start chatting.
+              </p>
+            </div>
+            <div className="flex-1 bg-white rounded-lg border border-gray-200 p-6">
+              <div className="text-center text-gray-500">
+                <p>Chat interface will be implemented here.</p>
+                <p className="text-sm mt-2">User: {nickname}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>
@@ -296,15 +317,8 @@ export default function Page() {
           </form>
           <div className="w-full flex flex-col items-center gap-2">
             <span className="text-sm text-gray-700">
-              Already have an account?
+              Don't have an account? Contact support.
             </span>
-            <a
-              href="/register"
-              onClick={handleNavigateRegister}
-              className="text-blue-600 text-sm font-medium hover:underline cursor-pointer"
-            >
-              Register
-            </a>
           </div>
           <div className="w-full flex items-center gap-4 my-2">
             <div className="flex-1 h-px bg-gray-200" />
