@@ -147,7 +147,7 @@ function PureChatHeader({
 
   // Для иконки профиля используем localSubscription, если есть, иначе session
   const userSubscription =
-    localSubscription ?? session?.user?.subscription ?? null;
+    localSubscription ?? (session?.user as any)?.subscription ?? null;
 
   // Profile button handler (for now, just go to /profile)
   const handleProfileClick = () => {

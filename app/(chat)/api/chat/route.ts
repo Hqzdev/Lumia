@@ -5,7 +5,7 @@ import {
   smoothStream,
   streamText,
 } from 'ai';
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
@@ -82,7 +82,8 @@ export async function POST(request: Request) {
     return createDataStreamResponse({
       execute: (dataStream) => {
         const sysPrompt = systemPrompt({ selectedChatModel });
-        const system = typeof sysPrompt === 'function' ? sysPrompt() : sysPrompt;
+        const system =
+          typeof sysPrompt === 'function' ? sysPrompt() : sysPrompt;
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system,

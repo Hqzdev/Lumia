@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { auth } from '../(auth)/auth';
+import { auth } from '@/lib/auth';
 
 import { Chat } from '@/components/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
