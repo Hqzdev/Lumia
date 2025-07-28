@@ -1,50 +1,38 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { getUserByNickname, updateUserLastLogin } from '@/lib/db/queries';
+import { createUser } from '@/lib/db/queries';
 import { cookies } from 'next/headers';
-
-export async function GET(request: NextRequest) {
-  return NextResponse.json({ message: 'Auth endpoint' });
-}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { nickname, password, rememberMe = false, redirect } = body;
+    const { email, nickname, password, rememberMe = false } = body;
 
-    if (!nickname || !password) {
+    if (!email || !nickname || !password) {
       return NextResponse.json(
-        { error: 'Nickname and password are required' },
+        { error: 'Email, nickname and password are required' },
         { status: 400 },
       );
     }
 
-    // Получаем пользователя из базы данных
-    const users = await getUserByNickname(nickname);
-    if (users.length === 0) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 },
-      );
-    }
+    // Проверяем, что пользователь с таким email или nickname не существует
+    // TODO: Добавить проверку существующих пользователей
 
-    const user = users[0];
-
-    // В реальном приложении здесь должна быть проверка пароля
-    // Для демонстрации просто проверяем, что пользователь существует
-    // TODO: Добавить хеширование и проверку пароля
-
-    // Обновляем время последнего входа
-    await updateUserLastLogin(user.id);
+    // Создаем нового пользователя
+    const newUser = await createUser(
+      email,
+      password, // В реальном приложении пароль должен быть хеширован
+      nickname,
+    );
 
     // Генерируем токен аутентификации
     const token = `auth_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     // Подготавливаем данные пользователя для куки
     const userData = {
-      id: user.id,
-      nickname: user.nickname,
-      email: user.email,
-      subscription: user.subscription,
+      id: newUser.id,
+      nickname: newUser.nickname,
+      email: newUser.email,
+      subscription: newUser.subscription,
     };
 
     // Устанавливаем куки
@@ -53,12 +41,12 @@ export async function POST(request: NextRequest) {
 
     // Устанавливаем токен аутентификации
     cookieStore.set('lumia_auth_token', token, {
-      httpOnly: false, // Должно быть доступно на клиенте
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      domain: '.lumiaai.ru', // Для кросс-доменного взаимодействия
+      domain: '.lumiaai.ru',
       path: '/',
-      maxAge: days * 24 * 60 * 60, // в секундах
+      maxAge: days * 24 * 60 * 60,
     });
 
     // Устанавливаем данные пользователя
@@ -93,20 +81,14 @@ export async function POST(request: NextRequest) {
       maxAge: 30 * 24 * 60 * 60,
     });
 
-    // Определяем URL для редиректа
-    let redirectUrl = 'https://chat.lumiaai.ru/';
-    if (redirect?.startsWith('https://chat.lumiaai.ru')) {
-      redirectUrl = redirect;
-    }
-
-    // Возвращаем успешный ответ с редиректом
+    // Возвращаем успешный ответ с редиректом на чат
     return NextResponse.json({
       success: true,
       user: userData,
-      redirectUrl,
+      redirectUrl: 'https://chat.lumiaai.ru/',
     });
   } catch (error) {
-    console.error('Error in auth POST:', error);
+    console.error('Error in register POST:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 },

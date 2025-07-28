@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAuthToken, getUserData } from '@/lib/utils/cookies';
+import {
+  getAuthToken,
+  getUserData,
+  isAuthenticated,
+} from '@/lib/utils/cookies';
+import { getRedirectParam, isValidRedirectUrl } from '@/lib/utils/cross-domain';
 
 interface AutoLoginProps {
   children: React.ReactNode;
@@ -24,8 +29,18 @@ export function AutoLogin({ children }: AutoLoginProps) {
           console.log(
             'No authentication data found, redirecting to auth domain',
           );
+
+          // Получаем параметр redirect из URL
+          const redirectParam = getRedirectParam();
+          let authUrl = 'https://auth.lumiaai.ru';
+
+          // Если есть валидный redirect параметр, добавляем его к URL аутентификации
+          if (redirectParam && isValidRedirectUrl(redirectParam)) {
+            authUrl += `?redirect=${encodeURIComponent(redirectParam)}`;
+          }
+
           // Перенаправляем на домен аутентификации
-          window.location.href = 'https://auth.lumiaai.ru';
+          window.location.href = authUrl;
           return;
         }
 

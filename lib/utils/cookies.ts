@@ -8,7 +8,7 @@ const getCookieDomain = () => {
 
   const hostname = window.location.hostname;
 
-  // Если мы на поддомене, устанавливаем куки для основного домена
+  // Если мы на поддомене lumiaai.ru, устанавливаем куки для основного домена
   if (hostname.includes('lumiaai.ru')) {
     return '.lumiaai.ru'; // Точка в начале позволяет использовать куки на всех поддоменах
   }
@@ -29,7 +29,9 @@ export function setCookie(name: string, value: string, days = 30) {
   const expires = `expires=${date.toUTCString()}`;
   const domain = getCookieDomain();
   const domainPart = domain ? `;domain=${domain}` : '';
-  document.cookie = `${name}=${value};${expires};path=/${domainPart}`;
+  const secure = window.location.protocol === 'https:' ? ';secure' : '';
+  const sameSite = ';samesite=lax'; // lax для кросс-доменного взаимодействия
+  document.cookie = `${name}=${value};${expires};path=/${domainPart}${secure}${sameSite}`;
 }
 
 export function getCookie(name: string): string | null {
@@ -50,7 +52,9 @@ export function deleteCookie(name: string) {
 
   const domain = getCookieDomain();
   const domainPart = domain ? `;domain=${domain}` : '';
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/${domainPart}`;
+  const secure = window.location.protocol === 'https:' ? ';secure' : '';
+  const sameSite = ';samesite=lax';
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/${domainPart}${secure}${sameSite}`;
 }
 
 // Аутентификационные куки
@@ -59,8 +63,8 @@ export const AUTH_COOKIES = {
   LAST_NICKNAME: 'lumia_last_nickname',
   LOGIN_ATTEMPTS: 'lumia_login_attempts',
   LAST_LOGIN: 'lumia_last_login',
-  AUTH_TOKEN: 'lumia_auth_token', // Добавляем токен для кросс-доменной аутентификации
-  USER_DATA: 'lumia_user_data', // Добавляем данные пользователя
+  AUTH_TOKEN: 'lumia_auth_token', // Токен для кросс-доменной аутентификации
+  USER_DATA: 'lumia_user_data', // Данные пользователя
 };
 
 // Функции для работы с аутентификационными куки
@@ -74,7 +78,7 @@ export function setAuthCookie(name: string, value: string, days = 30) {
   const domainPart = domain ? `;domain=${domain}` : '';
   // Добавляем флаги безопасности для аутентификационных куки
   const secure = window.location.protocol === 'https:' ? ';secure' : '';
-  const sameSite = ';samesite=lax'; // Изменяем на lax для кросс-доменного взаимодействия
+  const sameSite = ';samesite=lax'; // lax для кросс-доменного взаимодействия
   document.cookie = `${name}=${value};${expires};path=/${domainPart}${secure}${sameSite}`;
 }
 
@@ -89,8 +93,8 @@ export function deleteAuthCookie(name: string) {
 // Специфичные функции для аутентификации
 export function saveLoginCredentials(
   nickname: string,
-  rememberMe: boolean = false,
-  userData?: any, // Добавляем данные пользователя
+  rememberMe = false,
+  userData?: any, // Данные пользователя
 ) {
   if (!isClient) return;
 
@@ -208,4 +212,33 @@ export function isAuthenticated(): boolean {
   const token = getAuthToken();
   const userData = getUserData();
   return !!(token && userData);
+}
+
+// Функция для установки всех аутентификационных данных сразу
+export function setAuthenticationData(
+  token: string,
+  userData: any,
+  rememberMe = false,
+) {
+  if (!isClient) return;
+
+  const days = rememberMe ? 365 : 7;
+
+  // Устанавливаем токен
+  setAuthToken(token, days);
+
+  // Устанавливаем данные пользователя
+  setUserData(userData, days);
+
+  // Сохраняем дополнительные данные
+  if (userData.nickname) {
+    setAuthCookie(AUTH_COOKIES.LAST_NICKNAME, userData.nickname, days);
+  }
+
+  if (rememberMe) {
+    setAuthCookie(AUTH_COOKIES.REMEMBER_ME, 'true', 365);
+  }
+
+  // Сохраняем время последнего входа
+  setAuthCookie(AUTH_COOKIES.LAST_LOGIN, new Date().toISOString(), 30);
 }

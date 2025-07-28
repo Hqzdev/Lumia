@@ -1,5 +1,9 @@
+'use client';
+
 import Form from 'next/form';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getRedirectParam } from '@/lib/utils/cross-domain';
 
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -62,7 +66,7 @@ export function AuthForm({
   defaultEmail = '',
   mode = 'register',
 }: {
-  action: NonNullable<
+  action?: NonNullable<
     string | ((formData: FormData) => void | Promise<void>) | undefined
   >;
   children: React.ReactNode;
@@ -71,6 +75,8 @@ export function AuthForm({
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [animating, setAnimating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   // Анимация для поля пароля
   const handleTogglePassword = () => {
@@ -79,8 +85,94 @@ export function AuthForm({
     setTimeout(() => setAnimating(false), 200); // длительность анимации
   };
 
+  // Обработчик отправки формы для логина
+  const handleLoginSubmit = async (formData: FormData) => {
+    setIsLoading(true);
+
+    try {
+      const nickname = formData.get('nickname') as string;
+      const password = formData.get('password') as string;
+      const rememberMe = formData.get('rememberMe') === 'on';
+
+      // Получаем параметр redirect из URL
+      const redirectParam = getRedirectParam();
+
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nickname,
+          password,
+          rememberMe,
+          redirect: redirectParam,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Перенаправляем на домен чата
+        window.location.href = data.redirectUrl;
+      } else {
+        // Показываем ошибку
+        console.error('Login failed:', data.error);
+        // Здесь можно добавить показ ошибки пользователю
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Обработчик отправки формы для регистрации
+  const handleRegisterSubmit = async (formData: FormData) => {
+    setIsLoading(true);
+
+    try {
+      const email = formData.get('email') as string;
+      const nickname = formData.get('nickname') as string;
+      const password = formData.get('password') as string;
+      const rememberMe = formData.get('rememberMe') === 'on';
+
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          nickname,
+          password,
+          rememberMe,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Перенаправляем на домен чата
+        window.location.href = data.redirectUrl;
+      } else {
+        // Показываем ошибку
+        console.error('Registration failed:', data.error);
+        // Здесь можно добавить показ ошибки пользователю
+      }
+    } catch (error) {
+      console.error('Error during registration:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Выбираем обработчик в зависимости от режима
+  const formAction =
+    mode === 'login' ? handleLoginSubmit : handleRegisterSubmit;
+
   return (
-    <Form action={action} className="flex flex-col gap-4 px-4 sm:px-16">
+    <Form action={formAction} className="flex flex-col gap-4 px-4 sm:px-16">
       {mode === 'register' && (
         <div className="flex flex-col gap-2">
           <Label
@@ -165,6 +257,23 @@ export function AuthForm({
           </button>
         </div>
       </div>
+
+      {/* Добавляем чекбокс "Запомнить меня" */}
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="rememberMe"
+          name="rememberMe"
+          className="rounded border-gray-300"
+        />
+        <Label
+          htmlFor="rememberMe"
+          className="text-sm text-gray-600 dark:text-gray-500"
+        >
+          Запомнить меня
+        </Label>
+      </div>
+
       {children}
     </Form>
   );

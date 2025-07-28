@@ -52,17 +52,21 @@ export async function createUser(
   email: string,
   password: string,
   nickname: string,
-) {
+): Promise<User> {
   const salt = genSaltSync(10);
   const hash = hashSync(password, salt);
 
   try {
-    return await db.insert(user).values({
+    await db.insert(user).values({
       email,
       password: hash,
       nickname,
       subscription: 'free',
     });
+
+    // Получаем созданного пользователя
+    const [newUser] = await db.select().from(user).where(eq(user.email, email));
+    return newUser;
   } catch (error) {
     console.error('Failed to create user in database');
     throw error;

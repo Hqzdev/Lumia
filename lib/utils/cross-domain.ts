@@ -22,13 +22,13 @@ export function isChatDomain(): boolean {
 }
 
 // Получаем URL для перехода между доменами
-export function getAuthUrl(path: string = '/'): string {
+export function getAuthUrl(path = '/'): string {
   const protocol =
     typeof window !== 'undefined' ? window.location.protocol : 'https:';
   return `${protocol}//${DOMAINS.AUTH}${path}`;
 }
 
-export function getChatUrl(path: string = '/'): string {
+export function getChatUrl(path = '/'): string {
   const protocol =
     typeof window !== 'undefined' ? window.location.protocol : 'https:';
   return `${protocol}//${DOMAINS.CHAT}${path}`;
@@ -50,6 +50,9 @@ export function redirectToAuth(redirectPath?: string): void {
   window.location.href = authUrl;
 }
 
+// Импортируем функцию проверки аутентификации
+import { isAuthenticated } from './cookies';
+
 // Функция для проверки, нужно ли перенаправить пользователя
 export function shouldRedirectToAuth(): boolean {
   // Если мы на домене чата и пользователь не аутентифицирован
@@ -60,9 +63,6 @@ export function shouldRedirectToChat(): boolean {
   // Если мы на домене аутентификации и пользователь аутентифицирован
   return isAuthDomain() && isAuthenticated();
 }
-
-// Импортируем функцию проверки аутентификации
-import { isAuthenticated } from './cookies';
 
 // Функция для инициализации кросс-доменного взаимодействия
 export function initializeCrossDomain(): void {
@@ -83,24 +83,21 @@ export function initializeCrossDomain(): void {
 // Функция для обработки успешной аутентификации
 export function handleSuccessfulAuth(
   userData: any,
-  rememberMe: boolean = false,
+  rememberMe = false,
+  redirectPath?: string,
 ): void {
   if (typeof window === 'undefined') return;
 
   // Сохраняем данные пользователя в куки
-  import('./cookies').then(({ saveLoginCredentials, setAuthToken }) => {
+  import('./cookies').then(({ setAuthenticationData }) => {
     // Генерируем простой токен (в реальном приложении это должен быть JWT)
     const token = `auth_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    setAuthToken(token, rememberMe ? 365 : 7);
-    saveLoginCredentials(
-      userData.nickname || userData.email,
-      rememberMe,
-      userData,
-    );
+    // Устанавливаем все аутентификационные данные
+    setAuthenticationData(token, userData, rememberMe);
 
     // Перенаправляем на домен чата
-    redirectToChat();
+    redirectToChat(redirectPath);
   });
 }
 
@@ -115,4 +112,30 @@ export function handleLogout(): void {
     // Перенаправляем на домен аутентификации
     redirectToAuth();
   });
+}
+
+// Функция для получения параметра redirect из URL
+export function getRedirectParam(): string | null {
+  if (typeof window === 'undefined') return null;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('redirect');
+}
+
+// Функция для проверки валидности redirect URL
+export function isValidRedirectUrl(url: string): boolean {
+  try {
+    const redirectUrl = new URL(url);
+    return redirectUrl.hostname === DOMAINS.CHAT;
+  } catch {
+    return false;
+  }
+}
+
+// Функция для создания URL с параметром redirect
+export function createAuthUrlWithRedirect(redirectUrl: string): string {
+  const authUrl = getAuthUrl();
+  const url = new URL(authUrl);
+  url.searchParams.set('redirect', redirectUrl);
+  return url.toString();
 }
