@@ -1,7 +1,6 @@
 'use client';
 
 import React, {
-  startTransition,
   useMemo,
   useOptimistic,
   useState,
@@ -125,11 +124,8 @@ export function ModelSelector({
                 key={id}
                 onSelect={() => {
                   setOpen(false);
-
-                  startTransition(() => {
-                    setOptimisticModelId(id);
-                    saveChatModelAsCookie(id);
-                  });
+                  setOptimisticModelId(id);
+                  saveChatModelAsCookie(id);
                 }}
                 data-active={id === optimisticModelId}
                 asChild

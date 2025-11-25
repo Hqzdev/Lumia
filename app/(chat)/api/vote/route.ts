@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth';
+import { auth } from '@/app/(auth)/auth';
 import { getChatById, getVotesByChatId, voteMessage } from '@/lib/db/queries';
 
 export async function GET(request: Request) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -26,21 +26,6 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import {
-  clearLoginCredentials,
-  getSavedCredentials,
-} from '@/lib/utils/cookies';
-import { toast } from '@/components/toast';
 
 type SettingsSection =
   | 'general'
@@ -737,24 +722,6 @@ function SecuritySettings({ settings, updateSetting }: any) {
 }
 
 function AccountSettings() {
-  const [savedCredentials, setSavedCredentials] = useState(() =>
-    getSavedCredentials(),
-  );
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const handleClearCredentials = () => {
-    clearLoginCredentials();
-    setSavedCredentials({ nickname: null, rememberMe: false, userData: null });
-    toast({
-      type: 'success',
-      description: 'Login credentials cleared successfully',
-    });
-  };
-
   return (
     <div className="space-y-8">
       <div>
@@ -819,48 +786,6 @@ function AccountSettings() {
               <span className="text-base text-gray-900">Select domain</span>
             </div>
             <ChevronDown className="size-4" />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Authentication</h3>
-        <p className="text-sm text-muted-foreground">
-          Manage your login preferences and saved credentials.
-        </p>
-        <Separator />
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Saved Login</Label>
-              <p className="text-sm text-muted-foreground">
-                {savedCredentials.nickname
-                  ? `Last used: ${savedCredentials.nickname}`
-                  : 'No saved credentials'}
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleClearCredentials}
-              disabled={!savedCredentials.nickname}
-            >
-              Clear
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Remember Me</Label>
-              <p className="text-sm text-muted-foreground">
-                Keep me signed in on this device
-              </p>
-            </div>
-            <Switch
-              checked={savedCredentials.rememberMe}
-              disabled
-              className="opacity-50"
-            />
           </div>
         </div>
       </div>

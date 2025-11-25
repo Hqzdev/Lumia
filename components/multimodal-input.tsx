@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, startTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { ArrowUpIcon, StopIcon } from './icons';
@@ -77,6 +77,8 @@ import { SearchResults } from './search-results';
 import { SearchResultsImageSection } from './search-results-image';
 import { VideoSearchResults } from './video-search-results';
 import { Markdown } from './markdown';
+import { saveChatModelAsCookie } from '@/app/(chat)/actions';
+import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 
 // Стили для генерации изображений
 const IMAGE_STYLES = [
@@ -522,6 +524,8 @@ function PureMultimodalInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input]);
 
+  // Переключение модели происходит при отправке сообщения, а не при активации режима
+
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
     setInput(value);
@@ -539,6 +543,13 @@ function PureMultimodalInput({
 
   const submitForm = useCallback(async () => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
+
+    // Переключаем модель перед отправкой сообщения, если включен Think longer mode
+    if (isThinkLongerMode) {
+      await saveChatModelAsCookie('chat-model-reasoning');
+    } else {
+      await saveChatModelAsCookie(DEFAULT_CHAT_MODEL);
+    }
 
     const userPrompt = input;
     let systemPrompt = undefined;
@@ -600,6 +611,7 @@ function PureMultimodalInput({
     input,
     isJustifyMode,
     isDeepSearchMode,
+    isThinkLongerMode,
     setInput,
     customization,
   ]);
@@ -833,7 +845,7 @@ function PureMultimodalInput({
               placeholder={placeholder}
               value={isMenuSelected ? `${input} →` : input}
               onChange={handleInput}
-              className={`min-h-[60px] max-h-[400px] overflow-auto resize-none rounded-[30px] !text-base bg-white dark:bg-gray-900 pb-16 px-6 pt-4 border border-gray-200 dark:border-gray-600 focus:border-gray-200 focus-visible:border-gray-200 focus:ring-0 focus-visible:ring-0 transition-[height] duration-200 ease-in-out${(isCommandMenuOpen && /^(Justify|Search|Research|Deep Research|Generate Image)\b/.test(input)) || isMenuSelected ? ' font-bold text-blue-600' : ''}${className ? ` ${className}` : ''}`}
+              className={`min-h-[60px] max-h-[400px] overflow-auto resize-none rounded-[30px] !text-base bg-white dark:bg-gray-900 pb-16 px-6 pt-4 border border-gray-300 shadow-md dark:border-gray-600 focus:border-gray-200 focus-visible:border-gray-200 focus:ring-0 focus-visible:ring-0 transition-[height] duration-200 ease-in-out${(isCommandMenuOpen && /^(Justify|Search|Research|Deep Research|Generate Image)\b/.test(input)) || isMenuSelected ? ' font-bold text-blue-600' : ''}${className ? ` ${className}` : ''}`}
               rows={1}
               autoFocus
               onKeyDown={(event) => {

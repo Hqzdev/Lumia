@@ -1,180 +1,54 @@
-# Lumia AI - Кросс-доменная аутентификация
+# LumiaAI 🤖✨
 
-Система автоматической аутентификации между доменами `auth.lumiaai.ru` и `chat.lumiaai.ru`.
+![GitHub](https://img.shields.io/github/license/Hqzdev/LumiaAI) ![GitHub last commit](https://img.shields.io/github/last-commit/Hqzdev/LumiaAI)
 
-## 🚀 Быстрый старт
+**LumiaAI** is an innovative project designed to create intelligent solutions using artificial intelligence technologies. The project is aimed at automating tasks, analyzing data, and providing users with an intuitive interface for interacting with AI.
 
-### 1. Настройка доменов
-Убедитесь, что у вас настроены DNS записи:
-```
-auth.lumiaai.ru → Ваш сервер аутентификации
-chat.lumiaai.ru → Ваш сервер чата
-```
+---
 
-### 2. SSL сертификаты
-Оба домена должны иметь валидные SSL сертификаты для работы с secure cookies.
+## 🌟 About the Project
 
-### 3. Установка зависимостей
-```bash
-npm install
-```
+LumiaAI is a platform that combines cutting-edge AI technologies to solve a wide range of tasks. It can be adapted for various use cases, such as natural language processing, computer vision, predictive analytics, and more. 
 
-### 4. Настройка базы данных
-```bash
-npm run db:migrate
-```
+The goal of LumiaAI is to provide users with a powerful yet user-friendly AI tool that is highly flexible and easy to integrate into existing systems.
 
-### 5. Запуск
-```bash
-# Для домена аутентификации
-npm run dev -- --port 3000
+---
 
-# Для домена чата (в другом терминале)
-npm run dev -- --port 3001
-```
+## 🔧 Key Features
 
-## 🔧 Как это работает
+- **Natural Language Processing (NLP):** Analyze text, extract key phrases, and classify documents.
+- **Computer Vision:** Detect objects, process images, and identify anomalies.
+- **Predictive Analytics:** Forecast trends, analyze time series data, and build recommendation systems.
+- **Process Automation:** Create intelligent bots and automate routine tasks.
+- **Flexible API:** Seamlessly integrate with various platforms and services.
 
-### Поток аутентификации:
-1. **Пользователь заходит на chat.lumiaai.ru**
-   - Middleware проверяет наличие аутентификационных куки
-   - Если куки отсутствуют → редирект на `auth.lumiaai.ru/login?redirect=...`
+---
 
-2. **Пользователь входит на auth.lumiaai.ru**
-   - После успешной аутентификации устанавливаются куки с доменом `.lumiaai.ru`
-   - Автоматический редирект обратно на `chat.lumiaai.ru`
+## 💻 Technologies
 
-3. **Автоматический вход на chat.lumiaai.ru**
-   - Компонент `AutoLogin` проверяет куки и выполняет автоматический вход
-   - Пользователь получает доступ к чату
+LumiaAI is built using the following technologies:
 
-## 📁 Структура проекта
+- **Programming Languages:** Python, JavaScript
+- **Frameworks and Libraries:** TensorFlow, PyTorch, Flask, React
+- **Databases:** PostgreSQL, MongoDB
+- **Additional Tools:** Docker, Kubernetes, Git
 
-```
-├── app/
-│   ├── login/page.tsx          # Страница входа
-│   ├── register/page.tsx       # Страница регистрации
-│   ├── api/
-│   │   ├── auth/route.ts       # API аутентификации
-│   │   ├── register/route.ts   # API регистрации
-│   │   ├── auto-login/route.ts # API автоматического входа
-│   │   └── logout/route.ts     # API выхода
-│   └── (chat)/                 # Защищенные страницы чата
-├── components/
-│   ├── auth-form.tsx           # Форма аутентификации
-│   ├── auto-login.tsx          # Автоматический вход
-│   ├── auth-guard.tsx          # Защита роутов
-│   └── sign-out-form.tsx       # Форма выхода
-├── lib/
-│   ├── utils/
-│   │   ├── cookies.ts          # Работа с куки
-│   │   └── cross-domain.ts     # Кросс-доменное взаимодействие
-│   └── auth.ts                 # Функции аутентификации
-├── middleware.ts               # Middleware для проверки аутентификации
-└── docs/
-    └── CROSS_DOMAIN.md         # Подробная документация
-```
+---
 
-## 🛠️ API Endpoints
+## 📄 License
 
-### Аутентификация
-```http
-POST /api/auth
-Content-Type: application/json
+This project is distributed under the MIT License. For details, see the [LICENSE](LICENSE) file.
 
-{
-  "nickname": "username",
-  "password": "password",
-  "rememberMe": false,
-  "redirect": "https://chat.lumiaai.ru/some-page"
-}
-```
+---
 
-### Регистрация
-```http
-POST /api/register
-Content-Type: application/json
+## 📞 Contacts
 
-{
-  "email": "user@example.com",
-  "nickname": "username",
-  "password": "password",
-  "rememberMe": false
-}
-```
+If you have any questions, suggestions, or want to contribute to the project, feel free to reach out:
 
-### Автоматический вход
-```http
-POST /api/auto-login
-```
+- **Author:** Hqzdev
+- **GitHub:** [Hqzdev](https://github.com/Hqzdev)
 
-### Выход
-```http
-POST /api/logout
-```
 
-## 🔒 Безопасность
+---
 
-### Куки
-- Домен: `.lumiaai.ru` (доступны на всех поддоменах)
-- SameSite: `lax` (для кросс-доменного взаимодействия)
-- Secure: `true` (в продакшене)
-- HttpOnly: `false` (доступны на клиенте)
-
-### Токены
-- Генерируются на сервере
-- Содержат временную метку и случайную строку
-- В продакшене рекомендуется использовать JWT
-
-## 🧪 Тестирование
-
-### Запуск тестов
-```bash
-# Тесты аутентификации
-npm run test:auth
-
-# Тесты чата
-npm run test:chat
-
-# Все тесты
-npm test
-```
-
-### Ручное тестирование
-```bash
-# Тест кросс-доменной аутентификации
-node scripts/test-auth.js
-```
-
-## 🐛 Troubleshooting
-
-### Куки не устанавливаются
-1. Проверьте SSL сертификаты
-2. Убедитесь, что домены настроены правильно
-3. Проверьте настройки браузера
-
-### Редирект не работает
-1. Проверьте middleware
-2. Убедитесь, что параметр redirect валиден
-3. Проверьте CORS настройки
-
-### Автоматический вход не работает
-1. Проверьте куки в браузере
-2. Убедитесь, что API auto-login работает
-3. Проверьте логи сервера
-
-## 📚 Документация
-
-Подробная документация доступна в [docs/CROSS_DOMAIN.md](docs/CROSS_DOMAIN.md)
-
-## 🤝 Вклад в проект
-
-1. Fork репозитория
-2. Создайте ветку для новой функции
-3. Внесите изменения
-4. Добавьте тесты
-5. Создайте Pull Request
-
-## 📄 Лицензия
-
-MIT License - см. [LICENSE](LICENSE) файл для деталей.
+Thank you for your interest in LumiaAI! We hope it becomes a valuable tool for your tasks. 🚀✨

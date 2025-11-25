@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { signOut, useSession } from 'next-auth/react';
 
-import { ModelSelector } from '@/components/model-selector';
 import { SidebarToggle } from '@/components/sidebar-toggle';
 import { Button } from '@/components/ui/button';
 import {
@@ -109,12 +108,10 @@ function getProfileIconBySubscription(subscription: string | null | undefined) {
 
 function PureChatHeader({
   chatId,
-  selectedModelId,
   selectedVisibilityType,
   isReadonly,
 }: {
   chatId: string;
-  selectedModelId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
@@ -147,7 +144,7 @@ function PureChatHeader({
 
   // Для иконки профиля используем localSubscription, если есть, иначе session
   const userSubscription =
-    localSubscription ?? (session?.user as any)?.subscription ?? null;
+    localSubscription ?? session?.user?.subscription ?? null;
 
   // Profile button handler (for now, just go to /profile)
   const handleProfileClick = () => {
@@ -189,19 +186,7 @@ function PureChatHeader({
           </>
         )}
         {/* Theme toggle button removed from here */}
-        {!isReadonly && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <ModelSelector
-                  selectedModelId={selectedModelId}
-                  className="ml-2"
-                />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Select model</TooltipContent>
-          </Tooltip>
-        )}
+        {/* ModelSelector removed - model switches automatically with Think longer mode */}
         <div className="flex justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -321,16 +306,4 @@ function PureChatHeader({
   );
 }
 
-export const ChatHeader = memo(
-  PureChatHeader,
-  (
-    prevProps: {
-      selectedModelId: string;
-    },
-    nextProps: {
-      selectedModelId: string;
-    },
-  ) => {
-    return prevProps.selectedModelId === nextProps.selectedModelId;
-  },
-);
+export const ChatHeader = memo(PureChatHeader);

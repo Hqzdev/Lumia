@@ -1,11 +1,10 @@
 import { cookies } from 'next/headers';
-import { auth } from '@/lib/auth';
+import { auth } from '../(auth)/auth';
 
 import { Chat } from '@/components/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
-import { AutoLogin } from '@/components/auto-login';
 
 export default async function Page() {
   const id = generateUUID();
@@ -15,13 +14,30 @@ export default async function Page() {
   const session = await auth();
   const nickname = session?.user?.nickname;
 
-  const chatComponent = (
+  if (!modelIdFromCookie) {
+    return (
+      <>
+        <Chat
+          key={id}
+          id={id}
+          initialMessages={[]}
+          selectedChatModel={DEFAULT_CHAT_MODEL}
+          selectedVisibilityType="private"
+          isReadonly={false}
+          nickname={nickname}
+        />
+        <DataStreamHandler id={id} />
+      </>
+    );
+  }
+
+  return (
     <>
       <Chat
         key={id}
         id={id}
         initialMessages={[]}
-        selectedChatModel={modelIdFromCookie?.value || DEFAULT_CHAT_MODEL}
+        selectedChatModel={modelIdFromCookie.value}
         selectedVisibilityType="private"
         isReadonly={false}
         nickname={nickname}
@@ -29,6 +45,4 @@ export default async function Page() {
       <DataStreamHandler id={id} />
     </>
   );
-
-  return <AutoLogin>{chatComponent}</AutoLogin>;
 }

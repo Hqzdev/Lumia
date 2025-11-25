@@ -1,45 +1,16 @@
 'use client';
+import Form from 'next/form';
+import { signOutAction } from '@/app/actions/sign-out';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-
-export function SignOutForm() {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSignOut = async () => {
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Перенаправляем на домен аутентификации
-        window.location.href = data.redirectUrl;
-      } else {
-        console.error('Logout failed:', data.error);
-      }
-    } catch (error) {
-      console.error('Error during logout:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+export const SignOutForm = () => {
   return (
-    <Button
-      variant="outline"
-      onClick={handleSignOut}
-      disabled={isLoading}
-      className="w-full"
-    >
-      {isLoading ? 'Выход...' : 'Выйти'}
-    </Button>
+    <Form className="w-full" action={signOutAction}>
+      <button
+        type="submit"
+        className="w-full text-left px-1 py-0.5 text-red-500"
+      >
+        Sign out
+      </button>
+    </Form>
   );
-}
+};

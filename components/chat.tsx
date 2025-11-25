@@ -86,7 +86,6 @@ export const Chat = memo(function Chat({
       >
         <ChatHeader
           chatId={id}
-          selectedModelId={selectedChatModel}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
         />
