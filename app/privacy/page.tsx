@@ -12,7 +12,6 @@ import {
   Zap,
   Shield,
 } from 'lucide-react';
-
 export default function TermsAndPrivacyPage() {
   return (
     <div className="min-h-screen bg-gray-50">

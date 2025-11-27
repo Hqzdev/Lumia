@@ -124,30 +124,27 @@ export const register = async (
       nickname: formData.get('nickname'),
     });
 
-    // Add timeout to database operations (15 seconds)
-    const usersByEmail = await withTimeout(
+    // Выполняем проверки параллельно без дополнительных таймаутов
+    // Полагаемся на таймауты postgres клиента (10 секунд)
+    const [usersByEmail, usersByNickname] = await Promise.all([
       getUserByEmail(validatedData.email),
-      15000,
-    );
+      getUserByNickname(validatedData.nickname),
+    ]);
+
     const [userByEmail] = usersByEmail;
     if (userByEmail) {
       return { status: 'user_exists' } as RegisterActionState;
     }
     
-    const usersByNickname = await withTimeout(
-      getUserByNickname(validatedData.nickname),
-      15000,
-    );
     const [userByNickname] = usersByNickname;
     if (userByNickname) {
       return { status: 'nickname_exists' } as RegisterActionState;
     }
     
-    await withTimeout(
-      createUser(validatedData.email, validatedData.password, validatedData.nickname),
-      15000,
-    );
+    // Создаем пользователя
+    await createUser(validatedData.email, validatedData.password, validatedData.nickname);
     
+    // Вход
     await signIn('credentials', {
       nickname: validatedData.nickname,
       password: validatedData.password,
@@ -160,8 +157,14 @@ export const register = async (
       return { status: 'invalid_data' };
     }
     // Check for timeout errors
-    if (error instanceof Error && (error.message.includes('timed out') || error.message.includes('ETIMEDOUT') || (error as any).code === 'ETIMEDOUT')) {
-      console.error('Database timeout error during registration:', error);
+    if (
+      error instanceof Error && 
+      (error.message.includes('timed out') || 
+       error.message.includes('ETIMEDOUT') || 
+       (error as any).code === 'ETIMEDOUT' ||
+       (error as any).code === 'ECONNRESET')
+    ) {
+      console.error('Database connection error during registration:', error);
       return { status: 'failed' };
     }
     console.error('Registration error:', error);

@@ -18,9 +18,10 @@ export default async function Layout({
 
   return (
     <>
+      {/* Pyodide загружается лениво, только когда нужно выполнить код */}
       <Script
         src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
-        strategy="beforeInteractive"
+        strategy="lazyOnload"
       />
       <SidebarProvider defaultOpen={!isCollapsed}>
         <AppSidebar user={session?.user} />

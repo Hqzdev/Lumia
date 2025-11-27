@@ -31,6 +31,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useState, useMemo } from 'react';
 import type { Chat } from '@/lib/db/schema';
+import { fetcher } from '@/lib/utils';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -151,6 +152,7 @@ function ChatSearchDialog({
   const [query, setQuery] = useState('');
   const { data: chats, isLoading } = useSWR<Array<Chat>>(
     user ? '/api/history' : null,
+    fetcher,
   );
 
   const filtered = useMemo(() => {

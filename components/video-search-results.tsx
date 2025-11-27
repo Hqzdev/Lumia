@@ -1,6 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { AvatarImage, Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { CardContent, Card } from '@/components/ui/card'
@@ -81,14 +81,16 @@ export function VideoSearchResults({ results }: VideoSearchResultsProps) {
             >
               <Card className="flex-1 min-h-40 ">
                 <CardContent className="p-2">
-                  <img
-                    src={result.imageUrl}
-                    alt={result.title}
-                    className="w-full aspect-video mb-2"
-                    onError={e =>
-                      (e.currentTarget.src = '/images/placeholder-image.png')
-                    }
-                  />
+                  <div className="relative w-full aspect-video mb-2">
+                    <Image
+                      src={result.imageUrl}
+                      alt={result.title}
+                      fill
+                      className="object-cover rounded-md"
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      unoptimized={!result.imageUrl.startsWith('http')}
+                    />
+                  </div>
                   <p className="text-xs line-clamp-2">{result.title}</p>
                   <div className="mt-2 flex items-center space-x-2">
                     <Avatar className="size-4">

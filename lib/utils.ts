@@ -24,15 +24,38 @@ interface ApplicationError extends Error {
 export const fetcher = async (url: string) => {
   const res = await fetch(url);
 
+  // Проверяем Content-Type перед парсингом
+  const contentType = res.headers.get('content-type');
+  const isJson = contentType?.includes('application/json');
+
   if (!res.ok) {
     const error = new Error(
       'An error occurred while fetching the data.',
     ) as ApplicationError;
 
-    error.info = await res.json();
+    // Пытаемся получить JSON, если это не JSON - возвращаем текст
+    try {
+      if (isJson) {
+        error.info = await res.json();
+      } else {
+        const text = await res.text();
+        error.info = text;
+      }
+    } catch (e) {
+      error.info = `HTTP ${res.status}: ${res.statusText}`;
+    }
+    
     error.status = res.status;
 
     throw error;
+  }
+
+  // Если ответ не JSON, выбрасываем ошибку
+  if (!isJson) {
+    const text = await res.text();
+    throw new Error(
+      `Expected JSON but got ${contentType || 'unknown content type'}. Response: ${text.substring(0, 100)}`
+    );
   }
 
   return res.json();

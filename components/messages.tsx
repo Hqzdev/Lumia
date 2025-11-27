@@ -1,13 +1,35 @@
 import type { UIMessage } from 'ai';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
-import { useEffect } from 'react';
-import { Overview } from './overview';
+import { useEffect, Suspense } from 'react';
 import { memo } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
-import { AnimatePresence, motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
+
+// Динамический импорт тяжелых компонентов для улучшения производительности
+const Overview = dynamic(() => import('./overview').then((mod) => ({ default: mod.Overview })), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full" />
+});
+
+const AnimatePresenceWrapper = dynamic(
+  () =>
+    import('framer-motion').then((mod) => mod.AnimatePresence),
+  { ssr: false }
+);
+
+const MotionDivWrapper = dynamic(
+  () =>
+    import('framer-motion').then((mod) => {
+      return function Wrapper(props: React.ComponentProps<'div'>) {
+        const MotionDiv = mod.motion.div;
+        return <MotionDiv {...props} />;
+      };
+    }),
+  { ssr: false }
+);
 
 interface MessagesProps {
   chatId: string;
@@ -51,13 +73,21 @@ function PureMessages({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, messages[messages.length - 1]?.content]);
 
+  // Fallback на обычные элементы если анимации не загрузились
+  const AnimateWrapper = AnimatePresenceWrapper || (({ children }: { children: React.ReactNode }) => <>{children}</>);
+  const MessageWrapper = MotionDivWrapper || ((props: React.ComponentProps<'div'>) => <div {...props} />);
+
   return (
     <div
       ref={messagesContainerRef}
       className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
     >
-      {messages.length === 0 && <Overview nickname={nickname} />}
-      <AnimatePresence initial={false}>
+      {messages.length === 0 && (
+        <Suspense fallback={<div className="flex items-center justify-center h-full" />}>
+          <Overview nickname={nickname} />
+        </Suspense>
+      )}
+      <AnimateWrapper initial={false}>
         {messages.map((message, index) => {
           // Гарантируем уникальный ключ для каждого сообщения
           const safeKey =
@@ -65,7 +95,7 @@ function PureMessages({
               ? message.id
               : `fallback-${index}-${Date.now()}`;
           return (
-            <motion.div key={safeKey} className="">
+            <MessageWrapper key={safeKey} className="">
               <PreviewMessage
                 chatId={chatId}
                 message={message}
@@ -82,10 +112,10 @@ function PureMessages({
                 isReadonly={isReadonly}
                 selectedChatModel={selectedChatModel}
               />
-            </motion.div>
+            </MessageWrapper>
           );
         })}
-      </AnimatePresence>
+      </AnimateWrapper>
       {status === 'submitted' &&
         messages.length > 0 &&
         messages[messages.length - 1].role === 'user' && <ThinkingMessage />}

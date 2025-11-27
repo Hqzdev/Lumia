@@ -1,6 +1,10 @@
 'use client';
 
-import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
+// Оптимизированный импорт date-fns (ШАГ 3)
+import { isToday } from 'date-fns/isToday';
+import { isYesterday } from 'date-fns/isYesterday';
+import { subMonths } from 'date-fns/subMonths';
+import { subWeeks } from 'date-fns/subWeeks';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import type { User } from 'next-auth';
@@ -173,14 +177,28 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   const {
     data: history,
     isLoading,
+    error,
     mutate,
   } = useSWR<Array<Chat>>(user ? '/api/history' : null, fetcher, {
-    fallbackData: [],
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+    shouldRetryOnError: true,
+    errorRetryCount: 3,
+    onError: (err) => {
+      console.error('Failed to load chat history:', err);
+    },
   });
 
+  // Обновляем список чатов при изменении пути (например, после создания нового чата)
   useEffect(() => {
-    mutate();
-  }, [pathname, mutate]);
+    if (user && pathname) {
+      // Небольшая задержка, чтобы избежать конфликтов с первоначальной загрузкой
+      const timeoutId = setTimeout(() => {
+        mutate();
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [pathname, user, mutate]);
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -250,6 +268,19 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
         <SidebarGroupContent>
           <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
             Login to save and revisit previous chats!
+          </div>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    );
+  }
+
+  if (error) {
+    console.error('Error loading chat history:', error);
+    return (
+      <SidebarGroup>
+        <SidebarGroupContent>
+          <div className="px-2 text-red-500 w-full flex flex-row justify-center items-center text-sm gap-2">
+            Failed to load chats. Please refresh the page.
           </div>
         </SidebarGroupContent>
       </SidebarGroup>

@@ -7,6 +7,11 @@ const config: Config = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  // Оптимизация для мобильных устройств
+  corePlugins: {
+    // Отключаем неиспользуемые плагины для уменьшения CSS размера
+    preflight: true,
+  },
   theme: {
     extend: {
       fontFamily: {

@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { generateTitleFromUserMessage } from '@/app/(chat)/actions';
 import { SessionProvider } from 'next-auth/react';
+import { WebVitals } from '@/components/web-vitals';
 
 import './globals.css';
 
@@ -11,10 +12,27 @@ export const metadata: Metadata = {
   metadataBase: new URL('http://localhost:3000'),
   title: 'Lumia',
   description: 'The strongest A.I assistant',
+  openGraph: {
+    title: 'Lumia - The strongest A.I assistant',
+    description: 'The strongest A.I assistant',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Lumia - The strongest A.I assistant',
+    description: 'The strongest A.I assistant',
+  },
 };
 
 export const viewport = {
-  maximumScale: 1, // Disable auto-zoom on mobile Safari
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+  ],
 };
 
 const geist = Geist({
@@ -62,19 +80,26 @@ export default function RootLayout({
     >
       <head>
         <link rel="icon" sizes="32x32" href="/icon.png" />
+        {/* Prefetch для критических ресурсов */}
+        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://mc.yandex.ru" />
+        <link rel="preconnect" href="https://mc.yandex.ru" crossOrigin="anonymous" />
+        {/* Next.js автоматически оптимизирует шрифты через next/font/google */}
         <script
           dangerouslySetInnerHTML={{
             __html: THEME_COLOR_SCRIPT,
           }}
         />
-        {/* Yandex.Metrika counter */}
+        {/* Yandex.Metrika counter - загружается асинхронно для улучшения производительности */}
         <script
+          defer
           dangerouslySetInnerHTML={{
             __html: `
    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
    m[i].l=1*new Date();
    for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-   k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+   k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.defer=1,k.src=r,a.parentNode.insertBefore(k,a)})
    (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
 
    ym(103415484, "init", {
@@ -107,6 +132,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <WebVitals />
             <Toaster position="top-center" />
             {children}
           </ThemeProvider>

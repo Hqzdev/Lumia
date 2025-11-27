@@ -40,6 +40,8 @@ export function ImageEditor({
             })}
             src={`data:image/png;base64,${content}`}
             alt={title}
+            loading="lazy"
+            decoding="async"
           />
         </picture>
       )}

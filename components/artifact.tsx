@@ -1,5 +1,6 @@
 import type { Attachment, UIMessage } from 'ai';
-import { formatDistance } from 'date-fns';
+// Оптимизированный импорт date-fns (ШАГ 3)
+import { formatDistance } from 'date-fns/formatDistance';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   type Dispatch,

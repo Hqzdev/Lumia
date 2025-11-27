@@ -1,4 +1,5 @@
 import type { Attachment } from 'ai';
+import Image from 'next/image';
 
 import { LoaderIcon } from './icons';
 
@@ -13,16 +14,17 @@ export const PreviewAttachment = ({
 
   return (
     <div data-testid="input-attachment-preview" className="flex flex-col gap-2">
-      <div className="size-20 aspect-video bg-muted rounded-md relative flex flex-col items-center justify-center">
+      <div className="size-20 aspect-video bg-muted rounded-md relative">
         {contentType ? (
           contentType.startsWith('image') ? (
-            // NOTE: it is recommended to use next/image for images
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               key={url}
               src={url}
               alt={name ?? 'An image attachment'}
-              className="rounded-md size-full object-cover"
+              fill
+              className="rounded-md object-cover"
+              sizes="80px"
+              unoptimized={url.startsWith('data:') || url.startsWith('blob:')}
             />
           ) : (
             <div className="" />

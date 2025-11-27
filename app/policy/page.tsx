@@ -14,7 +14,6 @@ import {
   Lock,
   X as CloseIcon,
 } from 'lucide-react';
-
 export default function PrivacyPolicy() {
   const router = useRouter();
   return (

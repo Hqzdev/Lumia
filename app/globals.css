@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Оптимизация для мобильных устройств */
+@media (max-width: 768px) {
+  /* Отключаем анимации на слабых устройствах для улучшения производительности */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* Оптимизация рендеринга для мобильных */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 :root {
     --foreground-rgb: 0, 0, 0;
     --background-start-rgb: 255, 255, 255;
@@ -19,6 +38,12 @@
 @layer utilities {
     .text-balance {
         text-wrap: balance;
+    }
+    
+    /* Liquid Glass hover effect */
+    .glass-card:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5) !important;
     }
 }
 

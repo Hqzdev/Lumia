@@ -7,7 +7,13 @@ import { memo, useState, useEffect, useRef } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
-import { Markdown } from './markdown';
+import dynamic from 'next/dynamic';
+
+// Динамический импорт Markdown для оптимизации bundle (ШАГ 3)
+const Markdown = dynamic(() => import('./markdown').then((mod) => ({ default: mod.Markdown })), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-muted h-20 rounded" />,
+});
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';

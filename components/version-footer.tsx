@@ -1,6 +1,7 @@
 'use client';
 
-import { isAfter } from 'date-fns';
+// Оптимизированный импорт date-fns (ШАГ 3)
+import { isAfter } from 'date-fns/isAfter';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useSWRConfig } from 'swr';

@@ -14,13 +14,31 @@ import { cn, fetcher } from '@/lib/utils';
 import { Document } from '@/lib/db/schema';
 import { InlineDocumentSkeleton } from './document-skeleton';
 import useSWR from 'swr';
-import { Editor } from './text-editor';
 import { DocumentToolCall, DocumentToolResult } from './document';
-import { CodeEditor } from './code-editor';
 import { useArtifact } from '@/hooks/use-artifact';
 import equal from 'fast-deep-equal';
-import { SpreadsheetEditor } from './sheet-editor';
-import { ImageEditor } from './image-editor';
+import dynamic from 'next/dynamic';
+
+// Динамический импорт тяжелых редакторов для оптимизации bundle (ШАГ 3)
+const Editor = dynamic(() => import('./text-editor').then((mod) => ({ default: mod.Editor })), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-muted h-32 rounded" />,
+});
+
+const CodeEditor = dynamic(() => import('./code-editor').then((mod) => ({ default: mod.CodeEditor })), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-muted h-32 rounded" />,
+});
+
+const SpreadsheetEditor = dynamic(() => import('./sheet-editor').then((mod) => ({ default: mod.SpreadsheetEditor })), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-muted h-32 rounded" />,
+});
+
+const ImageEditor = dynamic(() => import('./image-editor').then((mod) => ({ default: mod.ImageEditor })), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-muted h-32 rounded" />,
+});
 
 interface DocumentPreviewProps {
   isReadonly: boolean;

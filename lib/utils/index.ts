@@ -11,6 +11,10 @@ import {
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { ExtendedCoreMessage } from '../types'
+
+// Re-export fetcher and other utilities from utils.ts
+export { fetcher, generateUUID, getLocalStorage, getDocumentTimestampByIndex } from '../utils'
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }

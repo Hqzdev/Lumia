@@ -65,12 +65,27 @@ export const {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
         token.nickname = user.nickname;
         token.subscription = user.subscription;
       }
+      
+      // При обновлении сессии (trigger === 'update') загружаем актуальные данные из БД
+      if (trigger === 'update' && token.id) {
+        try {
+          const { getUserById } = await import('@/lib/db/queries');
+          const users = await getUserById(token.id as string);
+          if (users && users.length > 0) {
+            token.subscription = users[0].subscription;
+          }
+        } catch (error) {
+          console.error('Failed to refresh subscription from DB:', error);
+          // В случае ошибки оставляем старое значение
+        }
+      }
+      
       return token;
     },
     async session({ session, token }) {

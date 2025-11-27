@@ -1,6 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
+import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Dialog,
@@ -68,13 +68,15 @@ export const SearchResultsImageSection: React.FC<SearchResultsImageSectionProps>
               onClick={() => setSelectedIndex(index)}
             >
               <Card className="h-full transition-transform group-hover:scale-[1.02]">
-                <CardContent className="p-0 size-full">
+                <CardContent className="p-0 size-full relative">
                   {image ? (
-                    <img
+                    <Image
                       src={image.url}
                       alt={`Image ${index + 1}`}
-                      className="size-full object-cover rounded-md"
-                      onError={e => (e.currentTarget.src = '/images/placeholder-image.png')}
+                      fill
+                      className="object-cover rounded-md"
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      unoptimized={image.url.startsWith('data:') || !image.url.startsWith('http')}
                     />
                   ) : (
                     <div className="size-full bg-muted animate-pulse rounded-md" />
@@ -101,12 +103,17 @@ export const SearchResultsImageSection: React.FC<SearchResultsImageSectionProps>
                 <CarouselContent>
                   {convertedImages.map((img, idx) => (
                     <CarouselItem key={idx}>
-                      <div className="p-1 flex items-center justify-center">
-                        <img
+                      <div className="p-1 flex items-center justify-center relative w-full h-[60vh]">
+                        <Image
                           src={img.url}
                           alt={`Image ${idx + 1}`}
-                          className="max-h-[60vh] w-auto object-contain rounded-md"
-                          onError={e => (e.currentTarget.src = '/images/placeholder-image.png')}
+                          fill
+                          className="object-contain rounded-md"
+                          sizes="(max-width: 768px) 100vw, 80vw"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/images/placeholder-image.png';
+                          }}
                         />
                       </div>
                     </CarouselItem>

@@ -67,7 +67,14 @@ export async function POST(request: Request) {
 
     const formatted = formatMarkdown({ results, images, videos });
 
-    return NextResponse.json({ results, images, videos, formatted });
+    return NextResponse.json(
+      { results, images, videos, formatted },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        },
+      }
+    );
   } catch (e) {
     return NextResponse.json(
       { error: 'Internal error', details: String(e) },

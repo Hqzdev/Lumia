@@ -1,7 +1,9 @@
 'use client';
 
 import cx from 'classnames';
-import { format, isWithinInterval } from 'date-fns';
+// Оптимизированный импорт date-fns (ШАГ 3)
+import { format } from 'date-fns/format';
+import { isWithinInterval } from 'date-fns/isWithinInterval';
 import { useEffect, useState } from 'react';
 
 interface WeatherAtLocation {
