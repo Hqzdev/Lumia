@@ -56,7 +56,7 @@ export const Overview = ({ nickname }: { nickname?: string }) => {
       ([entry]) => {
         setIsVisible(entry.isIntersecting);
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     observer.observe(containerRef.current);
@@ -124,7 +124,14 @@ export const Overview = ({ nickname }: { nickname?: string }) => {
       }
       lastUpdateTimeRef.current = 0;
     };
-  }, [charIdx, isDeleting, currentPhraseIdx, isVisible, isMobile, displayedText]);
+  }, [
+    charIdx,
+    isDeleting,
+    currentPhraseIdx,
+    isVisible,
+    isMobile,
+    displayedText,
+  ]);
 
   // Размер текста для приветствия (больше для телефона)
   const textSize = isMobile
@@ -135,61 +142,63 @@ export const Overview = ({ nickname }: { nickname?: string }) => {
     <div
       ref={containerRef}
       key="overview"
-      className="max-w-5xl mx-auto md:mt-22 px-4 size-full flex flex-col justify-center items-center"
+      className="w-full max-w-[95%] md:max-w-[800px] mx-auto md:mt-22 size-full flex flex-col justify-center"
       style={{
         // Оптимизация для мобильных - используем will-change только когда нужно
         willChange: !isMobile && isVisible ? 'transform, opacity' : 'auto',
       }}
     >
-      {nickname && (
-        <div
-          className="mb-4 font-extrabold flex items-center justify-center"
-          style={{
-            fontSize: isMobile ? '2.8rem' : '2.2rem',
-            lineHeight: 1.1,
-            letterSpacing: '0.01em',
-          }}
-        >
-          <span className="text-gray-600 dark:text-gray-400 mr-2">Hi,</span>
-          <span
-            className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+      <div className="relative w-full max-w-[95%] md:max-w-2xl mx-auto flex flex-col">
+        {nickname && (
+          <div
+            className="mb-4 font-extrabold flex items-center"
             style={{
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textShadow: '0 2px 16px #5050ff',
+              fontSize: isMobile ? '2.8rem' : '2.2rem',
+              lineHeight: 1.1,
+              letterSpacing: '0.01em',
             }}
           >
-            {nickname}
-          </span>
-        </div>
-      )}
-      {/* Фразы показываем только на desktop, на мобильных статичный текст */}
-      <div
-        className={`flex gap-[2px] ${textSize} font-bold justify-center mb-8`}
-        style={{ lineHeight: 1.05, minHeight: 36 }}
-      >
-        <span
-          className="text-gray-600 dark:text-gray-400"
-          style={{
-            letterSpacing: '0.01em',
-            transition: 'color 0.2s',
-          }}
-        >
-          {isMobile ? phrases[0] : displayedText}
-        </span>
-        {!isMobile && (
-          <span
-            className="ml-1"
-            style={{
-              color: '#6b7280',
-              WebkitTextStroke: '1px #fff',
-              fontWeight: 900,
-              animation: 'blink 1.8s steps(1) infinite',
-            }}
-          >
-            |
-          </span>
+            <span className="text-gray-600 dark:text-gray-400 mr-2">Hi,</span>
+            <span
+              className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600"
+              style={{
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: '0 2px 16px #3b82f6',
+              }}
+            >
+              {nickname}
+            </span>
+          </div>
         )}
+        {/* Фразы показываем только на desktop, на мобильных статичный текст */}
+        <div
+          className={`flex gap-[2px] ${textSize} font-bold mb-8`}
+          style={{ lineHeight: 1.05, minHeight: 36 }}
+        >
+          <span
+            className="text-gray-600 dark:text-gray-400"
+            style={{
+              letterSpacing: '0.01em',
+              transition: 'color 0.2s',
+            }}
+          >
+            {isMobile ? phrases[0] : displayedText}
+          </span>
+          {!isMobile && (
+            <span
+              className="ml-1"
+              style={{
+                color: '#6b7280',
+                WebkitTextStroke: '1px #fff',
+                fontWeight: 900,
+                animation: 'blink 1.8s steps(1) infinite',
+              }}
+            >
+              |
+            </span>
+          )}
+        </div>
       </div>
       <style>
         {`

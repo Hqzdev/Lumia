@@ -1,26 +1,53 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { auth } from '@/app/(auth)/auth';
 
-// Middleware для настройки Cache-Control заголовков (ШАГ 5)
-export function middleware(request: NextRequest) {
+// Middleware для настройки Cache-Control заголовков и проверки авторизации
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Игнорируем статические файлы и системные пути
+  if (
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/api/auth/') ||
+    pathname.startsWith('/favicon.ico') ||
+    pathname.startsWith('/icon.png') ||
+    pathname.startsWith('/robots.txt') ||
+    pathname.startsWith('/sitemap.xml')
+  ) {
+    return NextResponse.next();
+  }
+
+  const session = await auth();
+
+  // Разрешаем доступ к публичным страницам
+  const publicPaths = ['/login', '/register', '/policy', '/privacy'];
+  const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
+
+  // Если пользователь не авторизован и пытается зайти на защищенную страницу
+  if (!session?.user && !isPublicPath) {
+    // Перенаправляем на страницу логина
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('callbackUrl', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Если пользователь авторизован и пытается зайти на страницы логина/регистрации
+  if (session?.user && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
   const response = NextResponse.next();
 
   // Кэширование статических файлов
   if (
-    request.nextUrl.pathname.startsWith('/_next/static') ||
-    request.nextUrl.pathname.startsWith('/images') ||
-    request.nextUrl.pathname.startsWith('/icon')
+    pathname.startsWith('/images') ||
+    pathname.startsWith('/icon')
   ) {
     response.headers.set(
       'Cache-Control',
       'public, max-age=31536000, immutable'
     );
-  }
-
-  // Кэширование для API роутов (если не установлено в самом роуте)
-  if (request.nextUrl.pathname.startsWith('/api/')) {
-    // Для API роутов кэш устанавливается в самих роутах
-    // Здесь можно добавить общие заголовки если нужно
   }
 
   return response;

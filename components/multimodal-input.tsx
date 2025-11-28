@@ -794,7 +794,7 @@ function PureMultimodalInput({
       )}
       {/* Основной input-блок */}
       <div
-        className={`fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full max-w-[95%] md:max-w-[800px] z-40 bg-white dark:bg-black flex flex-col justify-center items-center transition-all duration-100 ease-in-out${open && width >= 768 && !openMobile ? ' md:ml-[130px]' : ''}${messages.length === 0 ? ' md:bottom-[30px] bottom-0' : ' bottom-0'}`}
+        className={`fixed h-auto py-1 pb-4 left-1/2 -translate-x-1/2 w-full max-w-[95%] md:max-w-[800px] z-40 flex flex-col justify-center items-center transition-all duration-500 ease-in-out${open && width >= 768 && !openMobile ? ' md:ml-[130px]' : ''}${messages.length === 0 ? ' md:top-[calc(50%-280px)] bottom-0' : ' bottom-0'}`}
       >
         {/* Кнопка поиска чатов */}
         {userId && (
@@ -917,7 +917,10 @@ function PureMultimodalInput({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
+                  side="bottom"
                   align="start"
+                  sideOffset={8}
+                  collisionPadding={100}
                   className="w-48 p-2 flex flex-col gap-1 rounded-2xl shadow-lg border border-gray-200"
                 >
                   <div className="px-3 pt-1 pb-2 text-xs text-gray-400 font-medium select-none">

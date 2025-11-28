@@ -12,25 +12,30 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnChat = nextUrl.pathname.startsWith('/');
-      const isOnRegister = nextUrl.pathname.startsWith('/register');
-      const isOnLogin = nextUrl.pathname.startsWith('/login');
+      const pathname = nextUrl.pathname;
+      
+      // Публичные страницы, доступные без авторизации
+      const publicPaths = ['/login', '/register', '/policy', '/privacy'];
+      const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
+      
+      // API роуты auth доступны всем
+      if (pathname.startsWith('/api/auth')) {
+        return true;
+      }
 
-      if (isLoggedIn && (isOnLogin || isOnRegister)) {
+      // Если пользователь авторизован и пытается зайти на страницы логина/регистрации
+      if (isLoggedIn && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
         return Response.redirect(new URL('/', nextUrl as unknown as URL));
       }
 
-      if (isOnRegister || isOnLogin) {
-        return true; // Always allow access to register and login pages
+      // Публичные страницы доступны всем
+      if (isPublicPath) {
+        return true;
       }
 
-      if (isOnChat) {
-        if (isLoggedIn) return true;
+      // Все остальные страницы требуют авторизации
+      if (!isLoggedIn) {
         return false; // Redirect unauthenticated users to login page
-      }
-
-      if (isLoggedIn) {
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
       }
 
       return true;
