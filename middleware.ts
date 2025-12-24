@@ -4,17 +4,17 @@ import { auth } from '@/app/(auth)/auth';
 
 /**
  * Middleware для маршрутизации на основе поддоменов
- * 
+ *
  * Поддомены:
  * - auth.lumiaai.ru → /auth (регистрация/логин)
  * - chat.lumiaai.ru → /chat (основное приложение)
- * 
+ *
  * Использует rewrite (не redirect), чтобы URL в браузере оставался с поддоменом
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get('host') || '';
-  
+
   // Исключаем статические файлы и системные пути
   if (
     pathname.startsWith('/_next/') ||
@@ -31,22 +31,25 @@ export async function middleware(request: NextRequest) {
   // Определяем поддомен
   // Формат: subdomain.lumiaai.ru или subdomain.lumiaai.ru:port
   // Для localhost:3000 или 127.0.0.1:3000 - пропускаем поддоменную логику
-  const isLocalhost = hostname.includes('localhost') || hostname.includes('127.0.0.1');
-  
-  let subdomain: string | null = null;
+  const isLocalhost =
+    hostname.includes('localhost') || hostname.includes('127.0.0.1');
+
   let isAuthSubdomain = false;
   let isChatSubdomain = false;
-  
-  if (!isLocalhost) {
+
+  if (!isLocalhost && hostname) {
+    // Убираем порт если есть: auth.lumiaai.ru:3000 -> auth.lumiaai.ru
+    const hostnameWithoutPort = hostname.split(':')[0];
     // Извлекаем поддомен: auth.lumiaai.ru -> auth
-    const parts = hostname.split('.');
+    const parts = hostnameWithoutPort.split('.');
+    // Проверяем, что это действительно поддомен (минимум 3 части: subdomain.domain.tld)
     if (parts.length >= 3) {
-      subdomain = parts[0];
-      isAuthSubdomain = subdomain === 'auth';
-      isChatSubdomain = subdomain === 'chat';
+      const subdomainLower = parts[0].toLowerCase();
+      isAuthSubdomain = subdomainLower === 'auth';
+      isChatSubdomain = subdomainLower === 'chat';
     }
   }
-  
+
   // Если это не один из наших поддоменов, пропускаем дальше
   // (для локальной разработки или основного домена)
   if (!isAuthSubdomain && !isChatSubdomain) {
@@ -56,26 +59,28 @@ export async function middleware(request: NextRequest) {
 
   // Обработка поддомена auth.lumiaai.ru
   if (isAuthSubdomain) {
-    // Если пользователь уже авторизован, перенаправляем на чат
-    const session = await auth();
-    if (session?.user) {
-      // Создаем URL для чата с правильным поддоменом
-      const protocol = request.nextUrl.protocol;
-      const chatUrl = new URL(`${protocol}//chat.lumiaai.ru/chat`);
-      return NextResponse.redirect(chatUrl);
+    // Если путь /login или /register, просто пропускаем без проверки авторизации
+    // Это предотвращает бесконечные редиректы
+    if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
+      return NextResponse.next();
+    }
+
+    // Если пользователь уже авторизован, перенаправляем на чат (только для корня и /auth)
+    if (pathname === '/' || pathname === '/auth') {
+      const session = await auth();
+      if (session?.user) {
+        // Создаем URL для чата с правильным поддоменом
+        const protocol = request.nextUrl.protocol;
+        const chatUrl = new URL(`${protocol}//chat.lumiaai.ru/chat`);
+        return NextResponse.redirect(chatUrl);
+      }
     }
 
     // Rewrite на страницу авторизации
-    // Если путь уже /login или /register, оставляем как есть
     if (pathname === '/' || pathname === '/auth') {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = '/login';
       return NextResponse.rewrite(loginUrl);
-    }
-    
-    // Если путь /login или /register, просто пропускаем
-    if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
-      return NextResponse.next();
     }
 
     // Для всех остальных путей на auth поддомене → rewrite на /login
@@ -86,20 +91,36 @@ export async function middleware(request: NextRequest) {
 
   // Обработка поддомена chat.lumiaai.ru
   if (isChatSubdomain) {
-    const session = await auth();
-    
-    // Если пользователь не авторизован, перенаправляем на auth поддомен
-    if (!session?.user) {
-      const protocol = request.nextUrl.protocol;
-      const authUrl = new URL(`${protocol}//auth.lumiaai.ru/login`);
-      return NextResponse.redirect(authUrl);
+    // Если путь /login или /register, перенаправляем на /chat (только если авторизован)
+    // Это предотвращает бесконечные редиректы
+    if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
+      const session = await auth();
+      if (session?.user) {
+        const homeUrl = request.nextUrl.clone();
+        homeUrl.pathname = '/chat';
+        return NextResponse.redirect(homeUrl);
+      } else {
+        // Если не авторизован, редирект на auth поддомен
+        const protocol = request.nextUrl.protocol;
+        const authUrl = new URL(`${protocol}//auth.lumiaai.ru/login`);
+        return NextResponse.redirect(authUrl);
+      }
     }
 
-    // Если пользователь авторизован и пытается зайти на /login или /register
-    if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
-      const homeUrl = request.nextUrl.clone();
-      homeUrl.pathname = '/chat';
-      return NextResponse.redirect(homeUrl);
+    // Проверяем авторизацию только для корня и /chat
+    if (
+      pathname === '/' ||
+      pathname === '/chat' ||
+      pathname.startsWith('/chat/')
+    ) {
+      const session = await auth();
+
+      // Если пользователь не авторизован, перенаправляем на auth поддомен
+      if (!session?.user) {
+        const protocol = request.nextUrl.protocol;
+        const authUrl = new URL(`${protocol}//auth.lumiaai.ru/login`);
+        return NextResponse.redirect(authUrl);
+      }
     }
 
     // Rewrite на страницу чата
@@ -129,7 +150,7 @@ async function handleStandardAuth(request: NextRequest, pathname: string) {
 
   // Разрешаем доступ к публичным страницам
   const publicPaths = ['/login', '/register', '/policy', '/privacy'];
-  const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
+  const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
 
   // Если пользователь не авторизован и пытается зайти на защищенную страницу
   if (!session?.user && !isPublicPath) {
@@ -139,7 +160,10 @@ async function handleStandardAuth(request: NextRequest, pathname: string) {
   }
 
   // Если пользователь авторизован и пытается зайти на страницы логина/регистрации
-  if (session?.user && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
+  if (
+    session?.user &&
+    (pathname.startsWith('/login') || pathname.startsWith('/register'))
+  ) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
@@ -149,7 +173,7 @@ async function handleStandardAuth(request: NextRequest, pathname: string) {
   if (pathname.startsWith('/images') || pathname.startsWith('/icon')) {
     response.headers.set(
       'Cache-Control',
-      'public, max-age=31536000, immutable'
+      'public, max-age=31536000, immutable',
     );
   }
 
