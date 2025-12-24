@@ -205,11 +205,11 @@ export default function Page() {
           }}
         >
           <input
-            id="email-mobile"
-            name="email"
+            id="nickname-mobile"
+            name="nickname"
             type="text"
-            placeholder="Email address"
-            autoComplete="email"
+            placeholder="Enter your nickname"
+            autoComplete="username"
             className="w-full h-12 rounded-full border border-gray-200 px-4 text-sm text-black caret-black outline-none focus:ring-0 transition"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
