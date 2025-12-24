@@ -16,6 +16,7 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
 
   // Исключаем статические файлы и системные пути
+  // ВАЖНО: API маршруты должны быть обработаны ПЕРВЫМИ, до любой логики поддоменов
   if (
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/api/') || // Все API маршруты пропускаем без обработки поддоменов
@@ -25,6 +26,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/sitemap.xml') ||
     pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|woff|woff2|ttf|eot)$/i)
   ) {
+    // Для API маршрутов просто пропускаем без изменений
     return NextResponse.next();
   }
 

@@ -10,15 +10,11 @@ import { VisibilityType } from './visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
+import { Messages } from './messages';
 
 // Динамический импорт тяжелых компонентов для улучшения производительности на мобильных
 const Artifact = dynamic(() => import('./artifact').then((mod) => ({ default: mod.Artifact })), {
   ssr: false,
-});
-
-const Messages = dynamic(() => import('./messages').then((mod) => ({ default: mod.Messages })), {
-  ssr: false,
-  loading: () => <div className="flex-1 flex items-center justify-center text-sm text-gray-500">Loading...</div>
 });
 
 const MultimodalInput = dynamic(() => import('@/components/multimodal-input').then((mod) => ({ default: mod.MultimodalInput })), {
