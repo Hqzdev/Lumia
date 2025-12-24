@@ -109,21 +109,49 @@ function LoginForm() {
       setTimeout(async () => {
         // Проверяем сессию перед редиректом
         try {
-          const response = await fetch('/api/auth/session', {
+          // Используем абсолютный URL для запроса сессии, чтобы он работал на поддоменах
+          const protocol =
+            typeof window !== 'undefined' ? window.location.protocol : 'https:';
+          const currentHost =
+            typeof window !== 'undefined' ? window.location.host : '';
+          const sessionUrl = `${protocol}//${currentHost}/api/auth/session`;
+
+          console.log('[LOGIN] Checking session at:', sessionUrl);
+
+          const response = await fetch(sessionUrl, {
             method: 'GET',
             credentials: 'include',
           });
+
+          console.log('[LOGIN] Session response status:', response.status);
+
+          if (!response.ok) {
+            console.error(
+              '[LOGIN] Session check failed:',
+              response.status,
+              response.statusText,
+            );
+            // Если запрос не удался, все равно выполняем редирект
+            performRedirect();
+            return;
+          }
+
           const session = await response.json();
+          console.log('[LOGIN] Session data:', session);
 
           // Если сессия не обновилась, ждем еще немного
           if (!session?.user) {
+            console.log('[LOGIN] Session not ready, waiting...');
             setTimeout(() => {
               performRedirect();
             }, 300);
             return;
           }
+
+          console.log('[LOGIN] Session ready, redirecting...');
         } catch (e) {
-          console.error('Error checking session:', e);
+          console.error('[LOGIN] Error checking session:', e);
+          // В случае ошибки все равно выполняем редирект
         }
 
         // Выполняем редирект

@@ -15,6 +15,11 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get('host') || '';
 
+  // Логирование для диагностики
+  if (pathname.startsWith('/api/auth')) {
+    console.log(`[MIDDLEWARE] API Auth route: ${hostname}${pathname}`);
+  }
+
   // Исключаем статические файлы и системные пути
   // ВАЖНО: API маршруты должны быть обработаны ПЕРВЫМИ, до любой логики поддоменов
   if (
@@ -27,6 +32,11 @@ export async function middleware(request: NextRequest) {
     pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|woff|woff2|ttf|eot)$/i)
   ) {
     // Для API маршрутов просто пропускаем без изменений
+    if (pathname.startsWith('/api/auth')) {
+      console.log(
+        `[MIDDLEWARE] Allowing API Auth route: ${hostname}${pathname}`,
+      );
+    }
     return NextResponse.next();
   }
 
@@ -52,6 +62,17 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Логирование для диагностики
+  if (
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/register') ||
+    pathname.startsWith('/chat')
+  ) {
+    console.log(
+      `[MIDDLEWARE] ${hostname}${pathname} - isAuth: ${isAuthSubdomain}, isChat: ${isChatSubdomain}`,
+    );
+  }
+
   // Если это не один из наших поддоменов, пропускаем дальше
   // (для локальной разработки или основного домена)
   if (!isAuthSubdomain && !isChatSubdomain) {
@@ -61,10 +82,16 @@ export async function middleware(request: NextRequest) {
 
   // Обработка поддомена auth.lumiaai.ru
   if (isAuthSubdomain) {
-    // Если путь /login или /register, НЕ проверяем авторизацию сразу
-    // Это позволяет пользователю остаться на странице логина даже после успешного входа
-    // Редирект будет выполнен на клиенте после обновления сессии
+    // Если путь /login или /register, проверяем авторизацию
+    // Если пользователь уже авторизован, сразу редиректим на chat (серверный редирект)
     if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
+      const session = await auth();
+      if (session?.user) {
+        // Используем x-forwarded-proto для определения протокола (надежнее на Vercel)
+        const proto = request.headers.get('x-forwarded-proto') ?? 'https';
+        const chatUrl = new URL(`${proto}://chat.lumiaai.ru/chat`);
+        return NextResponse.redirect(chatUrl);
+      }
       return NextResponse.next();
     }
 
@@ -72,9 +99,9 @@ export async function middleware(request: NextRequest) {
     if (pathname === '/' || pathname === '/auth') {
       const session = await auth();
       if (session?.user) {
-        // Создаем URL для чата с правильным поддоменом
-        const protocol = request.nextUrl.protocol;
-        const chatUrl = new URL(`${protocol}//chat.lumiaai.ru/chat`);
+        // Используем x-forwarded-proto для определения протокола
+        const proto = request.headers.get('x-forwarded-proto') ?? 'https';
+        const chatUrl = new URL(`${proto}://chat.lumiaai.ru/chat`);
         return NextResponse.redirect(chatUrl);
       }
     }
@@ -97,8 +124,8 @@ export async function middleware(request: NextRequest) {
     // Если путь /login или /register, всегда редиректим на auth поддомен
     // Это предотвращает бесконечные редиректы
     if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
-      const protocol = request.nextUrl.protocol;
-      const authUrl = new URL(`${protocol}//auth.lumiaai.ru${pathname}`);
+      const proto = request.headers.get('x-forwarded-proto') ?? 'https';
+      const authUrl = new URL(`${proto}://auth.lumiaai.ru${pathname}`);
       return NextResponse.redirect(authUrl);
     }
 
@@ -111,12 +138,11 @@ export async function middleware(request: NextRequest) {
       const session = await auth();
 
       // Если пользователь не авторизован, перенаправляем на auth поддомен
-      // Но добавляем небольшую задержку для проверки, чтобы избежать редиректов во время обновления сессии
       if (!session?.user) {
-        const protocol = request.nextUrl.protocol;
-        const authUrl = new URL(`${protocol}//auth.lumiaai.ru/login`);
-        // Добавляем callbackUrl для возврата после логина
-        authUrl.searchParams.set('callbackUrl', encodeURIComponent(request.url));
+        const proto = request.headers.get('x-forwarded-proto') ?? 'https';
+        const authUrl = new URL(`${proto}://auth.lumiaai.ru/login`);
+        // ИСПРАВЛЕНО: убрали encodeURIComponent - searchParams.set сам кодирует
+        authUrl.searchParams.set('callbackUrl', request.url);
         return NextResponse.redirect(authUrl);
       }
     }

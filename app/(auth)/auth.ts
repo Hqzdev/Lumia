@@ -35,6 +35,41 @@ export const {
 } = NextAuth({
   ...authConfig,
   trustHost: true, // Разрешаем работу с поддоменами
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        // КРИТИЧНО: domain=.lumiaai.ru позволяет cookie работать на всех поддоменах
+        domain: process.env.NODE_ENV === 'production' ? '.lumiaai.ru' : undefined,
+      },
+    },
+    callbackUrl: {
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.lumiaai.ru' : undefined,
+      },
+    },
+    csrfToken: {
+      // Для поддоменов не используем __Host- префикс, так как он требует отсутствие domain
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        // Для работы на поддоменах нужен domain
+        domain: process.env.NODE_ENV === 'production' ? '.lumiaai.ru' : undefined,
+      },
+    },
+  },
   providers: [
     Credentials({
       credentials: {},
