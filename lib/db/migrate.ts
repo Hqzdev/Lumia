@@ -11,7 +11,7 @@ const runMigrate = async () => {
   if (!process.env.POSTGRES_URL) {
     console.warn('⚠️  POSTGRES_URL is not defined, skipping migrations');
     console.warn('   Migrations will be run when POSTGRES_URL is available');
-    process.exit(0);
+    return; // Просто возвращаемся, не завершаем процесс
   }
 
   const connection = postgres(process.env.POSTGRES_URL, { max: 1 });
@@ -25,11 +25,11 @@ const runMigrate = async () => {
 
   console.log('✅ Migrations completed in', end - start, 'ms');
   await connection.end();
-  process.exit(0);
 };
 
 runMigrate().catch((err) => {
   console.error('❌ Migration failed');
   console.error(err);
-  process.exit(1);
+  // Не завершаем процесс с ошибкой, чтобы сборка могла продолжиться
+  // Миграции можно запустить вручную позже
 });

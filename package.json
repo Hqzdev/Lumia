@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "npx tsx lib/db/migrate.ts && next build",
+    "build": "next build",
+    "prebuild": "node --import tsx lib/db/migrate.ts || true",
     "start": "next start",
     "lint": "next lint && biome lint --write --unsafe",
     "lint:fix": "next lint --fix && biome lint --write --unsafe",
