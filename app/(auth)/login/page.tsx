@@ -6,6 +6,7 @@ import React, {
   useRef,
   useTransition,
   useActionState,
+  Suspense,
 } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -17,7 +18,7 @@ import { Eye, EyeOff, X, Phone } from 'lucide-react';
 import { login, type LoginActionState } from '../actions';
 import { LogoGoogle } from '@/components/icons';
 
-export default function Page() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -540,5 +541,19 @@ export default function Page() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-dvh items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
