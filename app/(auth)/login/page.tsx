@@ -65,9 +65,8 @@ function LoginForm() {
         typeof window !== 'undefined' ? window.location.hostname : '';
       const isAuthSubdomain = hostname.startsWith('auth.');
 
-      // Используем задержку, чтобы сессия успела обновиться на сервере
-      // Затем выполняем редирект
-      setTimeout(() => {
+      // Функция для выполнения редиректа
+      const performRedirect = () => {
         if (callbackUrl) {
           // Если есть callbackUrl, используем его
           try {
@@ -103,7 +102,33 @@ function LoginForm() {
             router.push('/chat');
           }
         }
-      }, 300);
+      };
+
+      // Используем задержку, чтобы сессия успела обновиться на сервере
+      // Затем выполняем редирект
+      setTimeout(async () => {
+        // Проверяем сессию перед редиректом
+        try {
+          const response = await fetch('/api/auth/session', {
+            method: 'GET',
+            credentials: 'include',
+          });
+          const session = await response.json();
+
+          // Если сессия не обновилась, ждем еще немного
+          if (!session?.user) {
+            setTimeout(() => {
+              performRedirect();
+            }, 300);
+            return;
+          }
+        } catch (e) {
+          console.error('Error checking session:', e);
+        }
+
+        // Выполняем редирект
+        performRedirect();
+      }, 500);
     }
   }, [state.status, router, searchParams]);
 

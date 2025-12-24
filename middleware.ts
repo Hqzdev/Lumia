@@ -61,15 +61,10 @@ export async function middleware(request: NextRequest) {
 
   // Обработка поддомена auth.lumiaai.ru
   if (isAuthSubdomain) {
-    // Если путь /login или /register, проверяем авторизацию
-    // Если пользователь уже авторизован, перенаправляем на чат
+    // Если путь /login или /register, НЕ проверяем авторизацию сразу
+    // Это позволяет пользователю остаться на странице логина даже после успешного входа
+    // Редирект будет выполнен на клиенте после обновления сессии
     if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
-      const session = await auth();
-      if (session?.user) {
-        const protocol = request.nextUrl.protocol;
-        const chatUrl = new URL(`${protocol}//chat.lumiaai.ru/chat`);
-        return NextResponse.redirect(chatUrl);
-      }
       return NextResponse.next();
     }
 
@@ -99,20 +94,12 @@ export async function middleware(request: NextRequest) {
 
   // Обработка поддомена chat.lumiaai.ru
   if (isChatSubdomain) {
-    // Если путь /login или /register, перенаправляем на /chat (только если авторизован)
+    // Если путь /login или /register, всегда редиректим на auth поддомен
     // Это предотвращает бесконечные редиректы
     if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
-      const session = await auth();
-      if (session?.user) {
-        const homeUrl = request.nextUrl.clone();
-        homeUrl.pathname = '/chat';
-        return NextResponse.redirect(homeUrl);
-      } else {
-        // Если не авторизован, редирект на auth поддомен
-        const protocol = request.nextUrl.protocol;
-        const authUrl = new URL(`${protocol}//auth.lumiaai.ru/login`);
-        return NextResponse.redirect(authUrl);
-      }
+      const protocol = request.nextUrl.protocol;
+      const authUrl = new URL(`${protocol}//auth.lumiaai.ru${pathname}`);
+      return NextResponse.redirect(authUrl);
     }
 
     // Проверяем авторизацию только для корня и /chat
@@ -124,9 +111,12 @@ export async function middleware(request: NextRequest) {
       const session = await auth();
 
       // Если пользователь не авторизован, перенаправляем на auth поддомен
+      // Но добавляем небольшую задержку для проверки, чтобы избежать редиректов во время обновления сессии
       if (!session?.user) {
         const protocol = request.nextUrl.protocol;
         const authUrl = new URL(`${protocol}//auth.lumiaai.ru/login`);
+        // Добавляем callbackUrl для возврата после логина
+        authUrl.searchParams.set('callbackUrl', encodeURIComponent(request.url));
         return NextResponse.redirect(authUrl);
       }
     }
