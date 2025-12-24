@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from '@/components/toast';
 
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { LogoGoogle } from '@/components/icons';
 
 export default function Page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [nickname, setNickname] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -54,9 +55,46 @@ export default function Page() {
     } else if (state.status === 'success') {
       setError('');
       setIsSuccessful(true);
-      router.refresh();
+
+      // Получаем callbackUrl из query параметров
+      const callbackUrl = searchParams.get('callbackUrl');
+
+      // Определяем, на какой поддомен нужно редиректить
+      const hostname = window.location.hostname;
+      const isAuthSubdomain = hostname.startsWith('auth.');
+      const isChatSubdomain = hostname.startsWith('chat.');
+
+      if (callbackUrl) {
+        // Если есть callbackUrl, используем его
+        try {
+          const decodedUrl = decodeURIComponent(callbackUrl);
+          // Если callbackUrl указывает на другой поддомен, редиректим туда
+          if (decodedUrl.includes('chat.lumiaai.ru')) {
+            window.location.href = decodedUrl;
+            return;
+          }
+          router.push(decodedUrl);
+        } catch (e) {
+          console.error('Invalid callbackUrl:', e);
+          // Если callbackUrl невалидный, редиректим на чат
+          if (isAuthSubdomain) {
+            window.location.href = 'https://chat.lumiaai.ru/chat';
+          } else {
+            router.push('/chat');
+          }
+        }
+      } else {
+        // Если нет callbackUrl, редиректим на чат
+        if (isAuthSubdomain) {
+          window.location.href = 'https://chat.lumiaai.ru/chat';
+        } else if (isChatSubdomain) {
+          router.push('/chat');
+        } else {
+          router.push('/chat');
+        }
+      }
     }
-  }, [state.status, router]);
+  }, [state.status, router, searchParams]);
 
   const handleContinue = () => {
     if (!nickname) return;
