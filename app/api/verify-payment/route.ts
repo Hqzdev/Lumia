@@ -74,6 +74,12 @@ export async function POST(req: NextRequest) {
       console.log('Resetting failed payment to pending for retry');
       updatePayment(paymentId, { status: 'pending' });
       payment = getPayment(paymentId);
+      if (!payment) {
+        return NextResponse.json(
+          { error: 'Failed to retrieve payment after update' },
+          { status: 500 },
+        );
+      }
     } else if (payment.status === 'failed' && !isRecentFailed) {
       return NextResponse.json(
         {
@@ -85,7 +91,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Проверяем соответствие данных
-    if (payment.userId !== userId || payment.subscription !== subscription) {
+    if (!payment || payment.userId !== userId || payment.subscription !== subscription) {
       return NextResponse.json(
         { error: 'Payment data mismatch' },
         { status: 400 },

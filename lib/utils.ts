@@ -36,7 +36,7 @@ export const fetcher = async (url: string) => {
     // Пытаемся получить JSON, если это не JSON - возвращаем текст
     try {
       if (isJson) {
-        error.info = await res.json();
+    error.info = await res.json();
       } else {
         const text = await res.text();
         error.info = text;

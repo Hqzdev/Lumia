@@ -35,9 +35,20 @@ const AnimatedChatWrapper = dynamic(
     import('framer-motion').then((mod) => {
       return function AnimatedChatContainer(props: React.ComponentProps<'div'>) {
         const MotionDiv = mod.motion.div;
+        // Исключаем конфликтующие props для Framer Motion
+        const {
+          onDrag,
+          onDragStart,
+          onDragEnd,
+          onAnimationStart,
+          onAnimationEnd,
+          onTransitionStart,
+          onTransitionEnd,
+          ...motionProps
+        } = props;
         return (
           <MotionDiv
-            {...props}
+            {...motionProps}
             initial={{ opacity: 0, y: 30 }}
             animate={{
               opacity: 1,
@@ -98,8 +109,9 @@ export const Chat = memo(function Chat({
     onFinish: () => {
       mutate('/api/history');
     },
-    onError: () => {
-      toast.error('An error occured, please try again!');
+    onError: (error) => {
+      console.error('Error in useChat:', error);
+      toast.error(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`);
     },
   });
 

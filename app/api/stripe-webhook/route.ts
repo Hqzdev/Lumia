@@ -9,7 +9,7 @@ function getStripeClient(): Stripe | null {
   }
   try {
     return new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-12-18.acacia',
+      apiVersion: '2025-11-17.clover',
     });
   } catch (error) {
     console.error('Failed to initialize Stripe:', error);

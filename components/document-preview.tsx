@@ -107,7 +107,7 @@ export function DocumentPreview({
     : artifact.status === 'streaming'
       ? {
           title: artifact.title,
-          kind: artifact.kind,
+          text: artifact.kind,
           content: artifact.content,
           id: artifact.documentId,
           createdAt: new Date(),
@@ -126,7 +126,7 @@ export function DocumentPreview({
       />
       <DocumentHeader
         title={document.title}
-        kind={document.kind}
+        kind={document.text}
         isStreaming={artifact.status === 'streaming'}
       />
       <DocumentContent document={document} />
@@ -282,8 +282,8 @@ const DocumentContent = ({ document }: { document: Document }) => {
   const containerClassName = cn(
     'h-[257px] overflow-y-scroll rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700 shadow-sm',
     {
-      'p-4 sm:px-14 sm:py-16': document.kind === 'text',
-      'p-0': document.kind === 'code',
+      'p-4 sm:px-14 sm:py-16': document.text === 'text',
+      'p-0': document.text === 'code',
     },
   );
 
@@ -303,21 +303,21 @@ const DocumentContent = ({ document }: { document: Document }) => {
         border: '1px solid rgb(193, 193, 193)',
       }}
     >
-      {document.kind === 'text' ? (
+      {document.text === 'text' ? (
         <Editor {...commonProps} onSaveContent={() => {}} />
-      ) : document.kind === 'code' ? (
+      ) : document.text === 'code' ? (
         <div className="flex flex-1 relative w-full">
           <div className="absolute inset-0">
             <CodeEditor {...commonProps} onSaveContent={() => {}} />
           </div>
         </div>
-      ) : document.kind === 'sheet' ? (
+      ) : document.text === 'sheet' ? (
         <div className="flex flex-1 relative size-full p-4">
           <div className="absolute inset-0">
             <SpreadsheetEditor {...commonProps} />
           </div>
         </div>
-      ) : document.kind === 'image' ? (
+      ) : document.text === 'image' ? (
         <ImageEditor
           title={document.title}
           content={document.content ?? ''}

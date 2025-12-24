@@ -3,17 +3,17 @@ import { getChatsByUserId } from '@/lib/db/queries';
 
 export async function GET() {
   try {
-    const session = await auth();
+  const session = await auth();
 
-    if (!session || !session.user) {
+  if (!session || !session.user) {
       return Response.json({ error: 'Unauthorized' }, { 
         status: 401,
         headers: { 'Content-Type': 'application/json' }
       });
-    }
+  }
 
-    // biome-ignore lint: Forbidden non-null assertion.
-    const chats = await getChatsByUserId({ id: session.user.id! });
+  // biome-ignore lint: Forbidden non-null assertion.
+  const chats = await getChatsByUserId({ id: session.user.id! });
     return Response.json(chats, {
       headers: { 'Content-Type': 'application/json' }
     });

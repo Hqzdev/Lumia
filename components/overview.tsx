@@ -149,55 +149,55 @@ export const Overview = ({ nickname }: { nickname?: string }) => {
       }}
     >
       <div className="relative w-full max-w-[95%] md:max-w-2xl mx-auto flex flex-col">
-        {nickname && (
-          <div
-            className="mb-4 font-extrabold flex items-center"
-            style={{
-              fontSize: isMobile ? '2.8rem' : '2.2rem',
-              lineHeight: 1.1,
-              letterSpacing: '0.01em',
-            }}
-          >
-            <span className="text-gray-600 dark:text-gray-400 mr-2">Hi,</span>
-            <span
-              className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600"
-              style={{
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textShadow: '0 2px 16px #3b82f6',
-              }}
-            >
-              {nickname}
-            </span>
-          </div>
-        )}
-        {/* Фразы показываем только на desktop, на мобильных статичный текст */}
+      {nickname && (
         <div
-          className={`flex gap-[2px] ${textSize} font-bold mb-8`}
-          style={{ lineHeight: 1.05, minHeight: 36 }}
+            className="mb-4 font-extrabold flex items-center"
+          style={{
+            fontSize: isMobile ? '2.8rem' : '2.2rem',
+            lineHeight: 1.1,
+            letterSpacing: '0.01em',
+          }}
         >
+          <span className="text-gray-600 dark:text-gray-400 mr-2">Hi,</span>
           <span
-            className="text-gray-600 dark:text-gray-400"
+              className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600"
             style={{
-              letterSpacing: '0.01em',
-              transition: 'color 0.2s',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+                textShadow: '0 2px 16px #3b82f6',
             }}
           >
-            {isMobile ? phrases[0] : displayedText}
+            {nickname}
           </span>
-          {!isMobile && (
-            <span
-              className="ml-1"
-              style={{
-                color: '#6b7280',
-                WebkitTextStroke: '1px #fff',
-                fontWeight: 900,
-                animation: 'blink 1.8s steps(1) infinite',
-              }}
-            >
-              |
-            </span>
-          )}
+        </div>
+      )}
+      {/* Фразы показываем только на desktop, на мобильных статичный текст */}
+      <div
+          className={`flex gap-[2px] ${textSize} font-bold mb-8`}
+        style={{ lineHeight: 1.05, minHeight: 36 }}
+      >
+        <span
+          className="text-gray-600 dark:text-gray-400"
+          style={{
+            letterSpacing: '0.01em',
+            transition: 'color 0.2s',
+          }}
+        >
+          {isMobile ? phrases[0] : displayedText}
+        </span>
+        {!isMobile && (
+          <span
+            className="ml-1"
+            style={{
+              color: '#6b7280',
+              WebkitTextStroke: '1px #fff',
+              fontWeight: 900,
+              animation: 'blink 1.8s steps(1) infinite',
+            }}
+          >
+            |
+          </span>
+        )}
         </div>
       </div>
       <style>

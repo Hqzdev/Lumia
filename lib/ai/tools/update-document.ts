@@ -34,11 +34,11 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
 
       const documentHandler = documentHandlersByArtifactKind.find(
         (documentHandlerByArtifactKind) =>
-          documentHandlerByArtifactKind.kind === document.kind,
+          documentHandlerByArtifactKind.kind === document.text,
       );
 
       if (!documentHandler) {
-        throw new Error(`No document handler found for kind: ${document.kind}`);
+        throw new Error(`No document handler found for kind: ${document.text}`);
       }
 
       await documentHandler.onUpdateDocument({
@@ -53,7 +53,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
       return {
         id,
         title: document.title,
-        kind: document.kind,
+        kind: document.text,
         content: 'The document has been updated successfully.',
       };
     },

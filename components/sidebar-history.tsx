@@ -194,7 +194,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     if (user && pathname) {
       // Небольшая задержка, чтобы избежать конфликтов с первоначальной загрузкой
       const timeoutId = setTimeout(() => {
-        mutate();
+    mutate();
       }, 100);
       return () => clearTimeout(timeoutId);
     }

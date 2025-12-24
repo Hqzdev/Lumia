@@ -17,8 +17,7 @@ export function ProfilerWrapper({ id, children, onRender }: ProfilerWrapperProps
     actualDuration,
     baseDuration,
     startTime,
-    commitTime,
-    interactions
+    commitTime
   ) => {
     if (process.env.NODE_ENV === 'development') {
       console.log(`[React Profiler] ${id}:`, {

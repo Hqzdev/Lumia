@@ -1,0 +1,486 @@
+{
+  "version": "1.0",
+  "database": {
+    "name": "Lumia AI Database",
+    "description": "Database schema for Lumia AI chat application with 12 tables",
+    "tables": [
+      {
+        "name": "User",
+        "description": "Основная информация о пользователях",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "default": "random()"
+          },
+          {
+            "name": "email",
+            "type": "VARCHAR(64)",
+            "notNull": true,
+            "unique": true
+          },
+          {
+            "name": "password",
+            "type": "VARCHAR(64)",
+            "notNull": false
+          },
+          {
+            "name": "nickname",
+            "type": "VARCHAR(32)",
+            "notNull": true,
+            "unique": true
+          }
+        ]
+      },
+      {
+        "name": "UserSettings",
+        "description": "Настройки и подписки пользователей",
+        "columns": [
+          {
+            "name": "userId",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "foreignKey": {
+              "table": "User",
+              "column": "id",
+              "onDelete": "CASCADE"
+            }
+          },
+          {
+            "name": "subscription",
+            "type": "VARCHAR(20)",
+            "notNull": true,
+            "default": "'free'"
+          },
+          {
+            "name": "customization",
+            "type": "JSON",
+            "notNull": false
+          }
+        ]
+      },
+      {
+        "name": "Chat",
+        "description": "Основная информация о чатах",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "default": "random()"
+          },
+          {
+            "name": "createdAt",
+            "type": "TIMESTAMP",
+            "notNull": true
+          },
+          {
+            "name": "title",
+            "type": "TEXT",
+            "notNull": true
+          },
+          {
+            "name": "userId",
+            "type": "UUID",
+            "notNull": true,
+            "foreignKey": {
+              "table": "User",
+              "column": "id"
+            }
+          }
+        ]
+      },
+      {
+        "name": "ChatSettings",
+        "description": "Настройки видимости чатов",
+        "columns": [
+          {
+            "name": "chatId",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "foreignKey": {
+              "table": "Chat",
+              "column": "id",
+              "onDelete": "CASCADE"
+            }
+          },
+          {
+            "name": "visibility",
+            "type": "VARCHAR",
+            "notNull": true,
+            "default": "'private'",
+            "enum": ["public", "private"]
+          }
+        ]
+      },
+      {
+        "name": "Message_v2",
+        "description": "Основная информация о сообщениях",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "default": "random()"
+          },
+          {
+            "name": "chatId",
+            "type": "UUID",
+            "notNull": true,
+            "foreignKey": {
+              "table": "Chat",
+              "column": "id"
+            }
+          },
+          {
+            "name": "role",
+            "type": "VARCHAR",
+            "notNull": true
+          },
+          {
+            "name": "createdAt",
+            "type": "TIMESTAMP",
+            "notNull": true
+          }
+        ]
+      },
+      {
+        "name": "MessageContent",
+        "description": "Контент сообщений (parts и attachments)",
+        "columns": [
+          {
+            "name": "messageId",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "foreignKey": {
+              "table": "Message_v2",
+              "column": "id",
+              "onDelete": "CASCADE"
+            }
+          },
+          {
+            "name": "parts",
+            "type": "JSON",
+            "notNull": true
+          },
+          {
+            "name": "attachments",
+            "type": "JSON",
+            "notNull": true
+          }
+        ]
+      },
+      {
+        "name": "Vote_v2",
+        "description": "Голоса за сообщения",
+        "columns": [
+          {
+            "name": "chatId",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "foreignKey": {
+              "table": "Chat",
+              "column": "id"
+            }
+          },
+          {
+            "name": "messageId",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "foreignKey": {
+              "table": "Message_v2",
+              "column": "id"
+            }
+          },
+          {
+            "name": "isUpvoted",
+            "type": "BOOLEAN",
+            "notNull": true
+          }
+        ]
+      },
+      {
+        "name": "VoteMetadata",
+        "description": "Метаданные голосов (время создания и обновления)",
+        "columns": [
+          {
+            "name": "chatId",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "foreignKey": {
+              "table": "Vote_v2",
+              "column": "chatId"
+            }
+          },
+          {
+            "name": "messageId",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "foreignKey": {
+              "table": "Vote_v2",
+              "column": "messageId"
+            }
+          },
+          {
+            "name": "createdAt",
+            "type": "TIMESTAMP",
+            "notNull": true,
+            "default": "NOW()"
+          },
+          {
+            "name": "updatedAt",
+            "type": "TIMESTAMP",
+            "notNull": true,
+            "default": "NOW()"
+          }
+        ]
+      },
+      {
+        "name": "Document",
+        "description": "Основная информация о документах",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "default": "random()"
+          },
+          {
+            "name": "createdAt",
+            "type": "TIMESTAMP",
+            "primaryKey": true,
+            "notNull": true
+          },
+          {
+            "name": "title",
+            "type": "TEXT",
+            "notNull": true
+          },
+          {
+            "name": "userId",
+            "type": "UUID",
+            "notNull": true,
+            "foreignKey": {
+              "table": "User",
+              "column": "id"
+            }
+          }
+        ]
+      },
+      {
+        "name": "DocumentContent",
+        "description": "Контент документов (текст, код, изображения, таблицы)",
+        "columns": [
+          {
+            "name": "documentId",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "foreignKey": {
+              "table": "Document",
+              "column": "id"
+            }
+          },
+          {
+            "name": "documentCreatedAt",
+            "type": "TIMESTAMP",
+            "primaryKey": true,
+            "notNull": true,
+            "foreignKey": {
+              "table": "Document",
+              "column": "createdAt"
+            }
+          },
+          {
+            "name": "content",
+            "type": "TEXT",
+            "notNull": false
+          },
+          {
+            "name": "kind",
+            "type": "VARCHAR",
+            "notNull": true,
+            "default": "'text'",
+            "enum": ["text", "code", "image", "sheet"]
+          }
+        ]
+      },
+      {
+        "name": "Suggestion",
+        "description": "Основная информация о предложениях по улучшению документов",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "default": "random()"
+          },
+          {
+            "name": "documentId",
+            "type": "UUID",
+            "notNull": true,
+            "foreignKey": {
+              "table": "Document",
+              "column": "id"
+            }
+          },
+          {
+            "name": "documentCreatedAt",
+            "type": "TIMESTAMP",
+            "notNull": true,
+            "foreignKey": {
+              "table": "Document",
+              "column": "createdAt"
+            }
+          },
+          {
+            "name": "userId",
+            "type": "UUID",
+            "notNull": true,
+            "foreignKey": {
+              "table": "User",
+              "column": "id"
+            }
+          },
+          {
+            "name": "createdAt",
+            "type": "TIMESTAMP",
+            "notNull": true
+          }
+        ]
+      },
+      {
+        "name": "SuggestionContent",
+        "description": "Контент предложений (оригинальный текст, предложенный текст, описание, статус)",
+        "columns": [
+          {
+            "name": "suggestionId",
+            "type": "UUID",
+            "primaryKey": true,
+            "notNull": true,
+            "foreignKey": {
+              "table": "Suggestion",
+              "column": "id",
+              "onDelete": "CASCADE"
+            }
+          },
+          {
+            "name": "originalText",
+            "type": "TEXT",
+            "notNull": true
+          },
+          {
+            "name": "suggestedText",
+            "type": "TEXT",
+            "notNull": true
+          },
+          {
+            "name": "description",
+            "type": "TEXT",
+            "notNull": false
+          },
+          {
+            "name": "isResolved",
+            "type": "BOOLEAN",
+            "notNull": true,
+            "default": "false"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "UserSettings",
+        "to": "User",
+        "type": "one-to-one",
+        "description": "Каждый пользователь имеет одну запись настроек"
+      },
+      {
+        "from": "Chat",
+        "to": "User",
+        "type": "many-to-one",
+        "description": "Пользователь может иметь много чатов"
+      },
+      {
+        "from": "ChatSettings",
+        "to": "Chat",
+        "type": "one-to-one",
+        "description": "Каждый чат имеет одну запись настроек"
+      },
+      {
+        "from": "Message_v2",
+        "to": "Chat",
+        "type": "many-to-one",
+        "description": "В чате может быть много сообщений"
+      },
+      {
+        "from": "MessageContent",
+        "to": "Message_v2",
+        "type": "one-to-one",
+        "description": "Каждое сообщение имеет один контент"
+      },
+      {
+        "from": "Vote_v2",
+        "to": "Chat",
+        "type": "many-to-one",
+        "description": "В чате может быть много голосов"
+      },
+      {
+        "from": "Vote_v2",
+        "to": "Message_v2",
+        "type": "many-to-one",
+        "description": "У сообщения может быть много голосов"
+      },
+      {
+        "from": "VoteMetadata",
+        "to": "Vote_v2",
+        "type": "one-to-one",
+        "description": "Каждый голос имеет одну запись метаданных"
+      },
+      {
+        "from": "Document",
+        "to": "User",
+        "type": "many-to-one",
+        "description": "Пользователь может иметь много документов"
+      },
+      {
+        "from": "DocumentContent",
+        "to": "Document",
+        "type": "one-to-one",
+        "description": "Каждый документ имеет один контент"
+      },
+      {
+        "from": "Suggestion",
+        "to": "Document",
+        "type": "many-to-one",
+        "description": "У документа может быть много предложений"
+      },
+      {
+        "from": "Suggestion",
+        "to": "User",
+        "type": "many-to-one",
+        "description": "Пользователь может создать много предложений"
+      },
+      {
+        "from": "SuggestionContent",
+        "to": "Suggestion",
+        "type": "one-to-one",
+        "description": "Каждое предложение имеет один контент"
+      }
+    ]
+  }
+}
+

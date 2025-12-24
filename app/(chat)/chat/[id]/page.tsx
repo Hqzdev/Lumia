@@ -35,16 +35,25 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   });
 
   function convertToUIMessages(messages: Array<DBMessage>): Array<UIMessage> {
-    return messages.map((message) => ({
-      id: message.id,
-      parts: message.parts as UIMessage['parts'],
-      role: message.role as UIMessage['role'],
-      // Note: content will soon be deprecated in @ai-sdk/react
-      content: '',
-      createdAt: message.createdAt,
-      experimental_attachments:
-        (message.attachments as Array<Attachment>) ?? [],
-    }));
+    return messages.map((message) => {
+      // Проверяем, что parts существует и не null
+      let parts = message.parts as UIMessage['parts'];
+      if (!parts || (Array.isArray(parts) && parts.length === 0)) {
+        // Если parts пустой или null, создаем дефолтный parts
+        parts = [{ type: 'text', text: '' }];
+      }
+
+      return {
+        id: message.id,
+        parts: parts,
+        role: message.role as UIMessage['role'],
+        // Note: content will soon be deprecated in @ai-sdk/react
+        content: '',
+        createdAt: message.createdAt,
+        experimental_attachments:
+          (message.attachments as Array<Attachment>) ?? [],
+      };
+    });
   }
 
   const cookieStore = await cookies();

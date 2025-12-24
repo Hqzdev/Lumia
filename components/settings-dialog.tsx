@@ -182,8 +182,12 @@ function GeneralSettings({ settings, updateSetting }: any) {
           <Select
             value={settings.theme}
             onValueChange={(value) => updateSetting('theme', value)}
+            disabled
           >
-            <SelectTrigger className="w-32 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm">
+            <SelectTrigger
+              className="w-32 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
+              disabled
+            >
               <SelectValue />
               <ChevronDown className="size-4" />
             </SelectTrigger>
@@ -200,8 +204,12 @@ function GeneralSettings({ settings, updateSetting }: any) {
           <Select
             value={settings.language}
             onValueChange={(value) => updateSetting('language', value)}
+            disabled
           >
-            <SelectTrigger className="w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm">
+            <SelectTrigger
+              className="w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
+              disabled
+            >
               <SelectValue />
               <ChevronDown className="size-4" />
             </SelectTrigger>
@@ -230,8 +238,12 @@ function GeneralSettings({ settings, updateSetting }: any) {
             onValueChange={(value) =>
               updateSetting('conversationLanguage', value)
             }
+            disabled
           >
-            <SelectTrigger className="w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm">
+            <SelectTrigger
+              className="w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
+              disabled
+            >
               <SelectValue />
               <ChevronDown className="size-4" />
             </SelectTrigger>
@@ -253,8 +265,12 @@ function GeneralSettings({ settings, updateSetting }: any) {
           <Select
             value={settings.voice}
             onValueChange={(value) => updateSetting('voice', value)}
+            disabled
           >
-            <SelectTrigger className="w-32 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm">
+            <SelectTrigger
+              className="w-32 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
+              disabled
+            >
               <SelectValue />
               <ChevronDown className="size-4" />
             </SelectTrigger>
@@ -276,6 +292,7 @@ function GeneralSettings({ settings, updateSetting }: any) {
               updateSetting('showSuggestions', checked)
             }
             className="data-[state=checked]:bg-blue-500"
+            disabled
           />
         </div>
       </div>
@@ -302,8 +319,12 @@ function NotificationSettings({ settings, updateSetting }: any) {
               onValueChange={(value) =>
                 updateSetting('responseNotifications', value)
               }
+              disabled
             >
-              <SelectTrigger className="w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm">
+              <SelectTrigger
+                className="w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
+                disabled
+              >
                 <SelectValue />
                 <ChevronDown className="size-4" />
               </SelectTrigger>
@@ -329,8 +350,12 @@ function NotificationSettings({ settings, updateSetting }: any) {
               onValueChange={(value) =>
                 updateSetting('taskNotifications', value)
               }
+              disabled
             >
-              <SelectTrigger className="w-64 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm">
+              <SelectTrigger
+                className="w-64 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
+                disabled
+              >
                 <SelectValue />
                 <ChevronDown className="size-4" />
               </SelectTrigger>
@@ -352,6 +377,7 @@ function NotificationSettings({ settings, updateSetting }: any) {
               type="button"
               className="text-sm text-gray-500 underline hover:text-gray-700"
               onClick={() => alert('Manage tasks (stub)')}
+              disabled
             >
               Manage tasks
             </button>
@@ -406,6 +432,7 @@ function PersonalizationSettings({ settings, updateSetting }: any) {
                   updateSetting('saveMemory', checked)
                 }
                 className="data-[state=checked]:bg-blue-500"
+                disabled
               />
             </div>
 
@@ -428,6 +455,7 @@ function PersonalizationSettings({ settings, updateSetting }: any) {
                   updateSetting('referenceHistory', checked)
                 }
                 className="data-[state=checked]:bg-blue-500"
+                disabled
               />
             </div>
 
@@ -438,6 +466,7 @@ function PersonalizationSettings({ settings, updateSetting }: any) {
                 size="sm"
                 className="h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                 onClick={() => alert('Memory management (stub)')}
+                disabled
               >
                 Manage
               </Button>
@@ -483,6 +512,7 @@ function ConnectedAppsSettings() {
             size="sm"
             className="h-9 px-6 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Connect (stub)')}
+            disabled
           >
             Connect
           </Button>
@@ -507,6 +537,7 @@ function ConnectedAppsSettings() {
             size="sm"
             className="h-9 px-6 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Connect (stub)')}
+            disabled
           >
             Connect
           </Button>
@@ -532,6 +563,7 @@ function ConnectedAppsSettings() {
             size="sm"
             className="h-9 px-6 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Connect (stub)')}
+            disabled
           >
             Connect
           </Button>
@@ -571,6 +603,7 @@ function DataControlsSettings({ settings, updateSetting }: any) {
             size="sm"
             className="h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Shared links (stub)')}
+            disabled
           >
             Manage
           </Button>
@@ -583,6 +616,7 @@ function DataControlsSettings({ settings, updateSetting }: any) {
             size="sm"
             className="h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Archived chats (stub)')}
+            disabled
           >
             Manage
           </Button>
@@ -595,6 +629,7 @@ function DataControlsSettings({ settings, updateSetting }: any) {
             size="sm"
             className="h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Archive all chats (stub)')}
+            disabled
           >
             Archive all
           </Button>
@@ -607,6 +642,7 @@ function DataControlsSettings({ settings, updateSetting }: any) {
             size="sm"
             className="h-9 px-4 bg-white border-red-300 text-red-600 hover:bg-red-50 rounded-full"
             onClick={() => alert('Delete all chats (stub)')}
+            disabled
           >
             Delete all
           </Button>
@@ -619,6 +655,7 @@ function DataControlsSettings({ settings, updateSetting }: any) {
             size="sm"
             className="h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Export data (stub)')}
+            disabled
           >
             Export
           </Button>
@@ -649,6 +686,7 @@ function SecuritySettings({ settings, updateSetting }: any) {
                 updateSetting('mfaEnabled', checked)
               }
               className="data-[state=checked]:bg-blue-500"
+              disabled
             />
           </div>
           <p className="text-sm text-gray-500">
@@ -667,6 +705,7 @@ function SecuritySettings({ settings, updateSetting }: any) {
             size="sm"
             className="h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => signOut({ redirect: true, callbackUrl: '/' })}
+            disabled
           >
             Log out
           </Button>
@@ -682,6 +721,7 @@ function SecuritySettings({ settings, updateSetting }: any) {
               size="sm"
               className="h-9 px-4 bg-white border-red-300 text-red-600 hover:bg-red-50 rounded-full"
               onClick={() => signOut({ redirect: true, callbackUrl: '/' })}
+              disabled
             >
               Log out of all
             </Button>
@@ -704,6 +744,7 @@ function SecuritySettings({ settings, updateSetting }: any) {
               type="button"
               className="text-gray-500 underline hover:text-gray-700"
               onClick={() => alert('Learn more (stub)')}
+              disabled
             >
               Learn more
             </button>
@@ -737,6 +778,7 @@ function AccountSettings() {
             size="sm"
             className="h-9 px-4 bg-white border-red-300 text-red-600 hover:bg-red-50 rounded-full"
             onClick={() => alert('Account deleted (stub)')}
+            disabled
           >
             Delete
           </Button>

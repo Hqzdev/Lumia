@@ -25,7 +25,17 @@ const MotionDivWrapper = dynamic(
     import('framer-motion').then((mod) => {
       return function Wrapper(props: React.ComponentProps<'div'>) {
         const MotionDiv = mod.motion.div;
-        return <MotionDiv {...props} />;
+        const {
+          onDrag,
+          onDragStart,
+          onDragEnd,
+          onAnimationStart,
+          onAnimationEnd,
+          onTransitionStart,
+          onTransitionEnd,
+          ...motionProps
+        } = props;
+        return <MotionDiv {...motionProps} />;
       };
     }),
   { ssr: false }

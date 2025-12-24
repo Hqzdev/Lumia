@@ -18,16 +18,11 @@ import {
   message,
   vote,
   type DBMessage,
-  // userProfile,
-  // type UserProfile,
+  messageDeprecated,
+  type MessageDeprecated,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 
-// Optionally, if not using email/pass login, you can
-// use the Drizzle adapter for Auth.js / NextAuth
-// https://authjs.dev/reference/adapter/drizzle
-
-// Helper function to create database connection with retry
 function createDbConnection() {
   if (!process.env.POSTGRES_URL) {
     throw new Error('POSTGRES_URL environment variable is not set');
@@ -251,7 +246,26 @@ export async function saveMessages({
   try {
     return await withRetry(
       async () => {
-        return await db.insert(message).values(messages);
+        // Валидируем и нормализуем сообщения перед сохранением
+        const validatedMessages = messages.map((msg) => {
+          // Убеждаемся, что parts не null и не undefined
+          let parts = msg.parts;
+          if (!parts || (Array.isArray(parts) && parts.length === 0)) {
+            // Если parts пустой, создаем дефолтный parts
+            parts = [{ type: 'text', text: '' }];
+          }
+
+          // Убеждаемся, что attachments не null
+          const attachments = msg.attachments ?? [];
+
+          return {
+            ...msg,
+            parts,
+            attachments,
+          };
+        });
+
+        return await db.insert(message).values(validatedMessages);
       },
       3,
       1000,
@@ -267,11 +281,69 @@ export async function getMessagesByChatId({ id }: { id: string }) {
   try {
     return await withRetry(
       async () => {
-        return await db
+        // Сначала получаем сообщения из Message_v2
+        const messagesV2 = await db
           .select()
           .from(message)
           .where(eq(message.chatId, id))
           .orderBy(asc(message.createdAt));
+
+        // Если есть сообщения в Message_v2, возвращаем их
+        if (messagesV2.length > 0) {
+          return messagesV2;
+        }
+
+        // Если нет сообщений в Message_v2, пробуем загрузить из старой таблицы Message
+        try {
+          const oldMessages = await db
+            .select()
+            .from(messageDeprecated)
+            .where(eq(messageDeprecated.chatId, id))
+            .orderBy(asc(messageDeprecated.createdAt));
+
+          // Конвертируем старые сообщения в новый формат
+          const convertedMessages: Array<DBMessage> = oldMessages.map(
+            (oldMsg) => {
+              // Преобразуем content в parts
+              let parts: any[] = [];
+              if (oldMsg.content) {
+                if (typeof oldMsg.content === 'string') {
+                  parts = [{ type: 'text', text: oldMsg.content }];
+                } else if (Array.isArray(oldMsg.content)) {
+                  parts = oldMsg.content;
+                } else if (typeof oldMsg.content === 'object') {
+                  // Если content - объект, пытаемся извлечь текст
+                  const text =
+                    (oldMsg.content as any).text ||
+                    JSON.stringify(oldMsg.content);
+                  parts = [{ type: 'text', text }];
+                } else {
+                  parts = [{ type: 'text', text: String(oldMsg.content) }];
+                }
+              } else {
+                parts = [{ type: 'text', text: '' }];
+              }
+
+              return {
+                id: oldMsg.id,
+                chatId: oldMsg.chatId,
+                role: oldMsg.role,
+                parts: parts,
+                attachments: [],
+                createdAt: oldMsg.createdAt,
+              };
+            },
+          );
+
+          return convertedMessages;
+        } catch (oldError) {
+          // Если старая таблица не существует или ошибка, просто возвращаем пустой массив
+          console.warn(
+            'Failed to load old messages, table Message might not exist:',
+            oldError,
+          );
+          return [];
+        }
       },
       3,
       1000,
@@ -357,7 +429,7 @@ export async function saveDocument({
     return await db.insert(document).values({
       id,
       title,
-      kind,
+      text: kind, // В БД поле называется 'text', а не 'kind'
       content,
       userId,
       createdAt: new Date(),
@@ -580,6 +652,297 @@ export async function updateUserCustomization({
     return result[0];
   } catch (error) {
     console.error('Failed to update user customization in database', error);
+    throw error;
+  }
+}
+
+// ============================================
+// ДОПОЛНИТЕЛЬНЫЕ CRUD ОПЕРАЦИИ
+// ============================================
+
+// User: Полный Update
+export async function updateUser({
+  userId,
+  email,
+  password,
+  nickname,
+}: {
+  userId: string;
+  email?: string;
+  password?: string;
+  nickname?: string;
+}) {
+  try {
+    const updateData: Partial<User> = {};
+    if (email) updateData.email = email;
+    if (password) {
+      const salt = genSaltSync(10);
+      updateData.password = hashSync(password, salt);
+    }
+    if (nickname) updateData.nickname = nickname;
+
+    const result = await db
+      .update(user)
+      .set(updateData)
+      .where(eq(user.id, userId))
+      .returning();
+
+    if (!result || result.length === 0) {
+      throw new Error(`User with id ${userId} not found`);
+    }
+    return result[0];
+  } catch (error) {
+    console.error('Failed to update user in database', error);
+    throw error;
+  }
+}
+
+// User: Delete
+export async function deleteUserById({ id }: { id: string }) {
+  try {
+    // Получаем все чаты пользователя
+    const userChats = await db
+      .select({ id: chat.id })
+      .from(chat)
+      .where(eq(chat.userId, id));
+
+    const chatIds = userChats.map((c) => c.id);
+
+    // Удаляем связанные данные
+    if (chatIds.length > 0) {
+      await db.delete(vote).where(inArray(vote.chatId, chatIds));
+      await db.delete(message).where(inArray(message.chatId, chatIds));
+    }
+    await db.delete(chat).where(eq(chat.userId, id));
+    await db.delete(suggestion).where(eq(suggestion.userId, id));
+    await db.delete(document).where(eq(document.userId, id));
+
+    // Затем удаляем пользователя
+    return await db.delete(user).where(eq(user.id, id));
+  } catch (error) {
+    console.error('Failed to delete user from database', error);
+    throw error;
+  }
+}
+
+// User: GetAll
+export async function getAllUsers() {
+  try {
+    return await db.select().from(user).orderBy(asc(user.email));
+  } catch (error) {
+    console.error('Failed to get all users from database', error);
+    throw error;
+  }
+}
+
+// Chat: Полный Update
+export async function updateChat({
+  chatId,
+  title,
+}: {
+  chatId: string;
+  title?: string;
+}) {
+  try {
+    const updateData: { title?: string } = {};
+    if (title) updateData.title = title;
+
+    const result = await db
+      .update(chat)
+      .set(updateData)
+      .where(eq(chat.id, chatId))
+      .returning();
+
+    if (!result || result.length === 0) {
+      throw new Error(`Chat with id ${chatId} not found`);
+    }
+    return result[0];
+  } catch (error) {
+    console.error('Failed to update chat in database', error);
+    throw error;
+  }
+}
+
+// Message: Update
+export async function updateMessage({
+  messageId,
+  parts,
+  attachments,
+}: {
+  messageId: string;
+  parts?: any;
+  attachments?: any;
+}) {
+  try {
+    const updateData: { parts?: any; attachments?: any } = {};
+    if (parts) updateData.parts = parts;
+    if (attachments) updateData.attachments = attachments;
+
+    const result = await db
+      .update(message)
+      .set(updateData)
+      .where(eq(message.id, messageId))
+      .returning();
+
+    if (!result || result.length === 0) {
+      throw new Error(`Message with id ${messageId} not found`);
+    }
+    return result[0];
+  } catch (error) {
+    console.error('Failed to update message in database', error);
+    throw error;
+  }
+}
+
+// Message: Delete по ID
+export async function deleteMessageById({ id }: { id: string }) {
+  try {
+    // Удаляем связанные голоса
+    await db.delete(vote).where(eq(vote.messageId, id));
+    // Удаляем сообщение
+    return await db.delete(message).where(eq(message.id, id));
+  } catch (error) {
+    console.error('Failed to delete message from database', error);
+    throw error;
+  }
+}
+
+// Vote: Delete
+export async function deleteVote({
+  chatId,
+  messageId,
+}: {
+  chatId: string;
+  messageId: string;
+}) {
+  try {
+    return await db
+      .delete(vote)
+      .where(and(eq(vote.chatId, chatId), eq(vote.messageId, messageId)));
+  } catch (error) {
+    console.error('Failed to delete vote from database', error);
+    throw error;
+  }
+}
+
+// Document: Update
+export async function updateDocument({
+  documentId,
+  documentCreatedAt,
+  title,
+  content,
+  kind,
+}: {
+  documentId: string;
+  documentCreatedAt: Date;
+  title?: string;
+  content?: string;
+  kind?: ArtifactKind;
+}) {
+  try {
+    const updateData: {
+      title?: string;
+      content?: string;
+      text?: ArtifactKind;
+    } = {};
+    if (title) updateData.title = title;
+    if (content !== undefined) updateData.content = content;
+    if (kind) updateData.text = kind; // В БД поле называется 'text', а не 'kind'
+
+    const result = await db
+      .update(document)
+      .set(updateData)
+      .where(
+        and(
+          eq(document.id, documentId),
+          eq(document.createdAt, documentCreatedAt),
+        ),
+      )
+      .returning();
+
+    if (!result || result.length === 0) {
+      throw new Error(
+        `Document with id ${documentId} and createdAt ${documentCreatedAt} not found`,
+      );
+    }
+    return result[0];
+  } catch (error) {
+    console.error('Failed to update document in database', error);
+    throw error;
+  }
+}
+
+// Document: Delete по ID
+export async function deleteDocumentById({
+  id,
+  createdAt,
+}: {
+  id: string;
+  createdAt: Date;
+}) {
+  try {
+    // Удаляем связанные предложения
+    await db
+      .delete(suggestion)
+      .where(
+        and(
+          eq(suggestion.documentId, id),
+          eq(suggestion.documentCreatedAt, createdAt),
+        ),
+      );
+    // Удаляем документ
+    return await db
+      .delete(document)
+      .where(and(eq(document.id, id), eq(document.createdAt, createdAt)));
+  } catch (error) {
+    console.error('Failed to delete document from database', error);
+    throw error;
+  }
+}
+
+// Suggestion: Update
+export async function updateSuggestion({
+  suggestionId,
+  originalText,
+  suggestedText,
+  description,
+  isResolved,
+}: {
+  suggestionId: string;
+  originalText?: string;
+  suggestedText?: string;
+  description?: string;
+  isResolved?: boolean;
+}) {
+  try {
+    const updateData: Partial<Suggestion> = {};
+    if (originalText !== undefined) updateData.originalText = originalText;
+    if (suggestedText !== undefined) updateData.suggestedText = suggestedText;
+    if (description !== undefined) updateData.description = description;
+    if (isResolved !== undefined) updateData.isResolved = isResolved;
+
+    const result = await db
+      .update(suggestion)
+      .set(updateData)
+      .where(eq(suggestion.id, suggestionId))
+      .returning();
+
+    if (!result || result.length === 0) {
+      throw new Error(`Suggestion with id ${suggestionId} not found`);
+    }
+    return result[0];
+  } catch (error) {
+    console.error('Failed to update suggestion in database', error);
+    throw error;
+  }
+}
+
+// Suggestion: Delete
+export async function deleteSuggestionById({ id }: { id: string }) {
+  try {
+    return await db.delete(suggestion).where(eq(suggestion.id, id));
+  } catch (error) {
+    console.error('Failed to delete suggestion from database', error);
     throw error;
   }
 }

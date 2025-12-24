@@ -86,7 +86,7 @@ export default function Page() {
 
   return (
     <div className="relative flex min-h-dvh w-screen flex-col items-center justify-center overflow-hidden bg-[#fafafa] px-4 py-8">
-      <div className="absolute left-4 top-4 flex items-center gap-2 text-2xl font-bold select-none hidden sm:flex">
+      <div className="absolute left-4 top-4 hidden items-center gap-2 text-2xl font-bold select-none sm:flex">
         <Image src="/icon.png" alt="Lumia" width={32} height={32} />
         <span>Lumia</span>
       </div>

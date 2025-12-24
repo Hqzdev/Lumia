@@ -881,6 +881,7 @@ function PureMultimodalInput({
                   <Button
                     className={`rounded-full bg-white flex items-center justify-center text-gray-600 hover:bg-gray-100 ml-0 px-3 py-1.5 text-sm font-normal shadow-none`}
                     variant="ghost"
+                    disabled
                     onClick={(event) => {
                       event.preventDefault();
                       fileInputRef.current?.click();
@@ -894,17 +895,15 @@ function PureMultimodalInput({
                 </TooltipContent>
               </Tooltip>
 
-              {/* Instruments button and popover */}
-              <Popover
-                open={isInstrumentsOpen}
-                onOpenChange={setIsInstrumentsOpen}
-              >
+              {/* Instruments button and popover (disabled) */}
+              <Popover open={false} onOpenChange={() => {}}>
                 <PopoverTrigger asChild>
                   <Button
-                    className="rounded-full bg-white flex items-center gap-2 px-3 py-1.5 text-sm font-normal text-gray-500 shadow-none hover:bg-gray-100 ml-2"
+                    className="rounded-full bg-white flex items-center gap-2 px-3 py-1.5 text-sm font-normal text-gray-400 shadow-none hover:bg-gray-100 ml-2 cursor-not-allowed"
                     variant="ghost"
                     type="button"
                     aria-label="Instruments"
+                    disabled
                   >
                     <SlidersHorizontal className="size-4 mr-1" />
                     {!(
@@ -916,99 +915,7 @@ function PureMultimodalInput({
                     ) && 'Instruments'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent
-                  side="bottom"
-                  align="start"
-                  sideOffset={8}
-                  collisionPadding={100}
-                  className="w-48 p-2 flex flex-col gap-1 rounded-2xl shadow-lg border border-gray-200"
-                >
-                  <div className="px-3 pt-1 pb-2 text-xs text-gray-400 font-medium select-none">
-                    Instruments
-                  </div>
-                  <button
-                    type="button"
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-normal transition-colors duration-100 ease-in-out hover:bg-gray-100 ${isJustifyMode ? 'text-blue-600 bg-blue-50' : 'text-black'}`}
-                    onClick={() => {
-                      setIsJustifyMode(true);
-                      setIsDeepSearchMode(false);
-                      setIsCreateImageMode(false);
-                      setIsCanvasMode(false);
-                      setIsThinkLongerMode(false);
-                      setIsInstrumentsOpen(false);
-                    }}
-                  >
-                    <Lightbulb className="size-4" />
-                    Web search
-                    {isJustifyMode && (
-                      <span className="ml-auto text-blue-600">✓</span>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-normal transition-colors duration-100 ease-in-out hover:bg-gray-100 ${isDeepSearchMode ? 'text-blue-600 bg-blue-50' : 'text-black'}`}
-                    onClick={() => {
-                      setIsJustifyMode(false);
-                      setIsDeepSearchMode(true);
-                      setIsCreateImageMode(false);
-                      setIsCanvasMode(false);
-                      setIsThinkLongerMode(false);
-                      setIsInstrumentsOpen(false);
-                    }}
-                  >
-                    <Telescope className="size-4" />
-                    Deep research
-                    {isDeepSearchMode && (
-                      <span className="ml-auto text-blue-600">✓</span>
-                    )}
-                  </button>
-                  {/* Новые кнопки */}
-                  <button
-                    type="button"
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-normal transition-colors duration-100 ease-in-out hover:bg-gray-100 ${isCreateImageMode ? 'text-blue-600 bg-blue-50' : 'text-black'}`}
-                    onClick={() => {
-                      setIsJustifyMode(false);
-                      setIsDeepSearchMode(false);
-                      setIsCreateImageMode(true);
-                      setIsCanvasMode(false);
-                      setIsThinkLongerMode(false);
-                      setIsInstrumentsOpen(false);
-                    }}
-                  >
-                    <ImageIcon className="size-4" />
-                    Create image
-                  </button>
-                  <button
-                    type="button"
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-normal transition-colors duration-100 ease-in-out hover:bg-gray-100 ${isCanvasMode ? 'text-blue-600 bg-blue-50' : 'text-black'}`}
-                    onClick={() => {
-                      setIsJustifyMode(false);
-                      setIsDeepSearchMode(false);
-                      setIsCreateImageMode(false);
-                      setIsCanvasMode(true);
-                      setIsThinkLongerMode(false);
-                      setIsInstrumentsOpen(false);
-                    }}
-                  >
-                    <Paintbrush className="size-4" />
-                    Canvas
-                  </button>
-                  <button
-                    type="button"
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-normal transition-colors duration-100 ease-in-out hover:bg-gray-100 ${isThinkLongerMode ? 'text-blue-600 bg-blue-50' : 'text-black'}`}
-                    onClick={() => {
-                      setIsJustifyMode(false);
-                      setIsDeepSearchMode(false);
-                      setIsCreateImageMode(false);
-                      setIsCanvasMode(false);
-                      setIsThinkLongerMode(true);
-                      setIsInstrumentsOpen(false);
-                    }}
-                  >
-                    <Sparkles className="size-4" />
-                    Think longer
-                  </button>
-                </PopoverContent>
+                {/* Контент поповера отключен, чтобы блок не работал */}
               </Popover>
               {/* Активный режим */}
               {(isJustifyMode ||
