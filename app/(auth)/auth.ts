@@ -34,6 +34,7 @@ export const {
   signOut,
 } = NextAuth({
   ...authConfig,
+  trustHost: true, // Разрешаем работу с поддоменами
   providers: [
     Credentials({
       credentials: {},

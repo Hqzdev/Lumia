@@ -125,7 +125,11 @@ export default function RootLayout({
           </div>
         </noscript>
         {/* /Yandex.Metrika noscript */}
-        <SessionProvider>
+        <SessionProvider
+          basePath="/api/auth"
+          refetchInterval={0}
+          refetchOnWindowFocus={false}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
