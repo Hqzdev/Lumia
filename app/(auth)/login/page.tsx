@@ -61,44 +61,54 @@ function LoginForm() {
       const callbackUrl = searchParams.get('callbackUrl');
 
       // Определяем, на какой поддомен нужно редиректить
-      const hostname = window.location.hostname;
+      const hostname =
+        typeof window !== 'undefined' ? window.location.hostname : '';
       const isAuthSubdomain = hostname.startsWith('auth.');
-      const isChatSubdomain = hostname.startsWith('chat.');
 
-      if (callbackUrl) {
-        // Если есть callbackUrl, используем его
-        try {
-          const decodedUrl = decodeURIComponent(callbackUrl);
-          // Если callbackUrl указывает на другой поддомен, редиректим туда
-          if (decodedUrl.includes('chat.lumiaai.ru')) {
-            window.location.href = decodedUrl;
-            return;
+      // Используем задержку, чтобы сессия успела обновиться на сервере
+      // Затем выполняем редирект
+      setTimeout(() => {
+        if (callbackUrl) {
+          // Если есть callbackUrl, используем его
+          try {
+            const decodedUrl = decodeURIComponent(callbackUrl);
+            // Если callbackUrl указывает на другой поддомен или полный URL, используем window.location.replace
+            if (
+              decodedUrl.includes('chat.lumiaai.ru') ||
+              decodedUrl.startsWith('http')
+            ) {
+              // Используем replace вместо href, чтобы не добавлять в историю
+              window.location.replace(decodedUrl);
+            } else {
+              // Для относительных путей используем router.push
+              router.push(decodedUrl);
+            }
+          } catch (e) {
+            console.error('Invalid callbackUrl:', e);
+            // Если callbackUrl невалидный, редиректим на чат
+            if (isAuthSubdomain) {
+              window.location.replace('https://chat.lumiaai.ru/chat');
+            } else {
+              router.push('/chat');
+            }
           }
-          router.push(decodedUrl);
-        } catch (e) {
-          console.error('Invalid callbackUrl:', e);
-          // Если callbackUrl невалидный, редиректим на чат
+        } else {
+          // Если нет callbackUrl, редиректим на чат
           if (isAuthSubdomain) {
-            window.location.href = 'https://chat.lumiaai.ru/chat';
+            // Для перехода на другой поддомен используем window.location.replace
+            // Это гарантирует переход на другой поддомен
+            window.location.replace('https://chat.lumiaai.ru/chat');
           } else {
+            // Для того же поддомена используем router.push
             router.push('/chat');
           }
         }
-      } else {
-        // Если нет callbackUrl, редиректим на чат
-        if (isAuthSubdomain) {
-          window.location.href = 'https://chat.lumiaai.ru/chat';
-        } else if (isChatSubdomain) {
-          router.push('/chat');
-        } else {
-          router.push('/chat');
-        }
-      }
+      }, 300);
     }
   }, [state.status, router, searchParams]);
 
   const handleContinue = () => {
-    if (!nickname) return;
+    if (!nickname.trim()) return;
     setIsNicknameLocked(true);
     setShowPassword(true);
     // Фокус на поле пароля без задержек
@@ -224,23 +234,29 @@ function LoginForm() {
           autoComplete="off"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!nickname) {
-              handleContinue();
-            } else {
-              if (!password) {
-                setShowPassword(true);
-                setTimeout(() => {
-                  passwordInputRef.current?.focus();
-                }, 0);
-              } else {
-                const formData = new FormData();
-                formData.append('nickname', nickname);
-                formData.append('password', password);
-                startTransition(() => {
-                  formAction(formData);
-                });
-              }
+            // Если нет nickname, ничего не делаем
+            if (!nickname.trim()) {
+              return;
             }
+            // Если nickname есть, но пароль еще не показан или не заблокирован, показываем его
+            if (!showPassword || !isNicknameLocked) {
+              handleContinue();
+              return;
+            }
+            // Если пароль не введен, фокусируемся на поле пароля
+            if (!password.trim()) {
+              setTimeout(() => {
+                passwordInputRef.current?.focus();
+              }, 0);
+              return;
+            }
+            // Если все заполнено, отправляем форму
+            const formData = new FormData();
+            formData.append('nickname', nickname.trim());
+            formData.append('password', password);
+            startTransition(() => {
+              formAction(formData);
+            });
           }}
         >
           <input
@@ -289,7 +305,7 @@ function LoginForm() {
           <Button
             type="submit"
             className="w-full h-12 rounded-full !bg-black !text-white text-sm font-medium mt-2 mb-2 hover:!bg-neutral-800 transition disabled:opacity-70 disabled:cursor-not-allowed"
-            disabled={isPending}
+            disabled={isPending || isSuccessful}
           >
             {isPending ? (
               <div className="flex items-center justify-center gap-2">
@@ -425,7 +441,7 @@ function LoginForm() {
           <Button
             type="submit"
             className="w-full max-w-80 h-12 sm:h-14 rounded-full !bg-black !text-white text-sm sm:text-base font-medium mt-2 mb-2 hover:!bg-neutral-800 transition disabled:opacity-70 disabled:cursor-not-allowed"
-            disabled={isPending}
+            disabled={isPending || isSuccessful}
           >
             {isPending ? (
               <div className="flex items-center justify-center gap-2">

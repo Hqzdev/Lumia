@@ -70,7 +70,7 @@ export default function Page() {
   };
 
   const handleContinue = () => {
-    if (!nickname || !email) return;
+    if (!nickname.trim() || !email.trim()) return;
     setIsLocked(true);
     setShowPassword(true);
     // Предлагаем сильный пароль когда показывается поле пароля
@@ -221,18 +221,24 @@ export default function Page() {
           autoComplete="off"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!nickname || !email) {
-              handleContinue();
-            } else {
-              if (!password) {
-                setShowPassword(true);
-                setTimeout(() => {
-                  passwordInputRef.current?.focus();
-                }, 0);
-              } else {
-                handleSubmit(e);
-              }
+            // Если нет nickname или email, ничего не делаем
+            if (!nickname.trim() || !email.trim()) {
+              return;
             }
+            // Если nickname и email есть, но пароль еще не показан или не заблокирован, показываем его
+            if (!showPassword || !isLocked) {
+              handleContinue();
+              return;
+            }
+            // Если пароль не введен, фокусируемся на поле пароля
+            if (!password.trim()) {
+              setTimeout(() => {
+                passwordInputRef.current?.focus();
+              }, 0);
+              return;
+            }
+            // Если все заполнено, отправляем форму
+            handleSubmit(e);
           }}
         >
           <input
@@ -504,7 +510,7 @@ export default function Page() {
           <Button
             type="submit"
             className="w-full max-w-80 h-12 sm:h-14 rounded-full !bg-black !text-white text-sm sm:text-base font-medium mt-2 mb-2 hover:!bg-neutral-800 transition disabled:opacity-70 disabled:cursor-not-allowed"
-            disabled={isPending}
+            disabled={isPending || isSuccessful}
           >
             {isPending ? (
               <div className="flex items-center justify-center gap-2">

@@ -61,9 +61,15 @@ export async function middleware(request: NextRequest) {
 
   // Обработка поддомена auth.lumiaai.ru
   if (isAuthSubdomain) {
-    // Если путь /login или /register, просто пропускаем без проверки авторизации
-    // Это предотвращает бесконечные редиректы
+    // Если путь /login или /register, проверяем авторизацию
+    // Если пользователь уже авторизован, перенаправляем на чат
     if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
+      const session = await auth();
+      if (session?.user) {
+        const protocol = request.nextUrl.protocol;
+        const chatUrl = new URL(`${protocol}//chat.lumiaai.ru/chat`);
+        return NextResponse.redirect(chatUrl);
+      }
       return NextResponse.next();
     }
 
