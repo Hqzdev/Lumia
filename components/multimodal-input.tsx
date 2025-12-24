@@ -1,6 +1,5 @@
 import React from 'react';
 import type { Attachment, Message } from 'ai';
-import cx from 'classnames';
 import { useRef, useEffect, useState, useCallback, memo } from 'react';
 import type { Dispatch, SetStateAction, ChangeEvent } from 'react';
 import { toast } from 'sonner';
@@ -11,7 +10,6 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip';
 import { useArtifactSelector, useArtifact } from '@/hooks/use-artifact';
-import { cn } from '@/lib/utils';
 import { useSession } from 'next-auth/react';
 import useSWR from 'swr';
 import {
@@ -22,28 +20,22 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
-import { useMemo, startTransition } from 'react';
+import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { ArrowUpIcon, StopIcon } from './icons';
+import { StopIcon } from './icons';
 import {
   ArrowUp,
-  Square,
   ChartNoAxesCombined,
   Paperclip,
   Search,
   Lightbulb,
   PlusIcon,
-  MessageSquareDiff,
-  Globe,
   Paintbrush,
-  Image,
-  SearchCheck,
   SlidersHorizontal,
   Telescope,
   Sparkles,
   Image as ImageIcon,
-  Mic,
   AudioLines,
   Palette,
   Camera,
@@ -52,27 +44,16 @@ import {
   Brush,
   Smile,
   Sun,
-  Moon,
   Zap,
 } from 'lucide-react';
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
-import { SearchModeToggle } from './search-mode-toggle';
 import { Textarea } from './ui/textarea';
-import { SuggestedActions } from './suggested-actions';
-import { DeepSearchToggle } from './deep-search-toggle';
-import { JustifyModeToggle } from './justify-toggle';
 import equal from 'fast-deep-equal';
-import type { UseChatHelpers, UseChatOptions } from '@ai-sdk/react';
-import { EllipsisModeToggle } from './three-button-toggle';
+import type { UseChatHelpers } from '@ai-sdk/react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { useSidebar } from '@/components/ui/sidebar';
-import {
-  artifactCreatePrompt,
-  regularPrompt,
-  justifyPrompt,
-  deepSearchPrompt,
-} from '@/lib/ai/prompts';
+import { regularPrompt, deepSearchPrompt } from '@/lib/ai/prompts';
 import { SearchResults } from './search-results';
 import { SearchResultsImageSection } from './search-results-image';
 import { VideoSearchResults } from './video-search-results';
@@ -1018,20 +999,6 @@ function PureMultimodalInput({
 
             <div>
               <div className="flex items-center gap-2 h-12">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      className="rounded-full size-12 flex items-center justify-center bg-white text-gray-500 hover:bg-gray-100"
-                      disabled
-                    >
-                      <Mic className="size-12" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    Voice input (coming soon)
-                  </TooltipContent>
-                </Tooltip>
                 {status === 'submitted' ? (
                   <StopButton stop={stop} setMessages={setMessages} />
                 ) : (

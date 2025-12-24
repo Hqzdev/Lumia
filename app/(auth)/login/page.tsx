@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from '@/components/toast';
 
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, X, Phone } from 'lucide-react';
 import { login, type LoginActionState } from '../actions';
 import { LogoGoogle } from '@/components/icons';
 
@@ -85,12 +85,216 @@ export default function Page() {
   };
 
   return (
-    <div className="relative flex min-h-dvh w-screen flex-col items-center justify-center overflow-hidden bg-[#fafafa] px-4 py-8">
+    <div className="relative flex min-h-dvh w-screen flex-col items-center justify-center overflow-hidden bg-white px-4 py-8">
+      {/* Desktop Logo */}
       <div className="absolute left-4 top-4 hidden items-center gap-2 text-2xl font-bold select-none sm:flex">
         <Image src="/icon.png" alt="Lumia" width={32} height={32} />
         <span>Lumia</span>
       </div>
-      <div className="z-10 w-full max-w-md flex flex-col items-center justify-center gap-4">
+
+      {/* Mobile Close Button */}
+      <button
+        type="button"
+        onClick={() => router.push('/')}
+        className="absolute right-4 top-4 sm:hidden z-50 p-2 hover:bg-gray-100 rounded-full transition"
+        aria-label="Close"
+      >
+        <X className="h-5 w-5 text-gray-600" />
+      </button>
+
+      {/* Mobile Version */}
+      <div className="w-full max-w-md flex flex-col items-center justify-center gap-4 sm:hidden">
+        <h1 className="text-2xl text-black font-semibold text-center mt-8 mb-2 px-4">
+          Sign in
+        </h1>
+        <div className="text-gray-600 text-sm font-normal text-center mb-4 leading-relaxed px-4">
+          You'll get smarter answers and
+          <br />
+          be able to upload files, images
+          <br />
+          and more.
+        </div>
+
+        {/* Social Buttons */}
+        <div className="w-full flex flex-col gap-3 items-center px-4">
+          <button
+            type="button"
+            className="w-full h-12 rounded-full border border-gray-200 flex items-center gap-3 px-4 text-sm font-normal bg-white text-black cursor-not-allowed justify-start"
+            tabIndex={-1}
+            disabled
+            title="Coming soon"
+          >
+            <LogoGoogle size={20} />
+            Continue with Google
+          </button>
+          <button
+            type="button"
+            className="w-full h-12 rounded-full border border-gray-200 flex items-center gap-3 px-4 text-sm font-normal bg-white text-black cursor-not-allowed justify-start"
+            tabIndex={-1}
+            disabled
+            title="Coming soon"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+            </svg>
+            Continue with Apple
+          </button>
+          <button
+            type="button"
+            className="w-full h-12 rounded-full border border-gray-200 flex items-center gap-3 px-4 text-sm font-normal bg-white text-black cursor-not-allowed justify-start"
+            tabIndex={-1}
+            disabled
+            title="Coming soon"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M0 0h11.377v11.372H0z" fill="#f35325" />
+              <path d="M12.623 0H24v11.372H12.623z" fill="#81bc06" />
+              <path d="M0 12.628h11.377V24H0z" fill="#05a6f0" />
+              <path d="M12.623 12.628H24V24H12.623z" fill="#ffba08" />
+            </svg>
+            Continue with Microsoft
+          </button>
+          <button
+            type="button"
+            className="w-full h-12 rounded-full border border-gray-200 flex items-center gap-3 px-4 text-sm font-normal bg-white text-black cursor-not-allowed justify-start"
+            tabIndex={-1}
+            disabled
+            title="Coming soon"
+          >
+            <Phone className="w-5 h-5" />
+            Continue with phone number
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="w-full flex items-center gap-4 my-2 px-4">
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="text-gray-400 text-sm">or</span>
+          <div className="flex-1 h-px bg-gray-200" />
+        </div>
+
+        {/* Email Input */}
+        <form
+          className="w-full flex flex-col gap-4 items-center px-4"
+          autoComplete="off"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!nickname) {
+              handleContinue();
+            } else {
+              if (!password) {
+                setShowPassword(true);
+                setTimeout(() => {
+                  passwordInputRef.current?.focus();
+                }, 0);
+              } else {
+                const formData = new FormData();
+                formData.append('nickname', nickname);
+                formData.append('password', password);
+                startTransition(() => {
+                  formAction(formData);
+                });
+              }
+            }
+          }}
+        >
+          <input
+            id="email-mobile"
+            name="email"
+            type="text"
+            placeholder="Email address"
+            autoComplete="email"
+            className="w-full h-12 rounded-full border border-gray-200 px-4 text-sm text-black caret-black outline-none focus:ring-0 transition"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+          />
+          <div
+            className={`overflow-hidden transition-all duration-300 ${showPassword && isNicknameLocked ? 'max-h-40 opacity-100 mt-2' : 'max-h-0 opacity-0'} flex flex-col w-full`}
+          >
+            <div className="relative w-full">
+              <input
+                id="password-mobile"
+                name="password"
+                type={
+                  showPassword && isNicknameLocked && !showPasswordEye
+                    ? 'password'
+                    : 'text'
+                }
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                className="w-full h-12 rounded-full border border-gray-200 px-4 text-sm text-black caret-black outline-none focus:ring-0 transition pr-12"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                ref={passwordInputRef}
+                tabIndex={showPassword && isNicknameLocked ? 0 : -1}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                tabIndex={showPassword && isNicknameLocked ? 0 : -1}
+                onClick={() => setShowPasswordEye((v) => !v)}
+              >
+                {showPasswordEye ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {error && (
+              <div className="text-red-500 text-xs mt-2 pl-2">{error}</div>
+            )}
+          </div>
+          <Button
+            type="submit"
+            className="w-full h-12 rounded-full !bg-black !text-white text-sm font-medium mt-2 mb-2 hover:!bg-neutral-800 transition disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={isPending}
+          >
+            {isPending ? (
+              <div className="flex items-center justify-center gap-2">
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  />
+                </svg>
+                <span>Loading...</span>
+              </div>
+            ) : (
+              'Continue'
+            )}
+          </Button>
+          <div className="w-full flex flex-col items-center gap-2 mt-2">
+            <span className="text-sm text-gray-600">
+              Don't have an account?
+            </span>
+            <Link
+              href="/register"
+              className="text-blue-600 text-sm font-medium hover:underline cursor-pointer"
+            >
+              Sign up
+            </Link>
+          </div>
+        </form>
+      </div>
+
+      {/* Desktop Version */}
+      <div className="z-10 w-full max-w-md hidden sm:flex flex-col items-center justify-center gap-4">
         <h1 className="text-2xl sm:text-3xl font-semibold text-center mt-1 mb-1 px-4">
           {showPassword && isNicknameLocked
             ? 'Enter your password'
@@ -181,7 +385,7 @@ export default function Page() {
           </div>
           <Button
             type="submit"
-            className="w-full max-w-80 h-12 sm:h-14 rounded-full bg-black text-white text-sm sm:text-base font-medium mt-2 mb-2 hover:bg-neutral-800 transition disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full max-w-80 h-12 sm:h-14 rounded-full !bg-black !text-white text-sm sm:text-base font-medium mt-2 mb-2 hover:!bg-neutral-800 transition disabled:opacity-70 disabled:cursor-not-allowed"
             disabled={isPending}
           >
             {isPending ? (
@@ -220,7 +424,7 @@ export default function Page() {
         </form>
         <div className="w-full flex flex-col items-center gap-2 px-4">
           <span className="text-sm text-gray-700">
-            Already have an account?
+            Don&apos;t have an account?
           </span>
           <a
             href="/register"

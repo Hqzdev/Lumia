@@ -24,6 +24,7 @@ import {
   Play,
   Globe,
   ChevronDown,
+  Menu,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 
@@ -44,6 +45,7 @@ interface SettingsDialogProps {
 export default function SettingsDialog(props: SettingsDialogProps) {
   const [activeSection, setActiveSection] =
     useState<SettingsSection>('general');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isControlled =
     typeof props.open === 'boolean' && typeof props.onOpenChange === 'function';
   const [internalOpen, setInternalOpen] = useState(false);
@@ -87,24 +89,63 @@ export default function SettingsDialog(props: SettingsDialogProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl h-[90vh] flex overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-80 bg-gray-50/50 border-r border-gray-200/50 flex flex-col">
-          <div className="p-6 border-b border-gray-200/50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-0 md:p-4">
+      {/* Overlay для мобильного меню */}
+      {isMobileMenuOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-[45]"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      <div className="bg-white rounded-none md:rounded-3xl shadow-2xl w-full h-full md:h-[90vh] md:max-w-6xl flex flex-col md:flex-row overflow-hidden relative z-50">
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-200/50 bg-white z-50">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="hover:bg-gray-100 h-10 w-10"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <h2 className="text-lg font-semibold text-gray-900">Settings</h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsOpen(false)}
+            className="hover:bg-gray-100 h-10 w-10"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Sidebar - скрыт на мобильных, показывается через меню */}
+        <div
+          className={`${
+            isMobileMenuOpen ? 'block' : 'hidden'
+          } md:block absolute md:relative inset-0 md:inset-auto z-[60] md:z-auto bg-white md:bg-gray-50/50 w-full md:w-80 border-r border-gray-200/50 flex flex-col`}
+        >
+          <div className="p-4 md:p-6 border-b border-gray-200/50">
             <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-gray-900 md:hidden">
+                Settings
+              </h2>
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsOpen(false)}
-                className="hover:bg-gray-100 h-8 w-8"
+                onClick={() => {
+                  setIsOpen(false);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="hover:bg-gray-100 h-8 w-8 md:ml-auto"
               >
                 <X className="h-5 w-5" />
               </Button>
             </div>
           </div>
 
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeSection === item.id;
@@ -113,7 +154,10 @@ export default function SettingsDialog(props: SettingsDialogProps) {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setActiveSection(item.id)}
+                  onClick={() => {
+                    setActiveSection(item.id);
+                    setIsMobileMenuOpen(false);
+                  }}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
                     isActive ? 'bg-gray-100' : 'hover:bg-gray-100'
                   }`}
@@ -128,7 +172,7 @@ export default function SettingsDialog(props: SettingsDialogProps) {
 
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto bg-gray-50/30">
-          <div className="p-8 max-w-4xl">
+          <div className="p-4 md:p-8 max-w-4xl">
             {activeSection === 'general' && (
               <GeneralSettings
                 settings={settings}
@@ -170,22 +214,24 @@ export default function SettingsDialog(props: SettingsDialogProps) {
 
 function GeneralSettings({ settings, updateSetting }: any) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <div>
-        <h3 className="text-2xl font-medium text-gray-900 mb-2">Settings</h3>
-        <div className="h-px bg-gray-200 mb-8" />
+        <h3 className="text-xl md:text-2xl font-medium text-gray-900 mb-2">
+          Settings
+        </h3>
+        <div className="h-px bg-gray-200 mb-4 md:mb-8" />
       </div>
 
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <span className="text-base text-gray-900">Theme</span>
+      <div className="space-y-4 md:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <span className="text-sm md:text-base text-gray-900">Theme</span>
           <Select
             value={settings.theme}
             onValueChange={(value) => updateSetting('theme', value)}
             disabled
           >
             <SelectTrigger
-              className="w-32 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
+              className="w-full sm:w-32 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
               disabled
             >
               <SelectValue />
@@ -199,15 +245,15 @@ function GeneralSettings({ settings, updateSetting }: any) {
           </Select>
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-base text-gray-900">Language</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <span className="text-sm md:text-base text-gray-900">Language</span>
           <Select
             value={settings.language}
             onValueChange={(value) => updateSetting('language', value)}
             disabled
           >
             <SelectTrigger
-              className="w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
+              className="w-full sm:w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
               disabled
             >
               <SelectValue />
@@ -241,7 +287,7 @@ function GeneralSettings({ settings, updateSetting }: any) {
             disabled
           >
             <SelectTrigger
-              className="w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
+              className="w-full sm:w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
               disabled
             >
               <SelectValue />
@@ -256,11 +302,11 @@ function GeneralSettings({ settings, updateSetting }: any) {
           </Select>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
           <div className="flex items-center gap-3">
-            <span className="text-base text-gray-900">Voice</span>
+            <span className="text-sm md:text-base text-gray-900">Voice</span>
             <Play className="h-4 w-4 text-gray-400" />
-            <span className="text-sm text-gray-600">Play</span>
+            <span className="text-xs md:text-sm text-gray-600">Play</span>
           </div>
           <Select
             value={settings.voice}
@@ -268,7 +314,7 @@ function GeneralSettings({ settings, updateSetting }: any) {
             disabled
           >
             <SelectTrigger
-              className="w-32 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
+              className="w-full sm:w-32 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
               disabled
             >
               <SelectValue />
@@ -282,8 +328,8 @@ function GeneralSettings({ settings, updateSetting }: any) {
           </Select>
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-base text-gray-900">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <span className="text-sm md:text-base text-gray-900">
             Show follow-up suggestions in chats
           </span>
           <Switch
@@ -302,18 +348,20 @@ function GeneralSettings({ settings, updateSetting }: any) {
 
 function NotificationSettings({ settings, updateSetting }: any) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <div>
-        <h3 className="text-2xl font-medium text-gray-900 mb-2">
+        <h3 className="text-xl md:text-2xl font-medium text-gray-900 mb-2">
           Notifications
         </h3>
-        <div className="h-px bg-gray-200 mb-8" />
+        <div className="h-px bg-gray-200 mb-4 md:mb-8" />
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-4 md:space-y-8">
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-base text-gray-900">Responses</span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+            <span className="text-sm md:text-base text-gray-900">
+              Responses
+            </span>
             <Select
               value={settings.responseNotifications}
               onValueChange={(value) =>
@@ -322,7 +370,7 @@ function NotificationSettings({ settings, updateSetting }: any) {
               disabled
             >
               <SelectTrigger
-                className="w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
+                className="w-full sm:w-48 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
                 disabled
               >
                 <SelectValue />
@@ -343,8 +391,8 @@ function NotificationSettings({ settings, updateSetting }: any) {
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-base text-gray-900">Tasks</span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+            <span className="text-sm md:text-base text-gray-900">Tasks</span>
             <Select
               value={settings.taskNotifications}
               onValueChange={(value) =>
@@ -353,7 +401,7 @@ function NotificationSettings({ settings, updateSetting }: any) {
               disabled
             >
               <SelectTrigger
-                className="w-64 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
+                className="w-full sm:w-64 h-9 bg-transparent hover:bg-gray-100 border border-gray-200 text-sm"
                 disabled
               >
                 <SelectValue />
@@ -390,15 +438,15 @@ function NotificationSettings({ settings, updateSetting }: any) {
 
 function PersonalizationSettings({ settings, updateSetting }: any) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <div>
-        <h3 className="text-2xl font-medium text-gray-900 mb-2">
+        <h3 className="text-xl md:text-2xl font-medium text-gray-900 mb-2">
           Personalization
         </h3>
-        <div className="h-px bg-gray-200 mb-8" />
+        <div className="h-px bg-gray-200 mb-4 md:mb-8" />
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-4 md:space-y-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-base text-gray-900">User instructions</span>
@@ -416,9 +464,12 @@ function PersonalizationSettings({ settings, updateSetting }: any) {
           </div>
 
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <label htmlFor="saveMemory" className="text-base text-gray-900">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+              <div className="flex-1">
+                <label
+                  htmlFor="saveMemory"
+                  className="text-sm md:text-base text-gray-900"
+                >
                   Save to memory
                 </label>
                 <p className="text-sm text-gray-500 mt-1">
@@ -436,11 +487,11 @@ function PersonalizationSettings({ settings, updateSetting }: any) {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+              <div className="flex-1">
                 <label
                   htmlFor="referenceHistory"
-                  className="text-base text-gray-900"
+                  className="text-sm md:text-base text-gray-900"
                 >
                   Reference chat history
                 </label>
@@ -459,8 +510,10 @@ function PersonalizationSettings({ settings, updateSetting }: any) {
               />
             </div>
 
-            <div className="flex items-center justify-between pt-4">
-              <span className="text-base text-gray-900">Memory management</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 pt-4">
+              <span className="text-sm md:text-base text-gray-900">
+                Memory management
+              </span>
               <Button
                 variant="outline"
                 size="sm"
@@ -480,9 +533,9 @@ function PersonalizationSettings({ settings, updateSetting }: any) {
 
 function ConnectedAppsSettings() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <div>
-        <h3 className="text-2xl font-medium text-gray-900 mb-2">
+        <h3 className="text-xl md:text-2xl font-medium text-gray-900 mb-2">
           File Uploads
         </h3>
         <div className="h-px bg-gray-200 mb-4" />
@@ -492,13 +545,13 @@ function ConnectedAppsSettings() {
       </div>
 
       <div className="space-y-6">
-        <div className="flex items-center justify-between py-4">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg flex items-center justify-center">
-              <Globe className="size-6" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Globe className="size-4 md:size-6" />
             </div>
-            <div>
-              <h4 className="text-base font-medium text-gray-900">
+            <div className="flex-1 min-w-0">
+              <h4 className="text-sm md:text-base font-medium text-gray-900">
                 Google Drive
               </h4>
               <p className="text-sm text-gray-500">
@@ -510,7 +563,7 @@ function ConnectedAppsSettings() {
           <Button
             variant="outline"
             size="sm"
-            className="h-9 px-6 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+            className="w-full sm:w-auto h-9 px-4 md:px-6 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Connect (stub)')}
             disabled
           >
@@ -518,13 +571,13 @@ function ConnectedAppsSettings() {
           </Button>
         </div>
 
-        <div className="flex items-center justify-between py-4">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Globe className="size-6" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Globe className="size-4 md:size-6" />
             </div>
-            <div>
-              <h4 className="text-base font-medium text-gray-900">
+            <div className="flex-1 min-w-0">
+              <h4 className="text-sm md:text-base font-medium text-gray-900">
                 Microsoft OneDrive (Personal)
               </h4>
               <p className="text-sm text-gray-500">
@@ -535,7 +588,7 @@ function ConnectedAppsSettings() {
           <Button
             variant="outline"
             size="sm"
-            className="h-9 px-6 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+            className="w-full sm:w-auto h-9 px-4 md:px-6 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Connect (stub)')}
             disabled
           >
@@ -543,13 +596,13 @@ function ConnectedAppsSettings() {
           </Button>
         </div>
 
-        <div className="flex items-center justify-between py-4">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-blue-700 rounded-lg flex items-center justify-center">
-              <Globe className="size-6" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-700 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Globe className="size-4 md:size-6" />
             </div>
-            <div>
-              <h4 className="text-base font-medium text-gray-900">
+            <div className="flex-1 min-w-0">
+              <h4 className="text-sm md:text-base font-medium text-gray-900">
                 Microsoft OneDrive (Work/School)
               </h4>
               <p className="text-sm text-gray-500">
@@ -561,7 +614,7 @@ function ConnectedAppsSettings() {
           <Button
             variant="outline"
             size="sm"
-            className="h-9 px-6 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+            className="w-full sm:w-auto h-9 px-4 md:px-6 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Connect (stub)')}
             disabled
           >
@@ -575,15 +628,15 @@ function ConnectedAppsSettings() {
 
 function DataControlsSettings({ settings, updateSetting }: any) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <div>
-        <h3 className="text-2xl font-medium text-gray-900 mb-2">
+        <h3 className="text-xl md:text-2xl font-medium text-gray-900 mb-2">
           Data Controls
         </h3>
-        <div className="h-px bg-gray-200 mb-8" />
+        <div className="h-px bg-gray-200 mb-4 md:mb-8" />
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-base text-gray-900">
@@ -596,12 +649,14 @@ function DataControlsSettings({ settings, updateSetting }: any) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-base text-gray-900">Shared links</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <span className="text-sm md:text-base text-gray-900">
+            Shared links
+          </span>
           <Button
             variant="outline"
             size="sm"
-            className="h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+            className="w-full sm:w-auto h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Shared links (stub)')}
             disabled
           >
@@ -609,12 +664,14 @@ function DataControlsSettings({ settings, updateSetting }: any) {
           </Button>
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-base text-gray-900">Archived chats</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <span className="text-sm md:text-base text-gray-900">
+            Archived chats
+          </span>
           <Button
             variant="outline"
             size="sm"
-            className="h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+            className="w-full sm:w-auto h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Archived chats (stub)')}
             disabled
           >
@@ -622,12 +679,14 @@ function DataControlsSettings({ settings, updateSetting }: any) {
           </Button>
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-base text-gray-900">Archive all chats</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <span className="text-sm md:text-base text-gray-900">
+            Archive all chats
+          </span>
           <Button
             variant="outline"
             size="sm"
-            className="h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+            className="w-full sm:w-auto h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Archive all chats (stub)')}
             disabled
           >
@@ -635,8 +694,10 @@ function DataControlsSettings({ settings, updateSetting }: any) {
           </Button>
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-base text-gray-900">Delete all chats</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <span className="text-sm md:text-base text-gray-900">
+            Delete all chats
+          </span>
           <Button
             variant="outline"
             size="sm"
@@ -648,12 +709,14 @@ function DataControlsSettings({ settings, updateSetting }: any) {
           </Button>
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-base text-gray-900">Export data</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <span className="text-sm md:text-base text-gray-900">
+            Export data
+          </span>
           <Button
             variant="outline"
             size="sm"
-            className="h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+            className="w-full sm:w-auto h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => alert('Export data (stub)')}
             disabled
           >
@@ -667,16 +730,21 @@ function DataControlsSettings({ settings, updateSetting }: any) {
 
 function SecuritySettings({ settings, updateSetting }: any) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <div>
-        <h3 className="text-2xl font-medium text-gray-900 mb-2">Security</h3>
-        <div className="h-px bg-gray-200 mb-8" />
+        <h3 className="text-xl md:text-2xl font-medium text-gray-900 mb-2">
+          Security
+        </h3>
+        <div className="h-px bg-gray-200 mb-4 md:mb-8" />
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-4 md:space-y-8">
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <label htmlFor="mfaEnabled" className="text-base text-gray-900">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+            <label
+              htmlFor="mfaEnabled"
+              className="text-sm md:text-base text-gray-900"
+            >
               Multi-factor authentication
             </label>
             <Switch
@@ -696,14 +764,14 @@ function SecuritySettings({ settings, updateSetting }: any) {
           </p>
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-base text-gray-900">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <span className="text-sm md:text-base text-gray-900">
             Log out of this device
           </span>
           <Button
             variant="outline"
             size="sm"
-            className="h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+            className="w-full sm:w-auto h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
             onClick={() => signOut({ redirect: true, callbackUrl: '/' })}
             disabled
           >
@@ -712,8 +780,8 @@ function SecuritySettings({ settings, updateSetting }: any) {
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-base text-gray-900">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+            <span className="text-sm md:text-base text-gray-900">
               Log out of all devices
             </span>
             <Button
@@ -734,7 +802,7 @@ function SecuritySettings({ settings, updateSetting }: any) {
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-medium text-gray-900">
+          <h4 className="text-base md:text-lg font-medium text-gray-900">
             Secure LumiaAI Login
           </h4>
           <p className="text-sm text-gray-500">
@@ -764,15 +832,19 @@ function SecuritySettings({ settings, updateSetting }: any) {
 
 function AccountSettings() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <div>
-        <h3 className="text-2xl font-medium text-gray-900 mb-2">Account</h3>
-        <div className="h-px bg-gray-200 mb-8" />
+        <h3 className="text-xl md:text-2xl font-medium text-gray-900 mb-2">
+          Account
+        </h3>
+        <div className="h-px bg-gray-200 mb-4 md:mb-8" />
       </div>
 
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <span className="text-base text-gray-900">Delete account</span>
+      <div className="space-y-4 md:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <span className="text-sm md:text-base text-gray-900">
+            Delete account
+          </span>
           <Button
             variant="outline"
             size="sm"
@@ -785,7 +857,7 @@ function AccountSettings() {
         </div>
 
         <div className="space-y-6">
-          <h4 className="text-lg font-medium text-gray-900">
+          <h4 className="text-base md:text-lg font-medium text-gray-900">
             GPT Builder Profile
           </h4>
           <p className="text-sm text-gray-500">
@@ -821,7 +893,9 @@ function AccountSettings() {
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-medium text-gray-900">Links</h4>
+          <h4 className="text-base md:text-lg font-medium text-gray-900">
+            Links
+          </h4>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Globe className="size-4" />

@@ -108,33 +108,33 @@ export async function POST(request: Request) {
     return createDataStreamResponse({
       execute: async (dataStream) => {
         try {
-          const sysPrompt = systemPrompt({ selectedChatModel });
-          const system = typeof sysPrompt === 'function' ? sysPrompt() : sysPrompt;
-          const result = streamText({
-            model: myProvider.languageModel(selectedChatModel),
-            system,
-            messages,
-            maxSteps: 5,
-            experimental_activeTools:
-              selectedChatModel === 'chat-model-reasoning'
-                ? []
-                : [
-                    'getWeather',
-                    'createDocument',
-                    'updateDocument',
-                    'requestSuggestions',
-                  ],
-            experimental_transform: smoothStream({ chunking: 'word' }),
-            experimental_generateMessageId: generateUUID,
-            tools: {
-              getWeather,
-              createDocument: createDocument({ session, dataStream }),
-              updateDocument: updateDocument({ session, dataStream }),
-              requestSuggestions: requestSuggestions({
-                session,
-                dataStream,
-              }),
-            },
+        const sysPrompt = systemPrompt({ selectedChatModel });
+        const system = typeof sysPrompt === 'function' ? sysPrompt() : sysPrompt;
+        const result = streamText({
+          model: myProvider.languageModel(selectedChatModel),
+          system,
+          messages,
+          maxSteps: 5,
+          experimental_activeTools:
+            selectedChatModel === 'chat-model-reasoning'
+              ? []
+              : [
+                  'getWeather',
+                  'createDocument',
+                  'updateDocument',
+                  'requestSuggestions',
+                ],
+          experimental_transform: smoothStream({ chunking: 'word' }),
+          experimental_generateMessageId: generateUUID,
+          tools: {
+            getWeather,
+            createDocument: createDocument({ session, dataStream }),
+            updateDocument: updateDocument({ session, dataStream }),
+            requestSuggestions: requestSuggestions({
+              session,
+              dataStream,
+            }),
+          },
             onFinish: async ({ response, finishReason }) => {
             // Если ответ не завершен успешно, не сохраняем сообщение
 
@@ -220,11 +220,11 @@ export async function POST(request: Request) {
           },
         });
 
-          result.consumeStream();
+        result.consumeStream();
 
-          result.mergeIntoDataStream(dataStream, {
-            sendReasoning: true,
-          });
+        result.mergeIntoDataStream(dataStream, {
+          sendReasoning: true,
+        });
         } catch (streamError) {
           console.error('Error in streamText execution:', streamError);
           // Отправляем сообщение об ошибке в поток
