@@ -14,7 +14,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from '@/components/toast';
 
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff, X, Phone } from 'lucide-react';
+import { Eye, EyeOff, Phone } from 'lucide-react';
 import { login, type LoginActionState } from '../actions';
 import { LogoGoogle } from '@/components/icons';
 
@@ -194,16 +194,6 @@ function LoginForm() {
         <span>Lumia</span>
       </div>
 
-      {/* Mobile Close Button */}
-      <button
-        type="button"
-        onClick={() => router.push('/')}
-        className="absolute right-4 top-4 sm:hidden z-50 p-2 hover:bg-gray-100 rounded-full transition"
-        aria-label="Close"
-      >
-        <X className="h-5 w-5 text-gray-600" />
-      </button>
-
       {/* Mobile Version */}
       <div className="w-full max-w-md flex flex-col items-center justify-center gap-4 sm:hidden">
         <h1 className="text-2xl text-black font-semibold text-center mt-8 mb-2 px-4">
@@ -318,7 +308,7 @@ function LoginForm() {
             type="text"
             placeholder="Enter your nickname"
             autoComplete="username"
-            className="w-full h-12 rounded-full border border-gray-200 px-4 text-sm text-black caret-black outline-none focus:ring-0 transition"
+            className="w-full h-12 rounded-full border border-gray-200 bg-white px-4 text-sm text-black caret-black outline-none focus:ring-0 transition"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
           />
@@ -336,7 +326,7 @@ function LoginForm() {
                 }
                 placeholder="Enter your password"
                 autoComplete="current-password"
-                className="w-full h-12 rounded-full border border-gray-200 px-4 text-sm text-black caret-black outline-none focus:ring-0 transition pr-12"
+                className="w-full h-12 rounded-full border border-gray-200 bg-white px-4 text-sm text-black caret-black outline-none focus:ring-0 transition pr-12"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 ref={passwordInputRef}
@@ -442,7 +432,7 @@ function LoginForm() {
               placeholder="Enter your nickname"
               autoComplete="username"
               required
-              className="w-full h-12 sm:h-14 rounded-full border border-gray-200 px-4 sm:px-6 text-sm sm:text-base outline-none focus:ring-0 transition pr-20 sm:pr-24 disabled:bg-gray-100"
+              className="w-full h-12 sm:h-14 rounded-full border border-gray-200 bg-white px-4 sm:px-6 text-sm sm:text-base text-black outline-none focus:ring-0 transition pr-20 sm:pr-24 disabled:bg-gray-100"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               disabled={isNicknameLocked}
@@ -472,7 +462,7 @@ function LoginForm() {
                 }
                 placeholder="Enter your password"
                 autoComplete="current-password"
-                className="w-full h-12 sm:h-14 rounded-full border border-blue-200 px-4 sm:px-6 text-sm sm:text-base outline-none focus:ring-0 transition pr-12"
+                className="w-full h-12 sm:h-14 rounded-full border border-blue-200 bg-white px-4 sm:px-6 text-sm sm:text-base text-black outline-none focus:ring-0 transition pr-12"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 ref={passwordInputRef}
