@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserCustomization, updateUserCustomization } from '@/lib/db/queries';
+import {
+  getUserCustomization,
+  updateUserCustomization,
+  getUserById,
+} from '@/lib/db/queries';
 
 // Кэширование для часто запрашиваемых данных (ШАГ 5 и ШАГ 6)
 export async function GET(req: NextRequest) {
@@ -10,8 +14,15 @@ export async function GET(req: NextRequest) {
   }
   try {
     const customization = await getUserCustomization(userId);
+    const users = await getUserById(userId);
+    const user = users[0];
+    
     return NextResponse.json(
-      { customization },
+      {
+        customization,
+        email: user?.email || null,
+        hasPassword: !!user?.password,
+      },
       {
         headers: {
           'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',

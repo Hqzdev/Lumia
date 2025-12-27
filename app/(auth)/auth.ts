@@ -1,9 +1,14 @@
 import { compare } from 'bcrypt-ts';
-import NextAuth, { DefaultSession } from 'next-auth';
+import NextAuth, { type DefaultSession } from 'next-auth';
+import type { NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 
-import { getUserByNickname, getUserByEmail, createOAuthUser } from '@/lib/db/queries';
+import {
+  getUserByNickname,
+  getUserByEmail,
+  createOAuthUser,
+} from '@/lib/db/queries';
 import { authConfig } from './auth.config';
 
 interface AppUser {
@@ -28,12 +33,28 @@ declare module 'next-auth' {
   }
 }
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
+// Проверка переменных окружения при загрузке
+if (process.env.NODE_ENV !== 'production') {
+  console.log('[NextAuth] Initializing NextAuth...');
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    console.warn('[NextAuth] Warning: GOOGLE_CLIENT_ID is not set');
+  } else {
+    console.log('[NextAuth] GOOGLE_CLIENT_ID is set');
+  }
+  if (!process.env.GOOGLE_CLIENT_SECRET) {
+    console.warn('[NextAuth] Warning: GOOGLE_CLIENT_SECRET is not set');
+  } else {
+    console.log('[NextAuth] GOOGLE_CLIENT_SECRET is set');
+  }
+  if (!process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_SECRET) {
+    console.warn(
+      '[NextAuth] Warning: NEXTAUTH_URL is recommended for OAuth providers',
+    );
+  }
+}
+
+// Конфигурация NextAuth - экспортируем как authOptions
+export const authOptions: NextAuthConfig = {
   ...authConfig,
   trustHost: true, // Разрешаем работу с поддоменами
   cookies: {
@@ -45,7 +66,8 @@ export const {
         path: '/',
         secure: process.env.NODE_ENV === 'production',
         // КРИТИЧНО: domain=.lumiaai.ru позволяет cookie работать на всех поддоменах
-        domain: process.env.NODE_ENV === 'production' ? '.lumiaai.ru' : undefined,
+        domain:
+          process.env.NODE_ENV === 'production' ? '.lumiaai.ru' : undefined,
       },
     },
     callbackUrl: {
@@ -55,7 +77,8 @@ export const {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        domain: process.env.NODE_ENV === 'production' ? '.lumiaai.ru' : undefined,
+        domain:
+          process.env.NODE_ENV === 'production' ? '.lumiaai.ru' : undefined,
       },
     },
     csrfToken: {
@@ -67,7 +90,8 @@ export const {
         path: '/',
         secure: process.env.NODE_ENV === 'production',
         // Для работы на поддоменах нужен domain
-        domain: process.env.NODE_ENV === 'production' ? '.lumiaai.ru' : undefined,
+        domain:
+          process.env.NODE_ENV === 'production' ? '.lumiaai.ru' : undefined,
       },
     },
   },
@@ -107,14 +131,28 @@ export const {
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({
+      user,
+      account,
+      profile,
+    }: {
+      user: any;
+      account: any;
+      profile?: any;
+    }) {
       // Handle Google OAuth sign in
       if (account?.provider === 'google') {
         try {
           console.log('[Google OAuth] Sign in callback started');
-          console.log('[Google OAuth] User:', { email: user.email, name: user.name });
-          console.log('[Google OAuth] Account:', { provider: account.provider, type: account.type });
-          
+          console.log('[Google OAuth] User:', {
+            email: user.email,
+            name: user.name,
+          });
+          console.log('[Google OAuth] Account:', {
+            provider: account.provider,
+            type: account.type,
+          });
+
           const email = user.email;
           if (!email) {
             console.error('[Google OAuth] No email provided');
@@ -122,26 +160,38 @@ export const {
           }
 
           // Check if user exists
-          console.log('[Google OAuth] Checking for existing user with email:', email);
+          console.log(
+            '[Google OAuth] Checking for existing user with email:',
+            email,
+          );
           const existingUsers = await getUserByEmail(email);
-          
+
           if (existingUsers.length === 0) {
             // Create new OAuth user
             console.log('[Google OAuth] Creating new OAuth user');
-            const newUser = await createOAuthUser(email, user.name || profile?.name);
+            const newUser = await createOAuthUser(
+              email,
+              user.name || profile?.name,
+            );
             user.id = newUser.id;
             user.nickname = newUser.nickname;
             user.subscription = newUser.subscription;
-            console.log('[Google OAuth] New user created:', { id: newUser.id, nickname: newUser.nickname });
+            console.log('[Google OAuth] New user created:', {
+              id: newUser.id,
+              nickname: newUser.nickname,
+            });
           } else {
             // User exists, use their data
             const existingUser = existingUsers[0];
             user.id = existingUser.id;
             user.nickname = existingUser.nickname;
             user.subscription = existingUser.subscription;
-            console.log('[Google OAuth] Existing user found:', { id: existingUser.id, nickname: existingUser.nickname });
+            console.log('[Google OAuth] Existing user found:', {
+              id: existingUser.id,
+              nickname: existingUser.nickname,
+            });
           }
-          
+
           console.log('[Google OAuth] Sign in successful');
           return true;
         } catch (error) {
@@ -153,17 +203,25 @@ export const {
           return false;
         }
       }
-      
+
       // For credentials provider, allow sign in
       return true;
     },
-    async jwt({ token, user, trigger }) {
+    async jwt({
+      token,
+      user,
+      trigger,
+    }: {
+      token: any;
+      user?: any;
+      trigger?: string;
+    }) {
       if (user) {
         token.id = user.id;
         token.nickname = user.nickname;
         token.subscription = user.subscription;
       }
-      
+
       // При обновлении сессии (trigger === 'update') загружаем актуальные данные из БД
       if (trigger === 'update' && token.id) {
         try {
@@ -177,10 +235,16 @@ export const {
           // В случае ошибки оставляем старое значение
         }
       }
-      
+
       return token;
     },
-    async session({ session, token }) {
+    async session({
+      session,
+      token,
+    }: {
+      session: any;
+      token: any;
+    }) {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.nickname = token.nickname as string;
@@ -189,4 +253,10 @@ export const {
       return session;
     },
   },
-});
+};
+
+// Создаем instance NextAuth для использования auth, signIn, signOut
+const handler = NextAuth(authOptions);
+
+// Экспортируем функции для использования в компонентах и серверных функциях
+export const { auth, signIn, signOut } = handler;

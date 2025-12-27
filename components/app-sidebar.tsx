@@ -32,16 +32,32 @@ import { Input } from '@/components/ui/input';
 import { useState, useMemo } from 'react';
 import type { Chat } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
+import { useHotkeys } from '@/hooks/use-hotkeys';
+import { useOS } from '@/hooks/use-os';
+import { HotkeyBadge } from './hotkey-badge';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const os = useOS();
 
   // Handler for search button
   const handleSearchClick = () => {
     setIsSearchOpen(true);
   };
+
+  // Hotkey: Search chats (Cmd/Ctrl+K)
+  useHotkeys(
+    { key: 'k', meta: true },
+    (e) => {
+      if (user) {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    },
+    { os, enabled: !!user }
+  );
 
   // Handler for new chat
   const handleNewChatClick = (e: React.MouseEvent) => {
@@ -85,7 +101,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     onClick={handleNewChatClick}
                   >
                     <span className="sr-only">New Chat</span>
-                    <MessageSquareDiff className="p-0 size-[42px] hover:bg-gray-200 rounded-xl [&_svg]:size-[24px] text-[#6B7280] ${className}" />
+                    <MessageSquareDiff className="p-0 size-[42px] hover:bg-gray-200 rounded-xl [&_svg]:size-[24px] text-[#6B7280]" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>New Chat</TooltipContent>
@@ -118,7 +134,10 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     </svg>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Search</TooltipContent>
+                <TooltipContent className="flex items-center gap-2">
+                  <span>Search</span>
+                  {user && <HotkeyBadge hotkey={{ key: 'k', meta: true }} />}
+                </TooltipContent>
               </Tooltip>
             </div>
           </div>

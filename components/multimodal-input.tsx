@@ -12,6 +12,9 @@ import {
 import { useArtifactSelector, useArtifact } from '@/hooks/use-artifact';
 import { useSession } from 'next-auth/react';
 import useSWR from 'swr';
+import { useHotkeys } from '@/hooks/use-hotkeys';
+import { useOS } from '@/hooks/use-os';
+import { HotkeyBadge } from './hotkey-badge';
 import {
   Dialog,
   DialogContent,
@@ -445,6 +448,17 @@ function PureMultimodalInput({
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const [webSearchResults, setWebSearchResults] = useState<any>(null);
   const [webSearchLoading, setWebSearchLoading] = useState(false);
+  const os = useOS();
+
+  // Hotkey: Focus on input (Cmd/Ctrl+L)
+  useHotkeys(
+    { key: 'l', meta: true },
+    (e) => {
+      e.preventDefault();
+      textareaRef.current?.focus();
+    },
+    { os }
+  );
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -780,15 +794,23 @@ function PureMultimodalInput({
         {/* Кнопка поиска чатов */}
         {userId && (
           <div className="w-full flex justify-end mb-2 pr-2">
-            <Button
-              type="button"
-              variant="ghost"
-              className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
-              onClick={() => setIsSearchOpen(true)}
-              aria-label="Search chats"
-            >
-              <Search className="size-6" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+                  onClick={() => setIsSearchOpen(true)}
+                  aria-label="Search chats"
+                >
+                  <Search className="size-6" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="flex items-center gap-2">
+                <span>Search chats</span>
+                <HotkeyBadge hotkey={{ key: 'k', meta: true }} />
+              </TooltipContent>
+            </Tooltip>
             <ChatSearchDialog
               open={isSearchOpen}
               onOpenChange={setIsSearchOpen}
@@ -1010,7 +1032,10 @@ function PureMultimodalInput({
                         uploadQueue={uploadQueue}
                       />
                     </TooltipTrigger>
-                    <TooltipContent side="top">Send message</TooltipContent>
+                    <TooltipContent side="top" className="flex items-center gap-2">
+                      <span>Send message</span>
+                      <HotkeyBadge hotkey={{ key: 'Enter' }} />
+                    </TooltipContent>
                   </Tooltip>
                 )}
               </div>

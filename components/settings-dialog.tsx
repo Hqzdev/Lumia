@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -26,7 +26,11 @@ import {
   ChevronDown,
   Menu,
 } from 'lucide-react';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
+import { DeleteAccountDialog } from './delete-account-dialog';
+import { EditPasswordDialog } from './edit-password-dialog';
+import { EditNicknameDialog } from './edit-nickname-dialog';
+import { Pencil, Mail, User as UserIcon, Lock } from 'lucide-react';
 
 type SettingsSection =
   | 'general'
@@ -198,12 +202,7 @@ export default function SettingsDialog(props: SettingsDialogProps) {
                 updateSetting={updateSetting}
               />
             )}
-            {activeSection === 'security' && (
-              <SecuritySettings
-                settings={settings}
-                updateSetting={updateSetting}
-              />
-            )}
+            {activeSection === 'security' && <SecuritySettings />}
             {activeSection === 'account' && <AccountSettings />}
           </div>
         </div>
@@ -728,18 +727,173 @@ function DataControlsSettings({ settings, updateSetting }: any) {
   );
 }
 
-function SecuritySettings({ settings, updateSetting }: any) {
-  return (
-    <div className="space-y-4 md:space-y-8">
-      <div>
-        <h3 className="text-xl md:text-2xl font-medium text-gray-900 mb-2">
-          Security
-        </h3>
-        <div className="h-px bg-gray-200 mb-4 md:mb-8" />
-      </div>
+function SecuritySettings() {
+  const { data: session } = useSession();
+  const [userData, setUserData] = useState<{
+    nickname: string;
+    email: string;
+    hasPassword: boolean;
+  } | null>(null);
+  const [isEditNicknameOpen, setIsEditNicknameOpen] = useState(false);
+  const [isEditPasswordOpen, setIsEditPasswordOpen] = useState(false);
 
+  useEffect(() => {
+    if (session?.user) {
+      // Получаем email из сессии (может быть не всегда доступен)
+      fetch(`/api/user-profile?userId=${session.user.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setUserData({
+            nickname: session.user?.nickname || '',
+            email: data.email || session.user?.email || '',
+            hasPassword: data.hasPassword ?? true, // Предполагаем, что есть пароль по умолчанию
+          });
+        })
+        .catch(() => {
+          // Fallback на данные из сессии
+          setUserData({
+            nickname: session.user?.nickname || '',
+            email: session.user?.email || '',
+            hasPassword: true,
+          });
+        });
+    }
+  }, [session]);
+
+  const handleLogout = () => {
+    signOut({ redirect: true, callbackUrl: '/' });
+  };
+
+  const handleLogoutAll = () => {
+    // Для "logout of all" пока просто делаем обычный logout
+    // В будущем можно добавить удаление всех сессий
+    signOut({ redirect: true, callbackUrl: '/' });
+  };
+
+  return (
+    <>
       <div className="space-y-4 md:space-y-8">
+        <div>
+          <h3 className="text-xl md:text-2xl font-medium text-gray-900 mb-2">
+            Security
+          </h3>
+          <div className="h-px bg-gray-200 mb-4 md:mb-8" />
+        </div>
+
+        {/* User Information */}
         <div className="space-y-4">
+          <h4 className="text-base md:text-lg font-medium text-gray-900">
+            Данные пользователя
+          </h4>
+
+          {/* Nickname */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 flex-shrink-0">
+                <UserIcon className="w-4 h-4 text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-500 mb-1">Имя пользователя</p>
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {userData?.nickname || session?.user?.nickname || '—'}
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-shrink-0 h-9 px-3 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+              onClick={() => setIsEditNicknameOpen(true)}
+            >
+              <Pencil className="w-4 h-4 mr-2" />
+              Изменить
+            </Button>
+          </div>
+
+          {/* Email */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 flex-shrink-0">
+                <Mail className="w-4 h-4 text-green-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-500 mb-1">Электронная почта</p>
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {userData?.email || session?.user?.email || '—'}
+                </p>
+              </div>
+            </div>
+            <div className="flex-shrink-0 text-xs text-gray-500">
+              Нельзя изменить
+            </div>
+          </div>
+
+          {/* Password */}
+          {userData?.hasPassword !== false && (
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 flex-shrink-0">
+                  <Lock className="w-4 h-4 text-purple-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-500 mb-1">Пароль</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    ••••••••••••••••
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-shrink-0 h-9 px-3 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+                onClick={() => setIsEditPasswordOpen(true)}
+              >
+                <Pencil className="w-4 h-4 mr-2" />
+                Изменить
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Logout Options */}
+        <div className="space-y-4 md:space-y-8 pt-4 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+            <span className="text-sm md:text-base text-gray-900">
+              Log out of this device
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+              onClick={handleLogout}
+            >
+              Log out
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+              <span className="text-sm md:text-base text-gray-900">
+                Log out of all devices
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 px-4 bg-white border-red-300 text-red-600 hover:bg-red-50 rounded-full"
+                onClick={handleLogoutAll}
+              >
+                Log out of all
+              </Button>
+            </div>
+            <p className="text-sm text-gray-500">
+              Log out of all active sessions on all devices, including the
+              current session.
+            </p>
+          </div>
+        </div>
+
+        {/* MFA Section */}
+        <div className="space-y-4 pt-4 border-t border-gray-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
             <label
               htmlFor="mfaEnabled"
@@ -749,12 +903,9 @@ function SecuritySettings({ settings, updateSetting }: any) {
             </label>
             <Switch
               id="mfaEnabled"
-              checked={settings.mfaEnabled}
-              onCheckedChange={(checked) =>
-                updateSetting('mfaEnabled', checked)
-              }
-              className="data-[state=checked]:bg-blue-500"
+              checked={false}
               disabled
+              className="data-[state=checked]:bg-blue-500"
             />
           </div>
           <p className="text-sm text-gray-500">
@@ -763,74 +914,24 @@ function SecuritySettings({ settings, updateSetting }: any) {
             the option to recover your account via email.
           </p>
         </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-          <span className="text-sm md:text-base text-gray-900">
-            Log out of this device
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full sm:w-auto h-9 px-4 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
-            onClick={() => signOut({ redirect: true, callbackUrl: '/' })}
-            disabled
-          >
-            Log out
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-            <span className="text-sm md:text-base text-gray-900">
-              Log out of all devices
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 px-4 bg-white border-red-300 text-red-600 hover:bg-red-50 rounded-full"
-              onClick={() => signOut({ redirect: true, callbackUrl: '/' })}
-              disabled
-            >
-              Log out of all
-            </Button>
-          </div>
-          <p className="text-sm text-gray-500">
-            Log out of all active sessions on all devices, including the current
-            session. Logging out of the system on other devices may take up to
-            30 minutes.
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="text-base md:text-lg font-medium text-gray-900">
-            Secure LumiaAI Login
-          </h4>
-          <p className="text-sm text-gray-500">
-            Log into websites and apps on the internet with reliable LumiaAI
-            security.{' '}
-            <button
-              type="button"
-              className="text-gray-500 underline hover:text-gray-700"
-              onClick={() => alert('Learn more (stub)')}
-              disabled
-            >
-              Learn more
-            </button>
-          </p>
-
-          <div className="bg-gray-100 rounded-lg p-4">
-            <p className="text-sm text-gray-700">
-              You haven&apos;t used LumiaAI to log into any websites or apps
-              yet. Once you do, they&apos;ll appear here.
-            </p>
-          </div>
-        </div>
       </div>
-    </div>
+
+      <EditNicknameDialog
+        open={isEditNicknameOpen}
+        onOpenChange={setIsEditNicknameOpen}
+        currentNickname={userData?.nickname || session?.user?.nickname || ''}
+      />
+      <EditPasswordDialog
+        open={isEditPasswordOpen}
+        onOpenChange={setIsEditPasswordOpen}
+      />
+    </>
   );
 }
 
 function AccountSettings() {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   return (
     <div className="space-y-4 md:space-y-8">
       <div>
@@ -842,15 +943,19 @@ function AccountSettings() {
 
       <div className="space-y-4 md:space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-          <span className="text-sm md:text-base text-gray-900">
-            Delete account
-          </span>
+          <div className="flex-1">
+            <span className="text-sm md:text-base text-gray-900 block mb-1">
+              Delete account
+            </span>
+            <p className="text-sm text-gray-500">
+              Удаление аккаунта приведет к безвозвратной потере всех данных
+            </p>
+          </div>
           <Button
             variant="outline"
             size="sm"
             className="h-9 px-4 bg-white border-red-300 text-red-600 hover:bg-red-50 rounded-full"
-            onClick={() => alert('Account deleted (stub)')}
-            disabled
+            onClick={() => setIsDeleteDialogOpen(true)}
           >
             Delete
           </Button>
@@ -905,6 +1010,10 @@ function AccountSettings() {
           </div>
         </div>
       </div>
+      <DeleteAccountDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      />
     </div>
   );
 }

@@ -43,6 +43,9 @@ import { VisibilitySelector } from './visibility-selector';
 import SettingsDialog from './settings-dialog';
 import { UpgradePlanDialog } from './upgrade-plan-dialog';
 import { CustomizeLumiaDialog } from './customize-lumia-dialog';
+import { KeyboardShortcutsDialog } from './keyboard-shortcuts-dialog';
+import { useHotkeys } from '@/hooks/use-hotkeys';
+import { useOS } from '@/hooks/use-os';
 
 // Theme switcher component (now returns just a button, no tooltip)
 function ThemeToggleMenuItem() {
@@ -122,6 +125,18 @@ function PureChatHeader({
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
   const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const os = useOS();
+
+  // Hotkey: Show keyboard shortcuts (Cmd/Ctrl+/)
+  useHotkeys(
+    { key: '/', meta: true },
+    (e) => {
+      e.preventDefault();
+      setIsShortcutsOpen(true);
+    },
+    { os }
+  );
 
   // Получаем userId из сессии
   const { data: session } = useSession();
@@ -253,7 +268,7 @@ function PureChatHeader({
                     </span>
                     Download Apps
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push('/shortcuts')}>
+                  <DropdownMenuItem onClick={() => setIsShortcutsOpen(true)}>
                     <span className="mr-2">
                       <Zap size={16} />
                     </span>
@@ -301,6 +316,10 @@ function PureChatHeader({
       <CustomizeLumiaDialog
         open={isCustomizeOpen}
         onOpenChange={setIsCustomizeOpen}
+      />
+      <KeyboardShortcutsDialog
+        open={isShortcutsOpen}
+        onOpenChange={setIsShortcutsOpen}
       />
     </header>
   );
