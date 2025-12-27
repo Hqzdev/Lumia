@@ -10,6 +10,7 @@ import { register, type RegisterActionState } from '../actions';
 import { useActionState, useTransition } from 'react';
 import Link from 'next/link';
 import { LogoGoogle } from '@/components/icons';
+import { signIn } from 'next-auth/react';
 
 export default function Page() {
   const router = useRouter();
@@ -120,6 +121,21 @@ export default function Page() {
     }, 500);
   };
 
+  const handleGoogleSignIn = () => {
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    const isAuthSubdomain = hostname.startsWith('auth.');
+    
+    // По умолчанию перенаправляем на /chat
+    let callbackUrl = '/chat';
+    
+    // Если мы на поддомене auth, перенаправляем на chat поддомен
+    if (isAuthSubdomain) {
+      callbackUrl = 'https://chat.lumiaai.ru/chat';
+    }
+    
+    signIn('google', { callbackUrl });
+  };
+
   return (
     <div className="relative flex min-h-dvh w-screen flex-col items-center justify-center overflow-hidden bg-white px-4 py-8">
       {/* Desktop Logo */}
@@ -145,10 +161,8 @@ export default function Page() {
         <div className="w-full flex flex-col gap-3 items-center px-4">
           <button
             type="button"
-            className="w-full h-12 rounded-full border border-gray-200 flex items-center gap-3 px-4 text-sm font-normal bg-white text-black cursor-not-allowed justify-start"
-            tabIndex={-1}
-            disabled
-            title="Coming soon"
+            onClick={handleGoogleSignIn}
+            className="w-full h-12 rounded-full border border-gray-200 flex items-center gap-3 px-4 text-sm font-normal bg-white text-black hover:bg-gray-50 transition cursor-pointer justify-start"
           >
             <LogoGoogle size={20} />
             Continue with Google
@@ -554,10 +568,8 @@ export default function Page() {
         <div className="w-full flex flex-col gap-3 items-center px-4">
           <button
             type="button"
-            className="w-full max-w-80 h-12 sm:h-14 rounded-full border border-gray-200 flex items-center gap-2 px-4 sm:px-6 text-sm sm:text-base font-medium bg-white text-black cursor-not-allowed justify-start"
-            tabIndex={-1}
-            disabled
-            title="Coming soon"
+            onClick={handleGoogleSignIn}
+            className="w-full max-w-80 h-12 sm:h-14 rounded-full border border-gray-200 flex items-center gap-2 px-4 sm:px-6 text-sm sm:text-base font-medium bg-white text-black hover:bg-gray-50 transition cursor-pointer justify-start"
           >
             <LogoGoogle size={20} />
             Continue with Google

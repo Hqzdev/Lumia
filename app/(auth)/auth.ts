@@ -1,8 +1,9 @@
 import { compare } from 'bcrypt-ts';
 import NextAuth, { DefaultSession } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import Google from 'next-auth/providers/google';
 
-import { getUserByNickname } from '@/lib/db/queries';
+import { getUserByNickname, getUserByEmail, createOAuthUser } from '@/lib/db/queries';
 import { authConfig } from './auth.config';
 
 interface AppUser {
@@ -99,8 +100,63 @@ export const {
         } as AppUser;
       },
     }),
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true, // Разрешаем связывание аккаунтов по email
+    }),
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // Handle Google OAuth sign in
+      if (account?.provider === 'google') {
+        try {
+          console.log('[Google OAuth] Sign in callback started');
+          console.log('[Google OAuth] User:', { email: user.email, name: user.name });
+          console.log('[Google OAuth] Account:', { provider: account.provider, type: account.type });
+          
+          const email = user.email;
+          if (!email) {
+            console.error('[Google OAuth] No email provided');
+            return false;
+          }
+
+          // Check if user exists
+          console.log('[Google OAuth] Checking for existing user with email:', email);
+          const existingUsers = await getUserByEmail(email);
+          
+          if (existingUsers.length === 0) {
+            // Create new OAuth user
+            console.log('[Google OAuth] Creating new OAuth user');
+            const newUser = await createOAuthUser(email, user.name || profile?.name);
+            user.id = newUser.id;
+            user.nickname = newUser.nickname;
+            user.subscription = newUser.subscription;
+            console.log('[Google OAuth] New user created:', { id: newUser.id, nickname: newUser.nickname });
+          } else {
+            // User exists, use their data
+            const existingUser = existingUsers[0];
+            user.id = existingUser.id;
+            user.nickname = existingUser.nickname;
+            user.subscription = existingUser.subscription;
+            console.log('[Google OAuth] Existing user found:', { id: existingUser.id, nickname: existingUser.nickname });
+          }
+          
+          console.log('[Google OAuth] Sign in successful');
+          return true;
+        } catch (error) {
+          console.error('[Google OAuth] Error during sign in:', error);
+          if (error instanceof Error) {
+            console.error('[Google OAuth] Error message:', error.message);
+            console.error('[Google OAuth] Error stack:', error.stack);
+          }
+          return false;
+        }
+      }
+      
+      // For credentials provider, allow sign in
+      return true;
+    },
     async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;

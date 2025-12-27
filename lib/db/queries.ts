@@ -155,6 +155,82 @@ export async function createUser(
   }
 }
 
+// Helper function to generate a unique nickname from email or name
+function generateNicknameFromEmail(email: string, name?: string | null): string {
+  // Try to use name if provided, otherwise use email prefix
+  let baseNickname = '';
+  if (name) {
+    // Take first part of name, remove spaces and special characters, limit to 20 chars
+    baseNickname = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .substring(0, 20);
+  }
+  
+  if (!baseNickname) {
+    // Use email prefix (part before @)
+    baseNickname = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 20);
+  }
+  
+  // Ensure minimum length
+  if (baseNickname.length < 3) {
+    baseNickname = baseNickname.padEnd(3, '0');
+  }
+  
+  // Ensure maximum length
+  if (baseNickname.length > 32) {
+    baseNickname = baseNickname.substring(0, 32);
+  }
+  
+  return baseNickname;
+}
+
+// Create OAuth user (without password)
+export async function createOAuthUser(
+  email: string,
+  name?: string | null,
+): Promise<User> {
+  let nickname = generateNicknameFromEmail(email, name);
+  let attempt = 0;
+  const maxAttempts = 10;
+  
+  try {
+    // Try to create user with generated nickname
+    while (attempt < maxAttempts) {
+      try {
+        const [newUser] = await db
+          .insert(user)
+          .values({
+            email,
+            password: null, // OAuth users don't have passwords
+            nickname,
+            subscription: 'free',
+          })
+          .returning();
+        
+        return newUser;
+      } catch (error: any) {
+        // If nickname is already taken, try with a number suffix
+        if (error?.code === '23505' && error?.constraint?.includes('nickname')) {
+          attempt++;
+          nickname = `${generateNicknameFromEmail(email, name)}${attempt}`;
+          // Ensure nickname doesn't exceed 32 characters
+          if (nickname.length > 32) {
+            nickname = nickname.substring(0, 32 - String(attempt).length) + attempt;
+          }
+          continue;
+        }
+        throw error;
+      }
+    }
+    
+    throw new Error(`Failed to create OAuth user: couldn't generate unique nickname after ${maxAttempts} attempts`);
+  } catch (error) {
+    console.error('Failed to create OAuth user in database', error);
+    throw error;
+  }
+}
+
 export async function saveChat({
   id,
   userId,
